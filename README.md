@@ -1,2 +1,2 @@
 # common_utils
-Common utilities that can be broadly used across repositories.
+Common python utilities that can be broadly used across repositories.
