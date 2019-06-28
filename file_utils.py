@@ -16,12 +16,13 @@ def delete_dir(dir_path: str):
 def make_dir(dir_path: str):
     os.mkdir(dir_path)
 
-def delete_all_files_in_dir(dir_path: str):
-    print('Are you sure that you want to delete of of the files in {}?'.format(dir_path))
-    consent = input('yes/no: ')
-    if consent != 'yes':
-        print('Program terminated')
-        sys.exit()
+def delete_all_files_in_dir(dir_path: str, ask_permission: bool=True):
+    if ask_permission:
+        print('Are you sure that you want to delete of of the files in {}?'.format(dir_path))
+        consent = input('yes/no: ')
+        if consent != 'yes':
+            print('Program terminated')
+            sys.exit()
     names = os.listdir(dir_path)
     for name in names:
         path = os.path.join(dir_path, name)
