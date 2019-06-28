@@ -32,13 +32,13 @@ def delete_all_files_in_dir(dir_path: str, ask_permission: bool=True):
             delete_dir(path)
         print('Deleted {}'.format(path.split('/')[-1]))
 
-def init_dir(dir_path: str):
+def init_dir(dir_path: str, ask_permission: bool=True):
     dir_name = dir_path.split('/')[-1]
     if not dir_exists(dir_path):
         make_dir(dir_path)
         print("Created directory {}".format(dir_name))
     else:
-        delete_all_files_in_dir(dir_path)
+        delete_all_files_in_dir(dir_path, ask_permission)
         print("All files have been deleted from directory {}".format(dir_name))
     print('Directory {} has been initialized'.format(dir_name))
 
