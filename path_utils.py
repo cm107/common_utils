@@ -54,5 +54,9 @@ def truncate_path(path: str, degree: int) -> str:
         return path
     return '/'.join(path.split('/')[0:-degree])
 
-def rel_to_abs_path(rel_path: str):
+def rel_to_abs_path(rel_path: str) -> str:
     return os.path.abspath(rel_path)
+
+def get_newest_filepath(dir_path: str) -> str:
+    filepaths = get_pathlist(dir_path)
+    return max(filepaths, key=os.path.getctime)
