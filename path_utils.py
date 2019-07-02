@@ -59,4 +59,7 @@ def rel_to_abs_path(rel_path: str) -> str:
 
 def get_newest_filepath(dir_path: str) -> str:
     filepaths = get_pathlist(dir_path)
-    return max(filepaths, key=os.path.getctime)
+    if len(filepaths) > 0:
+        return max(filepaths, key=os.path.getctime)
+    else:
+        return None
