@@ -1,4 +1,4 @@
-import os, inspect
+import os, inspect, subprocess
 
 def get_script_path() -> str:
     caller_script_path = os.path.abspath((inspect.stack()[1])[1])
@@ -63,3 +63,6 @@ def get_newest_filepath(dir_path: str) -> str:
         return max(filepaths, key=os.path.getctime)
     else:
         return None
+
+def create_softlink(src_path: str, dst_path: str):
+    subprocess.run(f"ln -s {src_path} {dst_path}", shell=True)
