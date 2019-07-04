@@ -10,8 +10,28 @@ def file_exists(url: str):
 def delete_file(url: str):
     os.unlink(url)
 
+def delete_existing_file(url: str):
+    if file_exists(url):
+        delete_file(url)
+    else:
+        raise Exception(f"Error: Failed to delete {url}. File doesn't exist.")
+
+def delete_file_if_exists(url: str):
+    if file_exists(url):
+        delete_file(url)
+
 def delete_dir(dir_path: str):
     rmtree(dir_path)
+
+def delete_existing_dir(url: str):
+    if dir_exists(url):
+        delete_dir(url)
+    else:
+        raise Exception(f"Error: Failed to delete {url}. Directory doesn't exist.")
+
+def delete_dir_if_exists(url: str):
+    if dir_exists(url):
+        delete_dir(url)
 
 def make_dir(dir_path: str):
     os.mkdir(dir_path)
