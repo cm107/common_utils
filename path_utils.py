@@ -1,4 +1,5 @@
 import os, inspect, subprocess
+from .file_utils import dir_exists
 
 def get_script_path() -> str:
     caller_script_path = os.path.abspath((inspect.stack()[1])[1])
@@ -10,6 +11,8 @@ def get_script_dir() -> str:
     return caller_script_dir
 
 def get_filelist(dir_path: str) -> list:
+    if not dir_exists:
+        raise Exception(f"Directory not found: {dir_path}")
     return os.listdir(dir_path)
 
 def get_pathlist(dir_path: str) -> list:
@@ -66,3 +69,17 @@ def get_newest_filepath(dir_path: str) -> str:
 
 def create_softlink(src_path: str, dst_path: str):
     subprocess.run(f"ln -s {src_path} {dst_path}", shell=True)
+
+def get_next_dump_path(
+    dump_dir: str, file_extension: str, label_length: int=6,
+    starting_number: int=0, increment: int=1
+    ):
+    newest_filepath = get_newest_filepath(dump_dir)
+    next_label_number = int(get_rootname_from_path(newest_filepath)) + increment \
+        if newest_filepath is not None else starting_number
+    next_label_str = str(next_label_number)
+    while len(next_label_str) < label_length:
+        next_label_str = '0' + next_label_str
+    dump_filename = f'{next_label_str}.{file_extension}'
+    dump_path = f'{dump_dir}/{dump_filename}'
+    return dump_path
