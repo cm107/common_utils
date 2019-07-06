@@ -62,8 +62,17 @@ def init_dir(dir_path: str, ask_permission: bool=True):
         print("All files have been deleted from directory {}".format(dir_name))
     print('Directory {} has been initialized'.format(dir_name))
 
-def copy_file(src_path: str, dest_path: str):
+def copy_file(src_path: str, dest_path: str, silent: bool=False):
     copyfile(src_path, dest_path)
-    src_preview = '/'.join(src_path.split('/')[-3:])
-    dest_preview = '/'.join(dest_path.split('/')[-3:])
-    print('Copied {} to {}'.format(src_preview, dest_preview))
+    if not silent:
+        src_preview = '/'.join(src_path.split('/')[-3:])
+        dest_preview = '/'.join(dest_path.split('/')[-3:])
+        print('Copied {} to {}'.format(src_preview, dest_preview))
+
+def move_file(src_path: str, dest_path: str, silent: bool=False):
+    copy_file(src_path, dest_path, silent=True)
+    delete_file(src_path)
+    if not silent:
+        src_preview = '/'.join(src_path.split('/')[-3:])
+        dest_preview = '/'.join(dest_path.split('/')[-3:])
+        print('Moved {} to {}'.format(src_preview, dest_preview))

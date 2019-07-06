@@ -75,8 +75,9 @@ def get_next_dump_path(
     starting_number: int=0, increment: int=1
     ):
     newest_filepath = get_newest_filepath(dump_dir)
-    next_label_number = int(get_rootname_from_path(newest_filepath)) + increment \
-        if newest_filepath is not None else starting_number
+    next_label_number = \
+        int(get_rootname_from_path(newest_filepath)) + increment \
+            if newest_filepath is not None else starting_number
     next_label_str = str(next_label_number)
     while len(next_label_str) < label_length:
         next_label_str = '0' + next_label_str
