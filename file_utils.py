@@ -1,5 +1,5 @@
 import os, sys
-from shutil import rmtree, copyfile
+from shutil import rmtree, copyfile, copytree
 
 def dir_exists(url: str):
     return os.path.isdir(url)
@@ -69,9 +69,24 @@ def copy_file(src_path: str, dest_path: str, silent: bool=False):
         dest_preview = '/'.join(dest_path.split('/')[-3:])
         print('Copied {} to {}'.format(src_preview, dest_preview))
 
+def copy_dir(src_path: str, dest_path: str, silent: bool=False):
+    copytree(src_path, dest_path)
+    if not silent:
+        src_preview = '/'.join(src_path.split('/')[-3:])
+        dest_preview = '/'.join(dest_path.split('/')[-3:])
+        print('Copied {} to {}'.format(src_preview, dest_preview))
+
 def move_file(src_path: str, dest_path: str, silent: bool=False):
     copy_file(src_path, dest_path, silent=True)
     delete_file(src_path)
+    if not silent:
+        src_preview = '/'.join(src_path.split('/')[-3:])
+        dest_preview = '/'.join(dest_path.split('/')[-3:])
+        print('Moved {} to {}'.format(src_preview, dest_preview))
+
+def move_dir(src_path: str, dest_path: str, silent: bool=False):
+    copy_dir(src_path, dest_path, silent=True)
+    delete_dir(src_path)
     if not silent:
         src_preview = '/'.join(src_path.split('/')[-3:])
         dest_preview = '/'.join(dest_path.split('/')[-3:])
