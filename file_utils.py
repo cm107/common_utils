@@ -1,11 +1,15 @@
-import os, sys
-from shutil import rmtree, copyfile, copytree
+import os, sys, subprocess
+from shutil import rmtree, copyfile
+from distutils.dir_util import copy_tree
 
 def dir_exists(url: str):
     return os.path.isdir(url)
 
 def file_exists(url: str):
     return os.path.isfile(url)
+
+def link_exists(url: str):
+    return os.path.islink(url)
 
 def delete_file(url: str):
     os.unlink(url)
@@ -35,6 +39,10 @@ def delete_dir_if_exists(url: str):
 
 def make_dir(dir_path: str):
     os.mkdir(dir_path)
+
+def make_dir_if_not_exists(dir_path: str):
+    if not dir_exists(dir_path):
+        make_dir(dir_path)
 
 def delete_all_files_in_dir(dir_path: str, ask_permission: bool=True):
     if ask_permission:
@@ -70,7 +78,7 @@ def copy_file(src_path: str, dest_path: str, silent: bool=False):
         print('Copied {} to {}'.format(src_preview, dest_preview))
 
 def copy_dir(src_path: str, dest_path: str, silent: bool=False):
-    copytree(src_path, dest_path)
+    copy_tree(src_path, dest_path)
     if not silent:
         src_preview = '/'.join(src_path.split('/')[-3:])
         dest_preview = '/'.join(dest_path.split('/')[-3:])
@@ -91,3 +99,10 @@ def move_dir(src_path: str, dest_path: str, silent: bool=False):
         src_preview = '/'.join(src_path.split('/')[-3:])
         dest_preview = '/'.join(dest_path.split('/')[-3:])
         print('Moved {} to {}'.format(src_preview, dest_preview))
+
+def create_softlink(src_path: str, dst_path: str):
+    print(f'dst_path={dst_path}')
+    if link_exists(dst_path):
+        print('Flag')
+        delete_file(dst_path)
+    subprocess.run(f"ln -s {src_path} {dst_path}", shell=True)

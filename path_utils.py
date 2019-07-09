@@ -1,4 +1,4 @@
-import os, inspect, subprocess
+import os, inspect
 from .file_utils import dir_exists
 
 def get_script_path() -> str:
@@ -66,9 +66,6 @@ def get_newest_filepath(dir_path: str) -> str:
         return max(filepaths, key=os.path.getctime)
     else:
         return None
-
-def create_softlink(src_path: str, dst_path: str):
-    subprocess.run(f"ln -s {src_path} {dst_path}", shell=True)
 
 def get_next_dump_path(
     dump_dir: str, file_extension: str, label_length: int=6,

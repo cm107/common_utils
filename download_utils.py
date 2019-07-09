@@ -1,5 +1,5 @@
 import requests
-import tarfile
+import tarfile, zipfile
 from tqdm import tqdm
 import math
 
@@ -19,3 +19,8 @@ def tar_extractall(tarfile_path: str, dst_path: str):
     tar = tarfile.open(tarfile_path)
     tar.extractall(dst_path)
     tar.close()
+
+def zip_extractall(zipfile_path: str, dst_path: str):
+	zip_ref = zipfile.ZipFile(zipfile_path, 'r')
+	zip_ref.extractall(dst_path)
+	zip_ref.close()
