@@ -60,8 +60,15 @@ def truncate_path(path: str, degree: int) -> str:
 def rel_to_abs_path(rel_path: str) -> str:
     return os.path.abspath(rel_path)
 
-def get_newest_filepath(dir_path: str) -> str:
+def get_newest_filepath(dir_path: str, extension: str=None) -> str:
     filepaths = get_pathlist(dir_path)
+    if extension is not None:
+        temp = []
+        for filepath in filepaths:
+            ext = get_extension_from_path(filepath)
+            if ext == extension:
+                temp.append(filepath)
+        filepaths = temp
     if len(filepaths) > 0:
         return max(filepaths, key=os.path.getctime)
     else:
