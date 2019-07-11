@@ -60,7 +60,7 @@ def truncate_path(path: str, degree: int) -> str:
 def rel_to_abs_path(rel_path: str) -> str:
     return os.path.abspath(rel_path)
 
-def get_all_files_of_extension(dir_path: str, extension: str=None):
+def get_all_files_of_extension(dir_path: str, extension: str=None) -> list:
     filepaths = get_pathlist(dir_path)
     if extension is not None:
         filepaths_of_extension = []
@@ -70,6 +70,13 @@ def get_all_files_of_extension(dir_path: str, extension: str=None):
                 filepaths_of_extension.append(filepath)
         filepaths = filepaths_of_extension
     return filepaths
+
+def file_extension_exists_in_dir(dir_path: str, extension: str) -> bool:
+    ext_filepaths = get_all_files_of_extension(dir_path, extension)
+    if len(ext_filepaths) > 0:
+        return True
+    else:
+        return False
 
 def get_newest_filepath(dir_path: str, extension: str=None) -> str:
     filepaths = get_all_files_of_extension(dir_path, extension)
