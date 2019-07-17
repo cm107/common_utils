@@ -1,4 +1,4 @@
-import os, inspect
+import os, inspect, glob
 from .file_utils import dir_exists
 
 def get_script_path() -> str:
@@ -14,6 +14,9 @@ def get_filelist(dir_path: str) -> list:
     if not dir_exists:
         raise Exception(f"Directory not found: {dir_path}")
     return os.listdir(dir_path)
+
+def find_path_matching_pattern(filepath_pattern: str) -> list:
+    return glob.glob(filepath_pattern)
 
 def get_pathlist(dir_path: str) -> list:
     filename_list = get_filelist(dir_path)
