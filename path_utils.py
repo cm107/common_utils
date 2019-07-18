@@ -42,6 +42,9 @@ def get_extension_from_path(path: str) -> str:
     filename = get_filename(path)
     return get_extension_from_filename(filename)
 
+def get_dirpath_from_filepath(filepath: str) -> str:
+    return '/'.join(filepath.split('/')[:-1])
+
 def construct_pathlist(dir_path: str, filename_list: list):
     return ['{}/{}'.format(dir_path, filename) for filename in filename_list]
 
