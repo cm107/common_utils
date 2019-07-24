@@ -4,6 +4,14 @@ def parse_str_from_tag(text: str, tag: str) -> str:
 def parse_int_from_tag(text: str, tag: str) -> int:
     return int(parse_str_from_tag(text, tag))
 
+def str2strlist(list_str: str) -> list:
+    temp = list_str.split('[')[1].split(']')[0].replace(' ', '').split(',')
+    return [i for i in temp]
+
 def str2intlist(list_str: str) -> list:
     temp = list_str.split('[')[1].split(']')[0].replace(' ', '').split(',')
     return [int(i) for i in temp]
+
+def str2floatlist(list_str: str) -> list:
+    temp = list_str.split('[')[1].split(']')[0].replace(' ', '').split(',')
+    return [float(i) for i in temp]
