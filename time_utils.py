@@ -21,13 +21,13 @@ def get_present_second() -> int:
 def get_present_microsecond() -> int:
     return datetime.datetime.today().microsecond
 
-def get_present_time_Ymd() -> str:
+def get_present_time() -> str:
     datetime.datetime.today().strftime('%Y/%m/%d, %H:%M:%S')
 
-def get_present_time_HMS() -> str:
+def get_present_time_Ymd() -> str:
     datetime.datetime.today().strftime('%Y/%m/%d')
 
-def get_present_time() -> str:
+def get_present_time_HMS() -> str:
     datetime.datetime.today().strftime('%H:%M:%S')
 
 def get_ctime(path: str) -> str:
