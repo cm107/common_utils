@@ -22,16 +22,16 @@ def get_present_microsecond() -> int:
     return datetime.datetime.today().microsecond
 
 def get_present_time() -> str:
-    datetime.datetime.today().strftime('%Y/%m/%d, %H:%M:%S')
+    return datetime.datetime.today().strftime('%Y/%m/%d %H:%M:%S')
 
 def get_present_time_Ymd() -> str:
-    datetime.datetime.today().strftime('%Y/%m/%d')
+    return datetime.datetime.today().strftime('%Y/%m/%d')
 
 def get_present_time_HMS() -> str:
-    datetime.datetime.today().strftime('%H:%M:%S')
+    return datetime.datetime.today().strftime('%H:%M:%S')
 
 def get_ctime(path: str) -> str:
-    return time.strftime("%Y/%m/%d, %H:%M:%S", time.gmtime(os.path.getctime(path)))
+    return time.strftime("%Y/%m/%d %H:%M:%S", time.gmtime(os.path.getctime(path)))
 
 def get_ctime_Ymd(path: str) -> str:
     return time.strftime("%Y/%m/%d", time.gmtime(os.path.getctime(path)))
@@ -40,7 +40,7 @@ def get_ctime_HMS(path: str) -> str:
     return time.strftime("%H:%M:%S", time.gmtime(os.path.getctime(path)))
 
 def get_mtime(path: str) -> str:
-    return time.strftime("%Y/%m/%d, %H:%M:%S", time.gmtime(os.path.getmtime(path)))
+    return time.strftime("%Y/%m/%d %H:%M:%S", time.gmtime(os.path.getmtime(path)))
 
 def get_mtime_Ymd(path: str) -> str:
     return time.strftime("%Y/%m/%d", time.gmtime(os.path.getmtime(path)))
