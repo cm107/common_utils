@@ -96,3 +96,9 @@ def get_list_dimension(list_data: list) -> int:
 
 def beautify_dict(data: dict, indent: int=2):
     return json.dumps(data, indent=indent)
+
+def list2chunks(data_list: list, chunk_size: int):
+    if len(data_list) % chunk_size != 0:
+        raise Exception(f"len(data_list) % chunk_size != 0 -> {len(data_list)} % {chunk_size} != 0 -> {len(data_list) % chunk_size} != 0")
+    chunks = [data_list[i:i+chunk_size] for i in range(int(len(data_list)/chunk_size))]
+    return chunks
