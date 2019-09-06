@@ -77,6 +77,17 @@ def get_all_files_of_extension(dir_path: str, extension: str=None) -> list:
         filepaths = filepaths_of_extension
     return filepaths
 
+def get_all_files_in_extension_list(dir_path: str, extension_list: list=None) -> list:
+    filepaths = get_pathlist(dir_path)
+    if extension_list is not None:
+        filepaths_of_extension = []
+        for filepath in filepaths:
+            ext = get_extension_from_path(filepath)
+            if ext in extension_list:
+                filepaths_of_extension.append(filepath)
+        filepaths = filepaths_of_extension
+    return filepaths
+
 def file_extension_exists_in_dir(dir_path: str, extension: str) -> bool:
     ext_filepaths = get_all_files_of_extension(dir_path, extension)
     if len(ext_filepaths) > 0:
@@ -95,7 +106,7 @@ def get_next_dump_path(
     dump_dir: str, file_extension: str, label_length: int=6,
     starting_number: int=0, increment: int=1
     ):
-    newest_filepath = get_newest_filepath(dump_dir)
+    newest_filepath = get_newest_filepath(dump_dir, extension=file_extension)
     next_label_number = \
         int(get_rootname_from_path(newest_filepath)) + increment \
             if newest_filepath is not None else starting_number

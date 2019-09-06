@@ -1,6 +1,6 @@
 from .file_utils import move_file, delete_existing_file
 from .path_utils import get_next_dump_path, get_extension_from_path, \
-    get_pathlist, get_all_files_of_extension, get_filename
+    get_pathlist, get_all_files_of_extension, get_filename, get_all_files_in_extension_list
 from .file_utils import file_exists, dir_exists
 
 def move_to_dump_dir(
@@ -32,6 +32,13 @@ def move_all_to_dump_dir(
 
 def delete_all_files_of_extension(dir_path: str, extension: str):
     filepaths = get_all_files_of_extension(dir_path, extension)
+    if len(filepaths) > 0:
+        for filepath in filepaths:
+            delete_existing_file(filepath)
+            print(f'Deleted {filepath}')
+
+def delete_all_files_in_extension_list(dir_path: str, extension_list: list):
+    filepaths = get_all_files_in_extension_list(dir_path, extension_list)
     if len(filepaths) > 0:
         for filepath in filepaths:
             delete_existing_file(filepath)

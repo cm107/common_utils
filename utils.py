@@ -96,3 +96,11 @@ def get_list_dimension(list_data: list) -> int:
 
 def beautify_dict(data: dict, indent: int=2):
     return json.dumps(data, indent=indent)
+
+def list1d2chunks(data_list: list, chunk_size: int):
+    if len(data_list) % chunk_size != 0:
+        raise Exception(f"len(data_list) % chunk_size != 0 -> {len(data_list)} % {chunk_size} != 0 -> {len(data_list) % chunk_size} != 0")
+    return np.array(data_list).reshape(-1, chunk_size).tolist()
+
+def chunks2list1d(chunks: list):
+    return np.array(chunks).reshape(-1).tolist()
