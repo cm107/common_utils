@@ -104,3 +104,11 @@ def list1d2chunks(data_list: list, chunk_size: int):
 
 def chunks2list1d(chunks: list):
     return np.array(chunks).reshape(-1).tolist()
+
+def rshift(val_list: list, shift_by: int) -> list:
+    i = shift_by % len(val_list)
+    return val_list[-i:] + val_list[:-i]
+
+def lshift(val_list: list, shift_by: int) -> list:
+    i = shift_by % len(val_list)
+    return val_list[i:] + val_list[:i]

@@ -30,6 +30,12 @@ class Point:
     def items(self) -> list:
         return [self.x, self.y]
 
+    def to_list(self) -> list:
+        return [self.x, self.y]
+
+    def to_tuple(self) -> tuple:
+        return (self.x, self.y)
+
     def types(self) -> list:
         return [type(self.x), type(self.y)]
 
