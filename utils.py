@@ -112,3 +112,11 @@ def rshift(val_list: list, shift_by: int) -> list:
 def lshift(val_list: list, shift_by: int) -> list:
     i = shift_by % len(val_list)
     return val_list[i:] + val_list[:i]
+
+def fractional_arange(start_val, end_val, num_vals):
+    interval = end_val - start_val
+    step = interval / (num_vals - 1)
+    vals = []
+    for i in range(num_vals):
+        vals.append(start_val + i * step)
+    return vals
