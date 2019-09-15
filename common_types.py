@@ -136,6 +136,18 @@ class Rectangle:
     def to_labelme_format(self) -> list:
         return [[self.xmin, self.ymin], [self.xmax, self.ymax]]
 
+    def to_vertex_list(self) -> list:
+        """
+        Returns vertices in the following order:
+        [upper_left, upper_right, lower_right, lower_left]
+        """
+        return [
+            [self.xmin, self.ymin], # upper left
+            [self.xmax, self.ymin], # upper right
+            [self.xmax, self.ymax], # lower right
+            [self.xmin, self.ymax]  # lower left
+        ]
+
     @classmethod
     def from_p0p1(self, p0: Point, p1: Point) -> Point:
         return Rectangle(xmin=p0.x, ymin=p0.y, xmax=p1.x, ymax=p1.y, check_types=False)
@@ -143,6 +155,14 @@ class Rectangle:
     @classmethod
     def from_p0size(self, p0: Point, size: Size):
         return Rectangle(xmin=p0.x, ymin=p0.y, xmax=(p0.x + size.width), ymax=(p0.y + size.height))
+
+    @classmethod
+    def from_centersize(self, center: Point, size: Size):
+        xmin = center.x - (size.width/2)
+        ymin = center.y - (size.height/2)
+        xmax = center.x + (size.width/2)
+        ymax = center.y + (size.height/2)
+        return Rectangle(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
 
     @classmethod
     def from_labelme_point_list(self, labelme_point_list: list):
