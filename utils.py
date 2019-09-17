@@ -112,3 +112,14 @@ def rshift(val_list: list, shift_by: int) -> list:
 def lshift(val_list: list, shift_by: int) -> list:
     i = shift_by % len(val_list)
     return val_list[i:] + val_list[:i]
+
+def list2pairlist(input_list: list, start=None) -> list:
+    """
+    Example:
+    input_list = [1,2,3,4,5], start=None -> [(1, 2), (2, 3), (3, 4), (4, 5)]
+    input_list = [1,2,3,4,5], start=10 -> [(10, 1), (1, 2), (2, 3), (3, 4), (4, 5)]
+    """
+    if start is not None:
+        return [(start, input_list[0])] + list(zip(input_list[:-1], input_list[1:]))
+    else:
+        return list(zip(input_list[:-1], input_list[1:]))
