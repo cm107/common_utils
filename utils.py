@@ -113,7 +113,6 @@ def lshift(val_list: list, shift_by: int) -> list:
     i = shift_by % len(val_list)
     return val_list[i:] + val_list[:i]
 
-<<<<<<< HEAD
 def list2pairlist(input_list: list, start=None) -> list:
     """
     Example:
@@ -124,7 +123,7 @@ def list2pairlist(input_list: list, start=None) -> list:
         return [(start, input_list[0])] + list(zip(input_list[:-1], input_list[1:]))
     else:
         return list(zip(input_list[:-1], input_list[1:]))
-=======
+
 def fractional_arange(start_val, end_val, num_vals):
     interval = end_val - start_val
     step = interval / (num_vals - 1)
@@ -132,4 +131,3 @@ def fractional_arange(start_val, end_val, num_vals):
     for i in range(num_vals):
         vals.append(start_val + i * step)
     return vals
->>>>>>> 1dba105e479f7c3ca4e81eaccea3cf2cef562614
