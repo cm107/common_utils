@@ -12,6 +12,16 @@ def check_type_from_list(item_list: list, valid_type_list: list):
     for item in item_list:
         check_type(item=item, valid_type_list=valid_type_list)
 
+def check_value(item, valid_value_list: list):
+    if item not in valid_value_list:
+        logger.error(f"Invalid value: {item}")
+        logger.error(f"Valid values: {valid_value_list}")
+        raise TypeError
+
+def check_value_from_list(item_list: list, valid_value_list: list):
+    for item in item_list:
+        check_value(item=item, valid_value_list=valid_value_list)
+
 def check_file_exists(filepath: str):
     if not file_exists(filepath):
         logger.error(f"File not found: {filepath}")
