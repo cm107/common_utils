@@ -47,3 +47,6 @@ def get_mtime_Ymd(path: str) -> str:
 
 def get_mtime_HMS(path: str) -> str:
     return time.strftime("%H:%M:%S", time.gmtime(os.path.getmtime(path)))
+
+def duration_to_HMS(duration: int) -> str:
+    return time.strftime("%H:%M:%S", time.gmtime(duration))

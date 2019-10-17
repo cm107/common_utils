@@ -72,3 +72,13 @@ def check_list_length(item_list: list, correct_length: int, ineq_type: str='eq')
     else:
         logger.error(f"Invalid ineq_type: {ineq_type}")
         raise Exception
+
+def check_key_in_dict(item_dict: dict, key):
+    if key not in item_dict:
+        logger.error(f"Key {key} not found in dictionary.")
+        raise Exception
+
+def check_key_not_in_dict(item_dict: dict, key):
+    if key in item_dict:
+        logger.error(f"Key {key} already exists in dictionary.")
+        raise Exception
