@@ -1,7 +1,7 @@
 import sys
-from ..logger.logger_handler import logger
-from .adv_file_utils import delete_all_files_in_extension_list
-from .file_utils import delete_dir
+from logger import logger
+from ..adv_file_utils import delete_all_files_in_extension_list
+from ..file_utils import delete_dir
 
 def delete_files_in_dir_prompt(dir_path: str, extension_list: list):
     answer = input("yes/no: ")

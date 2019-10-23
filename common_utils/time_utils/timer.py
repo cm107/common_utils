@@ -1,6 +1,6 @@
 import time
-from ..logger.logger_handler import logger
-from .check_utils import check_key_not_in_dict, check_key_in_dict
+from logger import logger
+from ..check_utils import check_key_not_in_dict, check_key_in_dict
 from .time_utils import duration_to_HMS
 
 class TimerStates:

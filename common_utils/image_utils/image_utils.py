@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
-from .common_types import Size
-from ..logger.logger_handler import logger
+from ..common_types import Size
+from logger import logger
 
 def get_scaled_dims(width: int, height: int, scale_factor) -> (int, int):
     return int(width * scale_factor), int(height * scale_factor)

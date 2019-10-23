@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
-from .common_types import Point, Size
-from .color_constants import Color
-from .check_utils import check_type_from_list
-from .image_utils import resize_img
+from ..common_types import Point, Size
+from ..color_constants import Color
+from ..check_utils import check_type_from_list
+from ..image_utils import resize_img
 
 class PointDrawer:
     def __init__(

@@ -1,6 +1,6 @@
-from ..logger.logger_handler import logger
-from .file_utils import file_exists, dir_exists
-from .path_utils import get_dirpath_from_filepath
+from logger import logger
+from ..file_utils import file_exists, dir_exists
+from ..path_utils import get_dirpath_from_filepath
 
 def check_type(item, valid_type_list: list):
     if type(item) not in valid_type_list:
