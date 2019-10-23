@@ -30,7 +30,7 @@ setup(
         'requests>=2.22.0',
         'pylint>=2.4.2',
         'tqdm>=4.36.1',
-        'logger @ https://github.com/cm107/logger/master.zip#egg=logger-0.1'
+        'logger @ https://github.com/cm107/logger/archive/master.zip#egg=logger-0.1'
     ],
     python_requires='>=3.6'
 )
