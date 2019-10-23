@@ -1,6 +1,6 @@
 from collections import namedtuple
-from ..logger.logger_handler import logger
-from .check_utils import check_type_from_list, check_list_length
+from logger import logger
+from ..check_utils import check_type_from_list, check_list_length
 from math import pi, asin, tan
 
 Keypoint = namedtuple('Keypoint', ['x', 'y', 'v'])

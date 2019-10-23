@@ -1,5 +1,5 @@
 import os, inspect, glob
-from .file_utils import dir_exists
+from ..file_utils import dir_exists
 
 def get_script_path() -> str:
     caller_script_path = os.path.abspath((inspect.stack()[1])[1])
