@@ -36,7 +36,7 @@ def get_rootname_from_path(path: str) -> str:
     return get_rootname_from_filename(filename)
 
 def get_extension_from_filename(filename: str) -> str:
-    return filename.split('.')[1]
+    return filename.split('.')[-1]
 
 def get_extension_from_path(path: str) -> str:
     filename = get_filename(path)
