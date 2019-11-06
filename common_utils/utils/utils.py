@@ -1,5 +1,6 @@
 import numpy as np
 import json
+from logger import logger
 
 def str2bool(text_str: str) -> bool:
     if text_str.lower() == 'true':
@@ -131,3 +132,6 @@ def fractional_arange(start_val, end_val, num_vals):
     for i in range(num_vals):
         vals.append(start_val + i * step)
     return vals
+
+def get_class_string(cls_obj) -> str:
+    return str(type(cls_obj)).replace("<class '", "").replace("'>", "").split('.')[-1]

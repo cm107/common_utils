@@ -15,7 +15,8 @@ common_utils/check_utils/check_utils.py
 common_utils/color_constants/__init__.py
 common_utils/color_constants/color_constants.py
 common_utils/common_types/__init__.py
-common_utils/common_types/common_types.py
+common_utils/common_types/bbox.py
+common_utils/common_types/common.py
 common_utils/counter_utils/__init__.py
 common_utils/counter_utils/counter_utils.py
 common_utils/cv_drawing_utils/__init__.py

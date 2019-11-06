@@ -1,10 +1,19 @@
+from __future__ import annotations
+import numpy as np
 from collections import namedtuple
 from logger import logger
-from ..check_utils import check_type_from_list, check_list_length
+from ..check_utils import check_type, check_type_from_list, check_list_length
 from math import pi, asin, tan
 
 Keypoint = namedtuple('Keypoint', ['x', 'y', 'v'])
-BoundingBox = namedtuple('BoundingBox', ['xmin', 'ymin', 'xmax', 'ymax'])
+
+class BoundingBox:
+    def __init__(self, xmin, ymin, xmax, ymax):
+        self.xmin = xmin
+        self.ymin = ymin
+        self.xmax = xmax
+        self.ymax = ymax
+        logger.warning(f"BoundingBox is decapricated. Please use BBox instead.")
 
 class Size:
     _from_list_length = 2
@@ -49,7 +58,7 @@ class Size:
 class Point:
     def __init__(self, x, y, check_types: bool=True):
         if check_types:
-            check_type_from_list(item_list=[x, y], valid_type_list=[int, float])
+            check_type_from_list(item_list=[x, y], valid_type_list=[int, float, np.float64])
         self.x = x
         self.y = y
 
@@ -326,3 +335,84 @@ class Resize:
 
     def on_polygon(self, polygon: Polygon) -> Polygon:
         return Polygon([self.on_point(point) for point in polygon.point_list])
+
+class Interval:
+    def __init__(self, min_val, max_val, check_types: bool=True):
+        if check_types:
+            check_type_from_list(item_list=[min_val, max_val], valid_type_list=[int, float, np.float64])
+        self.min_val = min_val
+        self.max_val = max_val
+
+    def __str__(self):
+        return f"Interval: [{self.min_val}, {self.max_val}]"
+
+    def __repr__(self):
+        return self.__str__()
+
+    def to_int(self):
+        return Interval(min_val=int(self.min_val), max_val=int(self.max_val), check_types=False)
+
+    def to_float(self):
+        return Interval(min_val=float(self.min_val), max_val=float(self.max_val), check_types=False)
+
+    def to_list(self) -> list:
+        return [self.min_val, self.max_val]
+
+    def to_tuple(self) -> tuple:
+        return (self.min_val, self.max_val)
+
+    def types(self) -> list:
+        return [type(self.min_val), type(self.min_val)]
+
+    @classmethod
+    def from_list(self, items: list):
+        check_list_length(item_list=items, correct_length=2)
+        return Interval(min_val=items[0], max_val=items[1])
+
+    def get_length(self):
+        return self.max_val - self.min_val
+
+    def center(self) -> float:
+        return self.min_val + (0.5 * self.get_length())
+
+    def contains(self, val) -> bool:
+        check_type(item=val, valid_type_list=[int, float, np.float64])
+        return self.min_val <= val and val <= self.max_val
+
+    def contains_interval(self, interval: Interval) -> bool:
+        if self.contains(val=interval.min_val) and self.contains(val=interval.max_val):
+            return True
+        else:
+            return False
+
+    def shift_interval_in_bounds(self, bound: Interval) -> (bool, list, Interval):
+        new_interval_min, new_interval_max = self.min_val, self.max_val
+        if self.min_val >= bound.min_val and self.max_val <= bound.max_val:
+            success = True
+            is_left_edge = True if self.min_val == bound.min_val else False
+            is_right_edge = True if self.max_val == bound.max_val else False
+        elif self.min_val < bound.min_val and self.max_val <= bound.max_val:
+            left_deviation = bound.min_val - self.min_val
+            new_interval_min = bound.min_val
+            new_interval_max += left_deviation
+            success = True
+            is_left_edge, is_right_edge = True, False
+        elif self.min_val >= bound.min_val and self.max_val > bound.max_val:
+            right_deviation = self.max_val - bound.max_val
+            new_interval_min -= right_deviation
+            new_interval_max = self.max_val
+            success = True
+            is_left_edge, is_right_edge = False, True
+        else:
+            new_interval_min, new_interval_max = None, None
+            success = False
+            is_left_edge, is_right_edge = False, False
+        
+        edge_orientation = [is_left_edge, is_right_edge]
+        new_interval = Interval.from_list([new_interval_min, new_interval_max]) \
+            if new_interval_min is not None and new_interval_max is not None else None
+
+        if new_interval is not None and not bound.contains_interval(new_interval):
+            success = False # One edge was in bounds before shift but then went out of bounds after shift.
+
+        return success, edge_orientation, new_interval
