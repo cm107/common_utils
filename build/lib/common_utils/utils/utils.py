@@ -135,3 +135,11 @@ def fractional_arange(start_val, end_val, num_vals):
 
 def get_class_string(cls_obj) -> str:
     return str(type(cls_obj)).replace("<class '", "").replace("'>", "").split('.')[-1]
+
+def check_sequence(sequence: list, valid_sequence_list: list, label: str='sequence'):
+    if sequence not in valid_sequence_list:
+        logger.error(f"Invalid {label}: {sequence}")
+        logger.error(f"Valid {label}:")
+        for valid_sequence in valid_sequence_list:
+            logger.error(f"\t{valid_sequence}")
+        raise Exception

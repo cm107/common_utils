@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 from ..common_types import Size
 from logger import logger
+from ..check_utils import check_type_from_list, \
+    check_filepath_list_exists
 
 def get_scaled_dims(width: int, height: int, scale_factor) -> (int, int):
     return int(width * scale_factor), int(height * scale_factor)
@@ -71,3 +73,72 @@ def show_cv2_image(img: np.ndarray, title: str='Test', window_size: Size=None):
     k = cv2.waitKey(0)
     if k == 27:         # wait for ESC key to exit
         cv2.destroyAllWindows()
+
+def cv2_img2matplotlib_img(img: np.ndarray):
+    return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+def matplotlib_img2cv2_img(img: np.ndarray):
+    return cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+
+def concat_images(imga, imgb, orientation: int=0):
+    """
+    Combines two color image ndarrays side-by-side.
+
+    orientation
+    0: horizontal
+    1: vertical
+    """
+    ha, wa = imga.shape[:2]
+    hb, wb = imgb.shape[:2]
+    max_h, max_w = np.max([ha, hb]), np.max([wa, wb])
+    sum_h, sum_w = np.sum([ha, hb]), np.sum([wa, wb])
+
+    if orientation == 0: # horizontal
+        new_img = np.zeros(shape=(max_h, sum_w, 3))
+        new_img[:ha, :wa] = imga
+        new_img[:hb, wa:wa+wb] = imgb
+    elif orientation == 1: # vertical
+        new_img = np.zeros(shape=(sum_h, max_w, 3))
+        new_img[:ha, :wa] = imga
+        new_img[ha:ha+hb, :wb] = imgb
+    else:
+        raise Exception
+
+    return new_img.astype('uint8')
+
+def concat_n_images(img_list: list, orientation: int=0):
+    """
+    Combines N color images from a list ndarray images
+
+    orientation
+    0: horizontal
+    1: vertical
+    """
+    check_type_from_list(img_list, valid_type_list=[np.ndarray])
+
+    output = None
+    for i, img in enumerate(img_list):
+        if i==0:
+            output = img
+        else:
+            output = concat_images(output, img, orientation=orientation)
+    return output
+
+def concat_n_images_from_pathlist(img_pathlist: list, orientation: int=0):
+    """
+    Combines N color images from a list of image paths.
+
+    orientation
+    0: horizontal
+    1: vertical
+    """
+    check_filepath_list_exists(img_pathlist)
+
+    output = None
+    for i, img_path in enumerate(img_pathlist):
+        img = cv2.imread(img_path)
+        if i==0:
+            output = img
+        else:
+            output = concat_images(output, img, orientation=orientation)
+    return output

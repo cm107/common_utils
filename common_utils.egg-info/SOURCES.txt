@@ -17,6 +17,8 @@ common_utils/color_constants/color_constants.py
 common_utils/common_types/__init__.py
 common_utils/common_types/bbox.py
 common_utils/common_types/common.py
+common_utils/common_types/tracker/__init__.py
+common_utils/common_types/tracker/tracker.py
 common_utils/counter_utils/__init__.py
 common_utils/counter_utils/counter_utils.py
 common_utils/cv_drawing_utils/__init__.py
@@ -29,6 +31,9 @@ common_utils/image_utils/__init__.py
 common_utils/image_utils/image_utils.py
 common_utils/math_utils/__init__.py
 common_utils/math_utils/math_utils.py
+common_utils/ml_utils/__init__.py
+common_utils/ml_utils/heatmap/__init__.py
+common_utils/ml_utils/heatmap/heatmap.py
 common_utils/path_utils/__init__.py
 common_utils/path_utils/path_utils.py
 common_utils/prompt_utils/__init__.py
@@ -36,6 +41,9 @@ common_utils/prompt_utils/prompt_utils.py
 common_utils/time_utils/__init__.py
 common_utils/time_utils/time_utils.py
 common_utils/time_utils/timer.py
+common_utils/transform_utils/__init__.py
+common_utils/transform_utils/point/__init__.py
+common_utils/transform_utils/point/point.py
 common_utils/user_utils/__init__.py
 common_utils/user_utils/user_utils.py
 common_utils/utils/__init__.py
