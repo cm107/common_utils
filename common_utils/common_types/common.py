@@ -4,6 +4,7 @@ from collections import namedtuple
 from logger import logger
 from ..check_utils import check_type, check_type_from_list, check_list_length
 from math import pi, asin, tan
+from .constants import number_types
 
 Keypoint = namedtuple('Keypoint', ['x', 'y', 'v'])
 
@@ -19,7 +20,7 @@ class Size:
     _from_list_length = 2
     def __init__(self, width, height, check_types: bool=True):
         if check_types:
-            check_type_from_list(item_list=[width, height], valid_type_list=[int, float])
+            check_type_from_list(item_list=[width, height], valid_type_list=number_types)
         self.width = width
         self.height = height
         self.area = width * height
@@ -58,7 +59,7 @@ class Size:
 class Point:
     def __init__(self, x, y, check_types: bool=True):
         if check_types:
-            check_type_from_list(item_list=[x, y], valid_type_list=[int, float, np.float64])
+            check_type_from_list(item_list=[x, y], valid_type_list=number_types)
         self.x = x
         self.y = y
 
@@ -103,7 +104,7 @@ class Point:
 class Rectangle:
     def __init__(self, xmin, ymin, xmax, ymax, check_types: bool=True):
         if check_types:
-            check_type_from_list(item_list=[xmin, xmax, ymin, ymax], valid_type_list=[int, float])
+            check_type_from_list(item_list=[xmin, xmax, ymin, ymax], valid_type_list=number_types)
         self.xmin = xmin
         self.ymin = ymin
         self.xmax = xmax
@@ -210,7 +211,7 @@ class Polygon:
 class Circle:
     def __init__(self, center: Point, radius, check_types: bool=True):
         if check_types:
-            check_type_from_list(item_list=[radius], valid_type_list=[int, float])
+            check_type_from_list(item_list=[radius], valid_type_list=number_types)
         self.center = center
         self.radius = radius
 
@@ -339,7 +340,7 @@ class Resize:
 class Interval:
     def __init__(self, min_val, max_val, check_types: bool=True):
         if check_types:
-            check_type_from_list(item_list=[min_val, max_val], valid_type_list=[int, float, np.float64])
+            check_type_from_list(item_list=[min_val, max_val], valid_type_list=number_types)
         self.min_val = min_val
         self.max_val = max_val
 
@@ -376,7 +377,7 @@ class Interval:
         return self.min_val + (0.5 * self.get_length())
 
     def contains(self, val) -> bool:
-        check_type(item=val, valid_type_list=[int, float, np.float64])
+        check_type(item=val, valid_type_list=number_types)
         return self.min_val <= val and val <= self.max_val
 
     def contains_interval(self, interval: Interval) -> bool:

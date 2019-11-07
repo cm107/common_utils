@@ -4,10 +4,11 @@ from logger import logger
 from ..check_utils import check_type_from_list, check_value
 from ..utils import get_class_string
 from .common import Point, Interval
+from .constants import number_types
 
 class BBox:
     def __init__(self, xmin, ymin, xmax, ymax):
-        check_type_from_list(item_list=[xmin, ymin, xmax, ymax], valid_type_list=[int, float, np.float64])
+        check_type_from_list(item_list=[xmin, ymin, xmax, ymax], valid_type_list=number_types)
         self.xmin = xmin
         self.ymin = ymin
         self.xmax = xmax
