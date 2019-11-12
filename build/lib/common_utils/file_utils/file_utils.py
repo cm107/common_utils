@@ -2,6 +2,8 @@ import os, sys, subprocess
 from shutil import rmtree, copyfile
 from distutils.dir_util import copy_tree
 
+from logger import logger
+
 def dir_exists(url: str):
     return os.path.isdir(url)
 
@@ -18,7 +20,8 @@ def delete_existing_file(url: str):
     if file_exists(url):
         delete_file(url)
     else:
-        raise Exception(f"Error: Failed to delete {url}. File doesn't exist.")
+        logger.error(f"Error: Failed to delete {url}. File doesn't exist.")
+        raise Exception
 
 def delete_file_if_exists(url: str):
     if file_exists(url):
@@ -31,7 +34,8 @@ def delete_existing_dir(url: str):
     if dir_exists(url):
         delete_dir(url)
     else:
-        raise Exception(f"Error: Failed to delete {url}. Directory doesn't exist.")
+        logger.error(f"Error: Failed to delete {url}. Directory doesn't exist.")
+        raise Exception
 
 def delete_dir_if_exists(url: str):
     if dir_exists(url):
@@ -44,12 +48,12 @@ def make_dir_if_not_exists(dir_path: str):
     if not dir_exists(dir_path):
         make_dir(dir_path)
 
-def delete_all_files_in_dir(dir_path: str, ask_permission: bool=True):
+def delete_all_files_in_dir(dir_path: str, ask_permission: bool=True, verbose: bool=False):
     if ask_permission:
-        print('Are you sure that you want to delete of of the files in {}?'.format(dir_path))
+        logger.warning('Are you sure that you want to delete of of the files in {}?'.format(dir_path))
         consent = input('yes/no: ')
         if consent != 'yes':
-            print('Program terminated')
+            logger.warning('Program terminated')
             sys.exit()
     names = os.listdir(dir_path)
     for name in names:
@@ -58,31 +62,32 @@ def delete_all_files_in_dir(dir_path: str, ask_permission: bool=True):
             delete_file(path)
         else:
             delete_dir(path)
-        print('Deleted {}'.format(path.split('/')[-1]))
+        if verbose:
+            logger.info('Deleted {}'.format(path.split('/')[-1]))
 
 def init_dir(dir_path: str, ask_permission: bool=True):
     dir_name = dir_path.split('/')[-1]
     if not dir_exists(dir_path):
         make_dir(dir_path)
-        print("Created directory {}".format(dir_name))
+        logger.info("Created directory {}".format(dir_name))
     else:
         delete_all_files_in_dir(dir_path, ask_permission)
-        print("All files have been deleted from directory {}".format(dir_name))
-    print('Directory {} has been initialized'.format(dir_name))
+        logger.info("All files have been deleted from directory {}".format(dir_name))
+    logger.good('Directory {} has been initialized'.format(dir_name))
 
 def copy_file(src_path: str, dest_path: str, silent: bool=False):
     copyfile(src_path, dest_path)
     if not silent:
         src_preview = '/'.join(src_path.split('/')[-3:])
         dest_preview = '/'.join(dest_path.split('/')[-3:])
-        print('Copied {} to {}'.format(src_preview, dest_preview))
+        logger.info('Copied {} to {}'.format(src_preview, dest_preview))
 
 def copy_dir(src_path: str, dest_path: str, silent: bool=False):
     copy_tree(src_path, dest_path)
     if not silent:
         src_preview = '/'.join(src_path.split('/')[-3:])
         dest_preview = '/'.join(dest_path.split('/')[-3:])
-        print('Copied {} to {}'.format(src_preview, dest_preview))
+        logger.info('Copied {} to {}'.format(src_preview, dest_preview))
 
 def move_file(src_path: str, dest_path: str, silent: bool=False):
     copy_file(src_path, dest_path, silent=True)
@@ -90,7 +95,7 @@ def move_file(src_path: str, dest_path: str, silent: bool=False):
     if not silent:
         src_preview = '/'.join(src_path.split('/')[-3:])
         dest_preview = '/'.join(dest_path.split('/')[-3:])
-        print('Moved {} to {}'.format(src_preview, dest_preview))
+        logger.info('Moved {} to {}'.format(src_preview, dest_preview))
 
 def move_dir(src_path: str, dest_path: str, silent: bool=False):
     copy_dir(src_path, dest_path, silent=True)
@@ -98,7 +103,7 @@ def move_dir(src_path: str, dest_path: str, silent: bool=False):
     if not silent:
         src_preview = '/'.join(src_path.split('/')[-3:])
         dest_preview = '/'.join(dest_path.split('/')[-3:])
-        print('Moved {} to {}'.format(src_preview, dest_preview))
+        logger.info('Moved {} to {}'.format(src_preview, dest_preview))
 
 def create_softlink(src_path: str, dst_path: str):
     if link_exists(dst_path):

@@ -18,6 +18,8 @@ common_utils/common_types/__init__.py
 common_utils/common_types/bbox.py
 common_utils/common_types/common.py
 common_utils/common_types/constants.py
+common_utils/common_types/point.py
+common_utils/common_types/segmentation.py
 common_utils/common_types/tracker/__init__.py
 common_utils/common_types/tracker/tracker.py
 common_utils/counter_utils/__init__.py

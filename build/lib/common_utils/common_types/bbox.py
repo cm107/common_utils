@@ -1,5 +1,8 @@
 from __future__ import annotations
 import numpy as np
+from shapely.geometry import Point as ShapelyPoint
+from shapely.geometry.polygon import Polygon as ShapelyPolygon
+
 from logger import logger
 from ..check_utils import check_type_from_list, check_value
 from ..utils import get_class_string
@@ -39,6 +42,13 @@ class BBox:
     def to_list(self) -> list:
         return [self.xmin, self.ymin, self.xmax, self.ymax]
 
+    def to_shapely(self) -> ShapelyPolygon:
+        p0 = [self.xmin, self.ymin]
+        p1 = [self.xmax, self.ymin]
+        p2 = [self.xmax, self.ymax]
+        p3 = [self.xmin, self.ymax]
+        return ShapelyPolygon([p0, p1, p2, p3])
+
     def area(self) -> float:
         return (self.xmax - self.xmin) * (self.ymax - self.ymin)
 
@@ -66,6 +76,23 @@ class BBox:
     def from_list(self, bbox: list) -> BBox:
         xmin, ymin, xmax, ymax = bbox
         return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
+
+    @classmethod
+    def from_shapely(self, shapely_polygon: ShapelyPolygon) -> BBox:
+        vals_tuple = shapely_polygon.exterior.coords.xy
+        numpy_array = np.array(vals_tuple).T[:-1]
+        if numpy_array.shape != (4, 2):
+            logger.error(f"Expected shapely object of size (4, 2). Got {numpy_array.shape}")
+            raise Exception
+        xmin, ymin = numpy_array.min(axis=0)
+        xmax, ymax = numpy_array.max(axis=0)
+        return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
+
+    def contains(self, obj) -> bool:
+        return self.to_shapely().contains(obj.to_shapely())
+
+    def within(self, obj) -> bool:
+        return self.to_shapely().within(obj.to_shapely())
 
     def rescale(self, target_shape: list, fixed_point: Point) -> BBox:
         if fixed_point.x < self.xmin or fixed_point.x > self.xmax or \
