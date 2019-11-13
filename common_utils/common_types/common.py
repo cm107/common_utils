@@ -2,9 +2,9 @@ from __future__ import annotations
 import numpy as np
 from collections import namedtuple
 from logger import logger
-from ..check_utils import check_type, check_type_from_list, check_list_length
+from ..check_utils import check_type, check_type_from_list, check_list_length, check_value
 from math import pi, asin, tan
-from .constants import number_types
+from .constants import number_types, int_types, float_types
 
 Keypoint = namedtuple('Keypoint', ['x', 'y', 'v'])
 
@@ -341,6 +341,9 @@ class Interval:
     def __init__(self, min_val, max_val, check_types: bool=True):
         if check_types:
             check_type_from_list(item_list=[min_val, max_val], valid_type_list=number_types)
+        if min_val > max_val:
+            logger.error(f"Interval cannot have min_val == {min_val} > max_val == {max_val}")
+            raise Exception
         self.min_val = min_val
         self.max_val = max_val
 
@@ -349,6 +352,9 @@ class Interval:
 
     def __repr__(self):
         return self.__str__()
+
+    def copy(self) -> Interval:
+        return Interval(min_val=self.min_val, max_val=self.max_val, check_types=False)
 
     def to_int(self):
         return Interval(min_val=int(self.min_val), max_val=int(self.max_val), check_types=False)
@@ -376,15 +382,54 @@ class Interval:
     def center(self) -> float:
         return self.min_val + (0.5 * self.get_length())
 
-    def contains(self, val) -> bool:
+    def contains(self, val, bound_type: str='closed') -> bool:
+        """
+        bound_type
+            'closed': Include boundary values
+            'open': Exclude boundary values
+        """
         check_type(item=val, valid_type_list=number_types)
-        return self.min_val <= val and val <= self.max_val
+        check_value(item=bound_type.lower(), valid_value_list=['closed', 'open'])
+        if bound_type.lower() == 'closed':
+            return self.min_val <= val and val <= self.max_val
+        elif bound_type.lower() == 'open':
+            return self.min_val < val and val < self.max_val
+        else:
+            raise Exception
 
-    def contains_interval(self, interval: Interval) -> bool:
-        if self.contains(val=interval.min_val) and self.contains(val=interval.max_val):
+    def contains_interval(self, interval: Interval, bound_type: str='closed') -> bool:
+        """
+        bound_type
+            'closed': Include boundary values
+            'open': Exclude boundary values
+        """
+        if self.contains(val=interval.min_val, bound_type=bound_type) and \
+            self.contains(val=interval.max_val, bound_type=bound_type):
             return True
         else:
             return False
+
+    def has_boundary(self, val) -> (bool, str):
+        """
+        ---output---
+        return on_boundary, side
+
+        on_boundary
+            Whether or not val is equal to min_val or max_val
+
+        side
+            If on_boundary, val == min_val -> 'left'
+            If not on_boundary, val == max_val -> 'right'
+        """
+        on_boundary = False
+        side = None
+        if val == self.min_val:
+            side = 'left'
+            on_boundary = True
+        elif val == self.max_val:
+            side = 'right'
+            on_boundary = True
+        return on_boundary, side
 
     def shift_interval_in_bounds(self, bound: Interval) -> (bool, list, Interval):
         new_interval_min, new_interval_max = self.min_val, self.max_val
@@ -417,3 +462,135 @@ class Interval:
             success = False # One edge was in bounds before shift but then went out of bounds after shift.
 
         return success, edge_orientation, new_interval
+
+    def split_at(self, val, inclusive_side: str=None) -> (Interval, Interval):
+        """
+        inclusive_side
+            None: val is excluded from both left and right interval
+            'left' or 'l': val is included in left interval
+            'right' or 'l': val is included in right interval
+        """
+
+        def get_interval_pair(val, left_offset: int=0, right_offset: int=0) -> (Interval, Interval):
+            left_interval = Interval(self.min_val, val-left_offset) if self.min_val <= val-left_offset else None
+            right_interval = Interval(val+right_offset, self.max_val) if val+right_offset <= self.max_val else None
+            if left_interval is None or right_interval is None:
+                raise Exception
+            return left_interval, right_interval
+
+        if inclusive_side is not None:
+            check_value(item=inclusive_side.lower(), valid_value_list=['left', 'l', 'right', 'r'])
+            # check_type_from_list(item_list=[val, self.min_val, self.max_val], valid_type_list=int_types)
+            for val_to_check in [val, self.min_val, self.max_val]:
+                if val_to_check not in int_types:
+                    inclusive_side = None   # Doing an inclusive split on a non-int interval is the
+                                            # same as an exclusive split.
+                    logger.warning(f"Attempted an inclusive split on a float interval. Assuming exclusive split.")
+
+        if self.contains(val):
+            on_boundary, side = self.has_boundary(val)
+            if on_boundary:
+                if side == 'right':
+                    if inclusive_side is not None: # Inclusive Integer Interval
+                        if inclusive_side.lower() in ['left', 'l']:
+                            left_interval, right_interval = get_interval_pair(val, right_offset=1)
+                        elif inclusive_side.lower() in ['right', 'r']:
+                            left_interval, right_interval = self.copy(), None
+                        else:
+                            raise Exception
+                    else: # Exclusive
+                        if type(val) in float_types: # Float Interval
+                            left_interval, right_interval = get_interval_pair(val)
+                        elif type(val) in int_types: # Integer Interval
+                            left_interval, right_interval = self.copy(), None
+                            left_interval.max_val -= 1
+                        else:
+                            raise Exception
+                elif side == 'left':
+                    if inclusive_side is not None: # Inclusive Integer Interval
+                        if inclusive_side.lower() in ['left', 'l']:
+                            left_interval, right_interval = None, self.copy()
+                        elif inclusive_side.lower() in ['right', 'r']:
+                            left_interval, right_interval = get_interval_pair(val, left_offset=1)
+                        else:
+                            raise Exception
+                    else: # Exclusive
+                        if type(val) in float_types: # Float Interval
+                            left_interval, right_interval = get_interval_pair(val)
+                        elif type(val) in int_types: # Integer Interval
+                            left_interval, right_interval = None, self.copy()
+                            right_interval.min_val += 1
+                        else:
+                            raise Exception
+                else:
+                    raise Exception
+            else: # Not on boundary
+                if inclusive_side is not None: # Inclusive Integer Interval
+                    if inclusive_side.lower() in ['left', 'l']:
+                        left_interval, right_interval = get_interval_pair(val, right_offset=1)
+                    elif inclusive_side.lower() in ['right', 'r']:
+                        left_interval, right_interval = get_interval_pair(val, left_offset=1)
+                    else:
+                        raise Exception
+                else: # Exclusive
+                    if type(val) in float_types: # Float Interval
+                        left_interval, right_interval = get_interval_pair(val)
+                    elif type(val) in int_types: # Integer Interval
+                        left_interval, right_interval = get_interval_pair(val, left_offset=1, right_offset=1)
+                    else:
+                        raise Exception
+        else:
+            logger.error(f"val={val} is not in {self.__str__()}")
+            raise Exception
+
+        return left_interval, right_interval
+
+    def intersects(self, target_interval: Interval, bound_type: str='closed') -> bool:
+        if self.contains(target_interval.min_val, bound_type=bound_type) or \
+            self.contains(target_interval.max_val, bound_type=bound_type):
+            return True
+        else:
+            return False
+
+    def intersect(self, target_interval: Interval) -> Interval:
+        if not self.intersects(target_interval, bound_type='closed'):
+            logger.error(f"Cannot find intersection because target_interval doesn't intersect with host interval.")
+            logger.error(f"host interval: {self.__str__()}")
+            logger.error(f"target_interval: {target_interval}")
+            raise Exception
+        min_val = max(self.min_val, target_interval.min_val)
+        max_val = min(self.max_val, target_interval.max_val)
+        return Interval(min_val=min_val, max_val=max_val, check_types=False)
+
+    def union(self, target_interval: Interval) -> Interval:
+        if not self.intersects(target_interval, bound_type='closed'):
+            logger.error(f"Cannot find intersection because target_interval doesn't intersect with host interval.")
+            logger.error(f"host interval: {self.__str__()}")
+            logger.error(f"target_interval: {target_interval}")
+            raise Exception
+        min_val = min(self.min_val, target_interval.min_val)
+        max_val = max(self.max_val, target_interval.max_val)
+        return Interval(min_val=min_val, max_val=max_val, check_types=False)
+
+    def shares_exactly_one_bound_with(self, target_interval: Interval) -> bool:
+        is_bound0, side0 = self.has_boundary(target_interval.min_val)
+        valid0 = is_bound0 and side0 == 'left'
+        is_bound1, side1 = self.has_boundary(target_interval.max_val)
+        valid1 = is_bound1 and side1 == 'right'
+        return (valid0 and not valid1) or (not valid0 and valid1)
+
+    def remove(self, target_interval: Interval) -> Interval:
+        is_bound0, side0 = self.has_boundary(target_interval.min_val)
+        valid0 = is_bound0 and side0 == 'left'
+        is_bound1, side1 = self.has_boundary(target_interval.max_val)
+        valid1 = is_bound1 and side1 == 'right'
+
+        if (not valid0 and not valid1) or (valid0 and valid1):
+            logger.error(f"Cannot remove target_interval unless exactly one of the boundaries is shared.")
+            raise Exception
+        elif valid0 and not valid1: # left bound is shared
+            return Interval(min_val=target_interval.max_val, max_val=self.max_val, check_types=False)
+        elif not valid0 and valid1: # right bound is shared
+            return Interval(min_val=self.min_val, max_val=target_interval.min_val, check_types=False)
+        else:
+            raise Exception
