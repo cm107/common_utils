@@ -143,3 +143,4 @@ def check_sequence(sequence: list, valid_sequence_list: list, label: str='sequen
         for valid_sequence in valid_sequence_list:
             logger.error(f"\t{valid_sequence}")
         raise Exception
+
