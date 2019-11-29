@@ -22,8 +22,9 @@ def parse_path(text_str: str, default: str=None, required: bool=False, name='par
     check_required(text_str, required=required, name=name)
     text_str = none_conversion(text_str)
     default = none_conversion(default)
+    text_str = rel_to_abs_path(text_str) if text_str is not None else None
     default = rel_to_abs_path(default) if default is not None else None
-    return rel_to_abs_path(text_str) if text_str is not None else default
+    return text_str if text_str is not None else default
 
 def parse_bool(text_str: str, default: bool=None, required: bool=False, name='param') -> bool:
     check_required(text_str, required=required, name=name)

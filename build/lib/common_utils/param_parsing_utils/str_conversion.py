@@ -1,3 +1,4 @@
+import re
 from logger import logger
 from ..check_utils import check_type
 from ..utils import remove_edge_squarebrackets_from_str, \
@@ -23,7 +24,13 @@ def str2float(text_str: str) -> float:
 
 def str2strlistlist(list_str: str) -> list:
     no_edges = remove_edge_squarebrackets_from_str(list_str)
-    return get_str_lists_from_noedge_str(no_edges)
+    result = no_edges.replace("'", "")
+    result = result.replace(" ", "")
+    
+    result = re.split('\[|\]', result)
+    result = [part for part in result if part not in ['', ',']]
+    result = [part.split(',') for part in result]
+    return result
 
 def strlist2intlist(strlist: list) -> list:
     list_buffer = []
