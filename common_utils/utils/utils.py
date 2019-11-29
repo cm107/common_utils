@@ -28,8 +28,19 @@ def remove_edge_squarebrackets_from_str(text: str) -> str:
     return temp
 
 def get_str_lists_from_noedge_str(text: str) -> str:
-    list_chunks = [j.replace(']', '') for j in [i.replace(' ', '') for i in ''.join(text.split('[')).split('],')]]
-    return [list_chunk.split(',') for list_chunk in list_chunks]
+    list_chunks = []
+    i_parts = []
+    for i in ''.join(text.split('[')).split('],'):
+        i_part = i.replace(' ', '')
+        i_parts.append(i_part)
+    for j in i_parts:
+        chunk = j.replace(']', '')
+        list_chunks.append(chunk)
+    split_chunk_list = []
+    for split_chunk in list_chunks[0].split(','):
+        clean_split_chunk = split_chunk.replace('\'', '')
+        split_chunk_list.append(clean_split_chunk)
+    return split_chunk_list
 
 def str2strlistlist(list_str: str) -> list:
     no_edges = remove_edge_squarebrackets_from_str(list_str)

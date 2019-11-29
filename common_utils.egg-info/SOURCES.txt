@@ -41,6 +41,9 @@ common_utils/ml_utils/heatmap/__init__.py
 common_utils/ml_utils/heatmap/heatmap.py
 common_utils/ml_utils/resume/__init__.py
 common_utils/ml_utils/resume/resume.py
+common_utils/param_parsing_utils/__init__.py
+common_utils/param_parsing_utils/parsing.py
+common_utils/param_parsing_utils/str_conversion.py
 common_utils/path_utils/__init__.py
 common_utils/path_utils/path_utils.py
 common_utils/prompt_utils/__init__.py
