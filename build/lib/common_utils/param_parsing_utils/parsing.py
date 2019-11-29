@@ -72,7 +72,7 @@ def parse_strlist(list_str: str, default: list=None, required: bool=False, name=
     check_required(list_str, required=required, name=name)
     list_str = none_conversion(list_str)
     default = none_conversion(default)
-    return str2strlistlist(list_str) if list_str is not None else default
+    return str2strlist(list_str) if list_str is not None else default
 
 def parse_intlist(list_str: str, default: list=None, required: bool=False, name='param') -> list:
     check_required(list_str, required=required, name=name)
