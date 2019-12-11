@@ -405,7 +405,7 @@ class Interval:
         else:
             raise Exception
 
-    def contains_interval(self, interval: self, bound_type: str='closed') -> bool:
+    def contains_interval(self, interval, bound_type: str='closed') -> bool:
         """
         bound_type
             'closed': Include boundary values
@@ -439,7 +439,7 @@ class Interval:
             on_boundary = True
         return on_boundary, side
 
-    def shift_interval_in_bounds(self, bound: self):
+    def shift_interval_in_bounds(self, bound):
         new_interval_min, new_interval_max = self.min_val, self.max_val
         if self.min_val >= bound.min_val and self.max_val <= bound.max_val:
             success = True
@@ -553,14 +553,14 @@ class Interval:
 
         return left_interval, right_interval
 
-    def intersects(self, target_interval: self, bound_type: str='closed') -> bool:
+    def intersects(self, target_interval, bound_type: str='closed') -> bool:
         if self.contains(target_interval.min_val, bound_type=bound_type) or \
             self.contains(target_interval.max_val, bound_type=bound_type):
             return True
         else:
             return False
 
-    def intersect(self, target_interval: self):
+    def intersect(self, target_interval):
         if not self.intersects(target_interval, bound_type='closed'):
             logger.error(f"Cannot find intersection because target_interval doesn't intersect with host interval.")
             logger.error(f"host interval: {self.__str__()}")
@@ -570,7 +570,7 @@ class Interval:
         max_val = min(self.max_val, target_interval.max_val)
         return Interval(min_val=min_val, max_val=max_val, check_types=False)
 
-    def union(self, target_interval: self):
+    def union(self, target_interval):
         if not self.intersects(target_interval, bound_type='closed'):
             logger.error(f"Cannot find intersection because target_interval doesn't intersect with host interval.")
             logger.error(f"host interval: {self.__str__()}")
@@ -580,14 +580,14 @@ class Interval:
         max_val = max(self.max_val, target_interval.max_val)
         return Interval(min_val=min_val, max_val=max_val, check_types=False)
 
-    def shares_exactly_one_bound_with(self, target_interval: self) -> bool:
+    def shares_exactly_one_bound_with(self, target_interval) -> bool:
         is_bound0, side0 = self.has_boundary(target_interval.min_val)
         valid0 = is_bound0 and side0 == 'left'
         is_bound1, side1 = self.has_boundary(target_interval.max_val)
         valid1 = is_bound1 and side1 == 'right'
         return (valid0 and not valid1) or (not valid0 and valid1)
 
-    def remove(self, target_interval: self):
+    def remove(self, target_interval):
         is_bound0, side0 = self.has_boundary(target_interval.min_val)
         valid0 = is_bound0 and side0 == 'left'
         is_bound1, side1 = self.has_boundary(target_interval.max_val)

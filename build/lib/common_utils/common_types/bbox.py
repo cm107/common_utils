@@ -118,29 +118,29 @@ class BBox:
         new_bbox = BBox.from_list([new_xmin, new_ymin, new_xmax, new_ymax])
         return new_bbox
 
-    def is_inside_of(self, bbox: self) -> bool:
+    def is_inside_of(self, bbox) -> bool:
         x_is_inside = True if bbox.xmin <= self.xmin and self.xmax <= bbox.xmax else False
         y_is_inside = True if bbox.ymin <= self.ymin and self.ymax <= bbox.ymax else False
         return x_is_inside and y_is_inside
 
-    def encloses(self, bbox: self) -> bool:
+    def encloses(self, bbox) -> bool:
         x_encloses = True if self.xmin <= bbox.xmin and bbox.xmax <= self.xmax else False
         y_encloses = True if self.ymin <= bbox.ymin and bbox.ymax <= self.ymax else False
         return x_encloses and y_encloses
 
-    def overlaps_with(self, bbox: self) -> bool:
+    def overlaps_with(self, bbox) -> bool:
         x_overlaps = True if (bbox.xmin < self.xmin and self.xmin < bbox.xmax) \
             or (bbox.xmin < self.xmax and self.xmax < bbox.xmax) else False
         y_overlaps = True if (bbox.ymin < self.ymin and self.ymin < bbox.ymax) \
             or (bbox.ymin < self.ymax and self.ymax < bbox.ymax) else False
         return x_overlaps or y_overlaps
 
-    def is_adjacent_with(self, bbox: self) -> bool:
+    def is_adjacent_with(self, bbox) -> bool:
         is_x_adjacent = True if bbox.xmax == self.xmin or self.xmax == bbox.xmin else False
         is_y_adjacent = True if bbox.ymax == self.ymin or self.ymax == bbox.ymin else False
         return is_x_adjacent and is_y_adjacent
 
-    def center_is_inside_of(self, bbox: self) -> bool:
+    def center_is_inside_of(self, bbox) -> bool:
         cx, cy = self.center()
         x_is_inside = True if bbox.xmin <= cx and cx <= bbox.xmax else False
         y_is_inside = True if bbox.ymin <= cy and cy <= bbox.ymax else False

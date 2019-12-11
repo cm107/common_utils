@@ -63,7 +63,7 @@ class Polygon:
     def contains_point(self, point: Point) -> bool:
         return self.to_shapely().contains(point.to_shapely())
 
-    def contains_polygon(self, polygon: self) -> bool:
+    def contains_polygon(self, polygon) -> bool:
         return self.to_shapely().contains(polygon.to_shapely())
 
     def contains_bbox(self, bbox: BBox) -> bool:
@@ -73,7 +73,7 @@ class Polygon:
         check_type(item=obj, valid_type_list=[Point, Polygon, BBox])
         return self.to_shapely().contains(obj.to_shapely())
 
-    def within_polygon(self, polygon: self) -> bool:
+    def within_polygon(self, polygon) -> bool:
         return self.to_shapely().within(polygon.to_shapely())
 
     def within_bbox(self, bbox: BBox) -> bool:
@@ -83,7 +83,7 @@ class Polygon:
         check_type(item=obj, valid_type_list=[Polygon, BBox])
         return self.to_shapely().within(obj.to_shapely())
 
-    def intersects_polygon(self, polygon: self) -> bool:
+    def intersects_polygon(self, polygon) -> bool:
         return self.to_shapely().intersects(polygon)
 
     def size(self) -> tuple:
