@@ -1,4 +1,3 @@
-from __future__ import annotations
 import numpy as np
 from shapely.geometry import Point as ShapelyPoint
 
@@ -21,10 +20,10 @@ class Point:
     def __repr__(self):
         return self.__str__()
     
-    def to_int(self) -> Point:
+    def to_int(self):
         return Point(coords=[int(val) for val in self.coords])
 
-    def to_float(self) -> Point:
+    def to_float(self):
         return Point(coords=[float(val) for val in self.coords])
 
     def to_list(self) -> list:
@@ -34,11 +33,11 @@ class Point:
         return ShapelyPoint(self.to_list())
 
     @classmethod
-    def from_list(self, coords: list) -> Point:
+    def from_list(self, coords: list):
         return Point(coords=coords)
 
     @classmethod
-    def from_shapely(self, shapely_point: ShapelyPoint) -> Point:
+    def from_shapely(self, shapely_point: ShapelyPoint):
         return Point(coords=[list(val)[0] for val in shapely_point.coords.xy])
 
     def within(self, obj) -> bool:

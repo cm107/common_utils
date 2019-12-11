@@ -1,4 +1,3 @@
-from __future__ import annotations
 import numpy as np
 from shapely.geometry import Point as ShapelyPoint
 from shapely.geometry.polygon import Polygon as ShapelyPolygon
@@ -23,7 +22,7 @@ class BBox:
     def __repr__(self):
         return self.__str__()
 
-    def copy(self) -> BBox:
+    def copy(self):
         return BBox(
             xmin=self.xmin,
             ymin=self.ymin,
@@ -31,7 +30,7 @@ class BBox:
             ymax=self.ymax
         )
 
-    def to_int(self) -> BBox:
+    def to_int(self):
         return BBox(
             xmin=int(self.xmin),
             ymin=int(self.ymin),
@@ -39,7 +38,7 @@ class BBox:
             ymax=int(self.ymax)
         )
 
-    def to_float(self) -> BBox:
+    def to_float(self):
         return BBox(
             xmin=float(self.xmin),
             ymin=float(self.ymin),
@@ -81,12 +80,12 @@ class BBox:
         return height / width
 
     @classmethod
-    def from_list(self, bbox: list) -> BBox:
+    def from_list(self, bbox: list):
         xmin, ymin, xmax, ymax = bbox
         return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
 
     @classmethod
-    def from_shapely(self, shapely_polygon: ShapelyPolygon) -> BBox:
+    def from_shapely(self, shapely_polygon: ShapelyPolygon):
         vals_tuple = shapely_polygon.exterior.coords.xy
         numpy_array = np.array(vals_tuple).T[:-1]
         if numpy_array.shape != (4, 2):
@@ -102,7 +101,7 @@ class BBox:
     def within(self, obj) -> bool:
         return self.to_shapely().within(obj.to_shapely())
 
-    def rescale(self, target_shape: list, fixed_point: Point) -> BBox:
+    def rescale(self, target_shape: list, fixed_point: Point):
         if fixed_point.x < self.xmin or fixed_point.x > self.xmax or \
             fixed_point.y < self.ymin or fixed_point.y > self.ymax:
             logger.error(f"fixed point {fixed_point} not inside bbox {self}")
@@ -162,7 +161,7 @@ class BBox:
             logger.error(f"Target: {target_aspect_ratio}, actual: {self.aspect_ratio()}")
             raise Exception
 
-    def pad(self, target_aspect_ratio: list, direction: str) -> BBox:
+    def pad(self, target_aspect_ratio: list, direction: str):
         """
         target_aspect_ratio corresponds to target_height:target_width
         """
@@ -202,10 +201,10 @@ class ConstantAR_BBox(BBox):
     def __init__(self, xmin, ymin, xmax, ymax):
         super().__init__(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
 
-    def from_BBox(self, bbox: BBox) -> ConstantAR_BBox:
+    def from_BBox(self, bbox: BBox):
         return ConstantAR_BBox(xmin=bbox.xmin, ymin=bbox.ymin, xmax=bbox.xmax, ymax=bbox.ymax)
 
-    def copy(self) -> ConstantAR_BBox:
+    def copy(self):
         return ConstantAR_BBox(
             xmin=self.xmin,
             ymin=self.ymin,
@@ -213,7 +212,7 @@ class ConstantAR_BBox(BBox):
             ymax=self.ymax
         )
 
-    def to_int(self) -> ConstantAR_BBox:
+    def to_int(self):
         return ConstantAR_BBox(
             xmin=int(self.xmin),
             ymin=int(self.ymin),
@@ -221,7 +220,7 @@ class ConstantAR_BBox(BBox):
             ymax=int(self.ymax)
         )
 
-    def to_float(self) -> ConstantAR_BBox:
+    def to_float(self):
         return ConstantAR_BBox(
             xmin=float(self.xmin),
             ymin=float(self.ymin),
@@ -230,14 +229,14 @@ class ConstantAR_BBox(BBox):
         )
 
     @classmethod
-    def from_list(self, bbox: list) -> ConstantAR_BBox:
+    def from_list(self, bbox: list):
         xmin, ymin, xmax, ymax = bbox
         return ConstantAR_BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
 
-    def rescale(self, target_shape: list, fixed_point: Point) -> ConstantAR_BBox:
+    def rescale(self, target_shape: list, fixed_point: Point):
         return self.from_BBox(super().rescale(target_shape=target_shape, fixed_point=fixed_point))
 
-    def pad(self, target_aspect_ratio: list, direction: str) -> ConstantAR_BBox:
+    def pad(self, target_aspect_ratio: list, direction: str):
         return self.from_BBox(super().pad(target_aspect_ratio=target_aspect_ratio, direction=direction))
 
     def is_in_bounds(self, frame_shape: list) -> bool:
@@ -248,7 +247,7 @@ class ConstantAR_BBox(BBox):
         ymax_in_bounds = True if 0 <= self.ymax <= frame_h - 1 else False
         return xmin_in_bounds and xmax_in_bounds and ymin_in_bounds and ymax_in_bounds
 
-    def adjust_to_frame_bounds(self, frame_shape: list) -> ConstantAR_BBox:
+    def adjust_to_frame_bounds(self, frame_shape: list):
         xmin, ymin, xmax, ymax = self.to_list()
         frame_h, frame_w = frame_shape[:2]
         xmin = 0 if xmin < 0 else frame_w - 1 if xmin >= frame_w else xmin
@@ -278,7 +277,7 @@ class ConstantAR_BBox(BBox):
         new_rect = [new_xmin, new_ymin, new_xmax, new_ymax]
         return bounds, edge_orientation, new_rect
 
-    def rescale_bbox(self, target_aspect_ratio: list, pad_direction: str, mode: str='c') -> ConstantAR_BBox:
+    def rescale_bbox(self, target_aspect_ratio: list, pad_direction: str, mode: str='c'):
         mode = mode.lower()
         check_value(item=pad_direction.lower(), valid_value_list=['w', 'width', 'h', 'height'])
         check_value(item=mode, valid_value_list=['c', 'ct', 'cb', 'cr', 'cl', 'tr', 'tl', 'br', 'bl'])
@@ -327,7 +326,7 @@ class ConstantAR_BBox(BBox):
         bounds, edge_orientation, new_rect = result.shift_bbox_in_bounds(frame_shape=frame_shape)
         return bounds, edge_orientation, new_rect
 
-    def rescale_shift_until_valid(self, frame_shape: list, target_aspect_ratio: float, max_retry_count: int=5) -> ConstantAR_BBox:
+    def rescale_shift_until_valid(self, frame_shape: list, target_aspect_ratio: float, max_retry_count: int=5):
         result = self
         mode = 'c'
         pad_direction = 'height'
@@ -426,7 +425,7 @@ class ConstantAR_BBox(BBox):
             raise Exception
         return ConstantAR_BBox(xmin=new_xmin, ymin=new_ymin, xmax=new_xmax, ymax=new_ymax)
 
-    def upscale_to_ar(self, target_aspect_ratio: float, hold_mode: str='center') -> ConstantAR_BBox:
+    def upscale_to_ar(self, target_aspect_ratio: float, hold_mode: str='center'):
         hold_mode = hold_mode.lower()
         check_value(item=hold_mode, valid_value_list=['center', 'min', 'max'])
         result = self.copy()
@@ -438,7 +437,7 @@ class ConstantAR_BBox(BBox):
             result = result.rescale_to_ar(target_aspect_ratio=target_aspect_ratio, hold_direction='y', hold_mode=hold_mode)
         return result
 
-    def downscale_to_ar(self, target_aspect_ratio: float, hold_mode: str='center') -> ConstantAR_BBox:
+    def downscale_to_ar(self, target_aspect_ratio: float, hold_mode: str='center'):
         hold_mode = hold_mode.lower()
         check_value(item=hold_mode, valid_value_list=['center', 'min', 'max'])
         result = self.copy()
@@ -450,7 +449,7 @@ class ConstantAR_BBox(BBox):
             result = result.rescale_to_ar(target_aspect_ratio=target_aspect_ratio, hold_direction='y', hold_mode=hold_mode)
         return result
 
-    def try_upscale_to_ar(self, frame_shape: list, target_aspect_ratio: float, hold_mode: str) -> ConstantAR_BBox:
+    def try_upscale_to_ar(self, frame_shape: list, target_aspect_ratio: float, hold_mode: str):
         """
         Attempt upscale.
         Return None if bbox goes out of bounds.
@@ -462,7 +461,7 @@ class ConstantAR_BBox(BBox):
         else:
             return None
 
-    def try_downscale_to_ar(self, frame_shape: list, target_aspect_ratio: float, hold_mode: str) -> ConstantAR_BBox:
+    def try_downscale_to_ar(self, frame_shape: list, target_aspect_ratio: float, hold_mode: str):
         """
         Attempt downscale.
         Return None if bbox goes out of bounds.
@@ -475,7 +474,7 @@ class ConstantAR_BBox(BBox):
         else:
             return None
 
-    def crop_scale(self, frame_shape: list, target_aspect_ratio: float) -> ConstantAR_BBox:
+    def crop_scale(self, frame_shape: list, target_aspect_ratio: float):
         """
         1. First try upscale.
         2. Try downscale if upscale doesn't work.
@@ -536,7 +535,7 @@ class ConstantAR_BBox(BBox):
 
     def adjust_to_target_shape(
         self, frame_shape: list, target_shape: list, method: str='conservative_pad'
-    ) -> ConstantAR_BBox:
+    ):
         check_value(item=method, valid_value_list=['pad', 'conservative_pad'])
         result = self
         if method == 'pad':

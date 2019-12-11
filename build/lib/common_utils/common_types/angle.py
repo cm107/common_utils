@@ -1,4 +1,3 @@
-from __future__ import annotations
 import math
 from common_utils.check_utils import check_type_from_list
 from common_utils.common_types.constants import number_types
@@ -20,11 +19,11 @@ class EulerAngle:
         return [self.roll, self.pitch, self.yaw]
 
     @classmethod
-    def from_list(self, val_list: list) -> EulerAngle:
+    def from_list(self, val_list: list):
         roll, pitch, yaw = val_list
         return EulerAngle(roll=roll, pitch=pitch, yaw=yaw)
 
-    def to_quaternion(self) -> Quaternion:
+    def to_quaternion(self):
         cy = math.cos(self.yaw * 0.5)
         sy = math.sin(self.yaw * 0.5)
         cp = math.cos(self.pitch * 0.5)
@@ -60,11 +59,11 @@ class Quaternion:
         return [self.qw, self.qx, self.qy, self.qz]
 
     @classmethod
-    def from_list(self, val_list: list) -> Quaternion:
+    def from_list(self, val_list: list):
         qw, qx, qy, qz = val_list
         return Quaternion(qw=qw, qx=qx, qy=qy, qz=qz)
 
-    def to_euler(self) -> EulerAngle:
+    def to_euler(self):
         # roll
         sinr_cosp = 2 * (self.qw * self.qx + self.qy * self.qz)
         cosr_cosp = 1 - 2 * (self.qx * self.qx + self.qy * self.qy)
