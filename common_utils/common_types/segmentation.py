@@ -1,4 +1,3 @@
-from __future__ import annotations
 import numpy as np
 from shapely.geometry import Point as ShapelyPoint
 from shapely.geometry.polygon import Polygon as ShapelyPolygon
@@ -31,10 +30,10 @@ class Polygon:
     def __repr__(self):
         return self.__str__()
     
-    def to_int(self) -> Polygon:
+    def to_int(self):
         return Polygon(points=[int(val) for val in self.points], dimensionality=self.dimensionality)
 
-    def to_float(self) -> Polygon:
+    def to_float(self):
         return Polygon(points=[float(val) for val in self.points], dimensionality=self.dimensionality)
 
     def to_list(self, demarcation: bool=False) -> list:
@@ -91,7 +90,7 @@ class Polygon:
         return np.array(self.points).reshape(-1, self.dimensionality).shape
 
     @classmethod
-    def from_list(self, points: list, dimensionality: int=2, demarcation: bool=False) -> Polygon:
+    def from_list(self, points: list, dimensionality: int=2, demarcation: bool=False):
         if demarcation:
             flattened_list = np.array(points).reshape(-1).tolist()
             return Polygon(points=flattened_list, dimensionality=dimensionality)
@@ -99,7 +98,7 @@ class Polygon:
             return Polygon(points=points, dimensionality=dimensionality)
 
     @classmethod
-    def from_point_list(self, point_list: list, dimensionality: int=2) -> Polygon:
+    def from_point_list(self, point_list: list, dimensionality: int=2):
         check_type_from_list(item_list=point_list, valid_type_list=[Point])
         result = []
         for i, point in enumerate(point_list):
@@ -111,7 +110,7 @@ class Polygon:
         return Polygon(points=result, dimensionality=dimensionality)
 
     @classmethod
-    def from_shapely(self, shapely_polygon: ShapelyPolygon) -> Polygon:
+    def from_shapely(self, shapely_polygon: ShapelyPolygon):
         vals_tuple = shapely_polygon.exterior.coords.xy
         numpy_array = np.array(vals_tuple).T[:-1]
         flattened_list = numpy_array.reshape(-1).tolist()
@@ -119,12 +118,12 @@ class Polygon:
         return Polygon(points=flattened_list, dimensionality=dimensionality)
 
     @classmethod
-    def from_contour(self, contour: np.ndarray) -> Polygon:
+    def from_contour(self, contour: np.ndarray):
         cont = contour.reshape(contour.shape[0], contour.shape[2]).tolist()
         return self.from_list(points=cont, dimensionality=2, demarcation=True)
 
     @classmethod
-    def from_polygon_list_to_merge(self, polygon_list: list) -> Polygon:
+    def from_polygon_list_to_merge(self, polygon_list: list):
         from shapely.geometry import MultiPolygon as ShapelyMultiPolygon
         import matplotlib.pyplot as plt
         import geopandas as gpd
@@ -252,7 +251,7 @@ class Segmentation:
         check_type(item=obj, valid_type_list=[Polygon, BBox])
         return [polygon.within() for polygon in self.polygon_list]
 
-    def merge(self) -> Segmentation:
+    def merge(self):
         return Segmentation(
             polygon_list=[Polygon.from_polygon_list_to_merge(
                 polygon_list=self.polygon_list
@@ -260,7 +259,7 @@ class Segmentation:
         )
 
     @classmethod
-    def from_list(self, points_list: list, demarcation: bool=False) -> Segmentation:
+    def from_list(self, points_list: list, demarcation: bool=False):
         return Segmentation(
             polygon_list=[
                 Polygon.from_list(
@@ -270,7 +269,7 @@ class Segmentation:
         )
 
     @classmethod
-    def from_point_list(self, point_list_list: list) -> Segmentation:
+    def from_point_list(self, point_list_list: list):
         return Segmentation(
             polygon_list=[
                 Polygon.from_point_list(
@@ -280,7 +279,7 @@ class Segmentation:
         )
 
     @classmethod
-    def from_shapely(self, shapely_polygon_list: list) -> Segmentation:
+    def from_shapely(self, shapely_polygon_list: list):
         return Segmentation(
             polygon_list=[
                 Polygon.from_shapely(
@@ -290,7 +289,7 @@ class Segmentation:
         )
 
     @classmethod
-    def from_contour(self, contour_list: list) -> Segmentation:
+    def from_contour(self, contour_list: list):
         return Segmentation(
             polygon_list=[
                 Polygon.from_contour(

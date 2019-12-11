@@ -1,4 +1,3 @@
-from __future__ import annotations
 from logger import logger
 from .common import Interval
 from .constants import int_types
@@ -17,12 +16,12 @@ class BGR:
     def __repr__(self):
         return self.__str__()
 
-    def __add__(self, other: BGR) -> BGR:
+    def __add__(self, other: BGR):
         b, g, r = self.b + other.b, self.g + other.g, self.r + other.r
         b, g, r = 255 if b > 255 else b, 255 if g > 255 else g, 255 if r > 255 else r
         return BGR(b=b, g=g, r=r)
 
-    def __sub__(self, other: BGR) -> BGR:
+    def __sub__(self, other: BGR):
         b, g, r = self.b - other.b, self.g - other.g, self.r - other.r
         b, g, r = 0 if b < 0 else b, 0 if g < 0 else g, 0 if r < 0 else r
         return BGR(b=b, g=g, r=r)
@@ -45,14 +44,14 @@ class BGR:
     def __ne__(self, other: BGR) -> bool:
         return self.b != other.b or self.g != other.g or self.r != other.r
 
-    def copy(self) -> BGR:
+    def copy(self):
         return BGR(b=self.b, g=self.g, r=self.r)
 
     def to_list(self) -> list:
         return [self.b, self.g, self.r]
 
     @classmethod
-    def from_list(self, val_list: list) -> BGR:
+    def from_list(self, val_list: list):
         b, g, r = val_list
         return BGR(b=b, g=g, r=r)
 
@@ -69,7 +68,7 @@ class BGR_Interval:
     def __repr__(self):
         return self.__str__()
 
-    def copy(self) -> BGR_Interval:
+    def copy(self):
         return BGR_Interval(
             b_interval=self.b_interval.copy(),
             g_interval=self.g_interval.copy(),
@@ -183,7 +182,7 @@ class BGR_Interval:
             on_boundary = True
         return on_boundary, side
 
-    def split_at(self, bgr: BGR, inclusive_side: str=None) -> (BGR_Interval, BGR_Interval):
+    def split_at(self, bgr: BGR, inclusive_side: str=None):
         def split_channel(interval: Interval, val: int) -> (Interval, Interval):
             if interval.contains(val):
                 left, right = interval.split_at(val, inclusive_side=inclusive_side)
@@ -255,12 +254,12 @@ class BGR_Interval:
         return part0, part1
 
     @classmethod
-    def from_interval_list(self, bgr_interval_list: list) -> BGR_Interval:
+    def from_interval_list(self, bgr_interval_list: list):
         b_interval, g_interval, r_interval = bgr_interval_list
         return BGR_Interval(b_interval=b_interval, g_interval=g_interval, r_interval=r_interval)
 
     @classmethod
-    def from_list(self, bgr_list: list) -> BGR_Interval:
+    def from_list(self, bgr_list: list):
         b_interval_list, g_interval_list, r_interval_list = bgr_list
         b_interval = Interval.from_list(b_interval_list)
         g_interval = Interval.from_list(g_interval_list)
@@ -268,7 +267,7 @@ class BGR_Interval:
         return BGR_Interval.from_interval_list([b_interval, g_interval, r_interval])
 
     @classmethod
-    def from_bgr_pair(self, bgr_lower: BGR, bgr_higher: BGR) -> BGR_Interval:
+    def from_bgr_pair(self, bgr_lower: BGR, bgr_higher: BGR):
         b_lower, g_lower, r_lower = bgr_lower.to_list()
         b_higher, g_higher, r_higher = bgr_higher.to_list()
         b_interval = Interval(b_lower, b_higher)
