@@ -16,32 +16,32 @@ class BGR:
     def __repr__(self):
         return self.__str__()
 
-    def __add__(self, other: BGR):
+    def __add__(self, other: self):
         b, g, r = self.b + other.b, self.g + other.g, self.r + other.r
         b, g, r = 255 if b > 255 else b, 255 if g > 255 else g, 255 if r > 255 else r
         return BGR(b=b, g=g, r=r)
 
-    def __sub__(self, other: BGR):
+    def __sub__(self, other: self):
         b, g, r = self.b - other.b, self.g - other.g, self.r - other.r
         b, g, r = 0 if b < 0 else b, 0 if g < 0 else g, 0 if r < 0 else r
         return BGR(b=b, g=g, r=r)
 
-    def __lt__(self, other: BGR) -> bool:
+    def __lt__(self, other: self) -> bool:
         return self.b < other.b and self.g < other.g and self.r < other.r
 
-    def __gt__(self, other: BGR) -> bool:
+    def __gt__(self, other: self) -> bool:
         return self.b > other.b and self.g > other.g and self.r > other.r
 
-    def __le__(self, other: BGR) -> bool:
+    def __le__(self, other: self) -> bool:
         return self.b <= other.b and self.g <= other.g and self.r <= other.r
 
-    def __ge__(self, other: BGR) -> bool:
+    def __ge__(self, other: self) -> bool:
         return self.b >= other.b and self.g >= other.g and self.r >= other.r
 
-    def __eq__(self, other: BGR) -> bool:
+    def __eq__(self, other: self) -> bool:
         return self.b == other.b and self.g == other.g and self.r == other.r
 
-    def __ne__(self, other: BGR) -> bool:
+    def __ne__(self, other: self) -> bool:
         return self.b != other.b or self.g != other.g or self.r != other.r
 
     def copy(self):
@@ -135,7 +135,7 @@ class BGR_Interval:
         else:
             raise Exception
 
-    def contains_bgr_interval(self, bgr_interval: BGR_Interval, bound_type: str='closed') -> bool:
+    def contains_bgr_interval(self, bgr_interval: self, bound_type: str='closed') -> bool:
         """
         bound_type
             'closed': Include boundary values
@@ -147,7 +147,7 @@ class BGR_Interval:
         else:
             return False
 
-    def contains_bgr_interval_detailed(self, bgr_interval: BGR_Interval, bound_type: str='closed') -> bool:
+    def contains_bgr_interval_detailed(self, bgr_interval: self, bound_type: str='closed') -> bool:
         """
         bound_type
             'closed': Include boundary values
@@ -210,13 +210,13 @@ class BGR_Interval:
             bgr_right = BGR_Interval(b_interval=b_right, g_interval=g_right, r_interval=r_right)
         return bgr_left, bgr_right
 
-    def intersects(self, bgr_interval: BGR_Interval, bound_type: str='open') -> (bool, bool, bool):
+    def intersects(self, bgr_interval: self, bound_type: str='open') -> (bool, bool, bool):
         return [
             host_interval.intersects(target_interval, bound_type=bound_type) for host_interval, target_interval in \
                 zip(self.to_interval_list(), bgr_interval.to_interval_list())
         ]
 
-    def intersect(self, bgr_interval: BGR_Interval) -> list:
+    def intersect(self, bgr_interval: self) -> list:
         result = []
         for host_interval, target_interval in \
             zip(self.to_interval_list(), bgr_interval.to_interval_list()):
@@ -227,7 +227,7 @@ class BGR_Interval:
 
         return result
 
-    def union(self, bgr_interval: BGR_Interval) -> list:
+    def union(self, bgr_interval: self) -> list:
         result = []
         for host_interval, target_interval in \
             zip(self.to_interval_list(), bgr_interval.to_interval_list()):
@@ -238,7 +238,7 @@ class BGR_Interval:
 
         return result
 
-    def exclude_interval(self, bgr_interval: BGR_Interval) -> (BGR_Interval, BGR_Interval):
+    def exclude_interval(self, bgr_interval: self):
         raise NotImplementedError
         [b_interval, g_interval, r_interval] = self.intersect(bgr_interval.copy())
         b_interval = b_interval if b_interval is not None else bgr_interval.b_interval
