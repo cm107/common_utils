@@ -23,6 +23,10 @@ class BBox:
     def __repr__(self):
         return self.__str__()
 
+    @classmethod
+    def buffer(self, bbox: BBox) -> BBox:
+        return bbox
+
     def copy(self) -> BBox:
         return BBox(
             xmin=self.xmin,
@@ -204,6 +208,10 @@ class ConstantAR_BBox(BBox):
 
     def from_BBox(self, bbox: BBox) -> ConstantAR_BBox:
         return ConstantAR_BBox(xmin=bbox.xmin, ymin=bbox.ymin, xmax=bbox.xmax, ymax=bbox.ymax)
+
+    @classmethod
+    def buffer(self, bbox: ConstantAR_BBox) -> ConstantAR_BBox:
+        return bbox
 
     def copy(self) -> ConstantAR_BBox:
         return ConstantAR_BBox(
