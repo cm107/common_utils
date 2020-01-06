@@ -511,7 +511,6 @@ class ConstantAR_BBox(BBox):
                 hold_mode = 'max'
             else:
                 hold_mode = 'center'
-            return hold_mode
 
         result = self.copy()
         upscale_try_count = 0
