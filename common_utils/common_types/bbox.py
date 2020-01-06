@@ -458,7 +458,7 @@ class ConstantAR_BBox(BBox):
             result = result.rescale_to_ar(target_aspect_ratio=target_aspect_ratio, hold_direction='y', hold_mode=hold_mode)
         return result
 
-    def try_upscale_to_ar(self, frame_shape: list, target_aspect_ratio: float, hold_mode: str) -> (bool, ConstantAR_BBox):
+    def try_upscale_to_ar(self, frame_shape: list, target_aspect_ratio: float, hold_mode: str) -> ConstantAR_BBox:
         """
         Attempt upscale.
         Return None if bbox goes out of bounds.
@@ -466,11 +466,11 @@ class ConstantAR_BBox(BBox):
         result = self.copy()
         result = result.upscale_to_ar(target_aspect_ratio=target_aspect_ratio, hold_mode=hold_mode)
         if result.is_in_bounds(frame_shape=frame_shape):
-            return True, result
+            return result
         else:
-            return False, result
+            return None
 
-    def try_downscale_to_ar(self, frame_shape: list, target_aspect_ratio: float, hold_mode: str) -> (bool, ConstantAR_BBox):
+    def try_downscale_to_ar(self, frame_shape: list, target_aspect_ratio: float, hold_mode: str) -> ConstantAR_BBox:
         """
         Attempt downscale.
         Return None if bbox goes out of bounds.
@@ -479,89 +479,83 @@ class ConstantAR_BBox(BBox):
         result = result.downscale_to_ar(target_aspect_ratio=target_aspect_ratio, hold_mode=hold_mode)
         result = result.to_int()
         if result.is_in_bounds(frame_shape=frame_shape):
-            return True, result
+            return result
         else:
-            return False, result
+            return None
 
-    def crop_scale(self, frame_shape: list, target_aspect_ratio: float, upscale_tries: int=1) -> ConstantAR_BBox:
+    def crop_scale(self, frame_shape: list, target_aspect_ratio: float) -> ConstantAR_BBox:
         """
         1. First try upscale.
         2. Try downscale if upscale doesn't work.
         3. Preserve frame border adjacent sides of the bbox.
         """
-        def get_hold_mode(result: ConstantAR_BBox, frame_shape: list) -> str:
-            left_adj, top_adj, right_adj, bottom_adj = result.is_adjacent_to_frame_bounds(frame_shape)
-
-            not_adj = not left_adj and not top_adj and not right_adj and not bottom_adj
-            l_adj = left_adj and not top_adj and not right_adj and not bottom_adj
-            t_adj = not left_adj and top_adj and not right_adj and not bottom_adj
-            r_adj = not left_adj and not top_adj and right_adj and not bottom_adj
-            b_adj = not left_adj and not top_adj and not right_adj and bottom_adj
-
-            lt_adj = left_adj and top_adj
-            rt_adj = right_adj and top_adj
-            lb_adj = left_adj and bottom_adj
-            rb_adj = right_adj and bottom_adj
-
-            if not_adj:
-                hold_mode = 'center'
-            elif l_adj or t_adj or lt_adj or rt_adj or lb_adj:
-                hold_mode = 'min'
-            elif rb_adj:
-                hold_mode = 'max'
-            else:
-                hold_mode = 'center'
-
         result = self.copy()
-        upscale_try_count = 0
+        result = result.adjust_to_frame_bounds(frame_shape=frame_shape)
+        left_adj, top_adj, right_adj, bottom_adj = result.is_adjacent_to_frame_bounds(frame_shape)
 
-        while upscale_try_count < upscale_tries:
-            upscale_try_count += 1
-            result = result.adjust_to_frame_bounds(frame_shape=frame_shape)
-            hold_mode = get_hold_mode(result=result, frame_shape=frame_shape)
+        not_adj = not left_adj and not top_adj and not right_adj and not bottom_adj
+        l_adj = left_adj and not top_adj and not right_adj and not bottom_adj
+        t_adj = not left_adj and top_adj and not right_adj and not bottom_adj
+        r_adj = not left_adj and not top_adj and right_adj and not bottom_adj
+        b_adj = not left_adj and not top_adj and not right_adj and bottom_adj
 
-            new_result = result.copy()
-            success, new_result = new_result.try_upscale_to_ar(
-                frame_shape=frame_shape,
-                target_aspect_ratio=target_aspect_ratio,
-                hold_mode=hold_mode
-            )
-            if success:
-                result = new_result
-                break
-            else:
-                result = new_result
+        lt_adj = left_adj and top_adj
+        rt_adj = right_adj and top_adj
+        lb_adj = left_adj and bottom_adj
+        rb_adj = right_adj and bottom_adj
+
+        approach = 'upscale'
+
+        if not_adj:
+            hold_mode = 'center'
+        elif l_adj or t_adj or lt_adj or rt_adj or lb_adj:
+            hold_mode = 'min'
+        elif rb_adj:
+            hold_mode = 'max'
         else:
-            result = self.copy()
-            result = result.adjust_to_frame_bounds(frame_shape=frame_shape)
-            hold_mode = get_hold_mode(result=result, frame_shape=frame_shape)
+            hold_mode = 'center'
 
-            success, new_result = new_result.try_downscale_to_ar(
-                frame_shape=frame_shape,
-                target_aspect_ratio=target_aspect_ratio,
-                hold_mode=hold_mode
-            )
-            if success:
-                result = new_result
-            else:
-                logger.error(f"Couldn't resolve bbox.")
-                raise Exception
+        while True:
+            new_result = result.copy()
+            if approach == 'upscale':
+                new_result = new_result.try_upscale_to_ar(
+                    frame_shape=frame_shape,
+                    target_aspect_ratio=target_aspect_ratio,
+                    hold_mode=hold_mode
+                )
+                if new_result is not None:
+                    result = new_result
+                    break
+                else:
+                    approach = 'downscale'
+            elif approach == 'downscale':
+                new_result = new_result.try_downscale_to_ar(
+                    frame_shape=frame_shape,
+                    target_aspect_ratio=target_aspect_ratio,
+                    hold_mode=hold_mode
+                )
+                if new_result is not None:
+                    result = new_result
+                    break
+                else:
+                    logger.error(f"Couldn't resolve bbox.")
+                    raise Exception
         return result
 
     def adjust_to_target_shape(
         self, frame_shape: list, target_shape: list, method: str='conservative_pad'
     ) -> ConstantAR_BBox:
-        check_value(item=method, valid_value_list=['pad', 'conservative_pad', 'conservative_pad2'])
+        check_value(item=method, valid_value_list=['pad', 'conservative_pad'])
         result = self
-        target_h, target_w = target_shape[:2]
-        target_aspect_ratio = target_h / target_w
         if method == 'pad':
+            target_h, target_w = target_shape[:2]
+            target_aspect_ratio = target_h / target_w
             result = result.rescale_shift_until_valid(frame_shape=frame_shape, target_aspect_ratio=target_aspect_ratio, max_retry_count=5)
             result.check_bbox_in_frame(frame_shape=frame_shape)
         elif method == 'conservative_pad':
-            result = result.crop_scale(frame_shape=frame_shape, target_aspect_ratio=target_aspect_ratio, upscale_tries=1)
-        elif method == 'conservative_pad2':
-            result = result.crop_scale(frame_shape=frame_shape, target_aspect_ratio=target_aspect_ratio, upscale_tries=2)
+            target_h, target_w = target_shape[:2]
+            target_aspect_ratio = target_h / target_w
+            result = result.crop_scale(frame_shape=frame_shape, target_aspect_ratio=target_aspect_ratio)
         else:
             raise Exception
         return result
