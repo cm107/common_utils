@@ -542,19 +542,51 @@ class ConstantAR_BBox(BBox):
                     raise Exception
         return result
 
+    def square_pad(self, frame_shape: list, side_mode: str='max') -> ConstantAR_BBox:
+        check_value(side_mode, valid_value_list=['max', 'min'])
+        frame_h, frame_w = frame_shape[:2]
+        
+        result = self.copy()
+        result = result.adjust_to_frame_bounds(frame_shape=frame_shape)
+
+        if side_mode == 'max':
+            target_side_length = max(self.shape())
+        elif side_mode == 'min':
+            target_side_length = min(self.shape())
+        else:
+            raise Exception
+        target_side_length = frame_h if target_side_length > frame_h else target_side_length
+        target_side_length = frame_w if target_side_length > frame_w else target_side_length
+
+        [cx, cy] = result.center()
+        new_xmin, new_xmax = cx - (0.5 * target_side_length), cx + (0.5 * target_side_length)
+        new_ymin, new_ymax = cy - (0.5 * target_side_length), cy + (0.5 * target_side_length)
+        new_result = ConstantAR_BBox.from_list([new_xmin, new_ymin, new_xmax, new_ymax])
+        if new_result.is_in_bounds(frame_shape=frame_shape):
+            return new_result
+        else:
+            _, _, new_rect = new_result.shift_bbox_in_bounds(frame_shape=frame_shape)
+            new_result = ConstantAR_BBox.from_list(new_rect)
+            if new_result.is_in_bounds(frame_shape=frame_shape):
+                return new_result
+            else:
+                if side_mode == 'max':
+                    return self.square_pad(frame_shape=frame_shape, side_mode='min')
+                else:
+                    logger.error(f"Couldn't resolve bbox.")
+                    raise Exception
+
     def adjust_to_target_shape(
         self, frame_shape: list, target_shape: list, method: str='conservative_pad'
     ) -> ConstantAR_BBox:
         check_value(item=method, valid_value_list=['pad', 'conservative_pad'])
         result = self
+        target_h, target_w = target_shape[:2]
+        target_aspect_ratio = target_h / target_w
         if method == 'pad':
-            target_h, target_w = target_shape[:2]
-            target_aspect_ratio = target_h / target_w
             result = result.rescale_shift_until_valid(frame_shape=frame_shape, target_aspect_ratio=target_aspect_ratio, max_retry_count=5)
             result.check_bbox_in_frame(frame_shape=frame_shape)
         elif method == 'conservative_pad':
-            target_h, target_w = target_shape[:2]
-            target_aspect_ratio = target_h / target_w
             result = result.crop_scale(frame_shape=frame_shape, target_aspect_ratio=target_aspect_ratio)
         else:
             raise Exception
