@@ -49,6 +49,9 @@ class Polygon:
     def to_shapely(self) -> ShapelyPolygon:
         return ShapelyPolygon(self.to_list(demarcation=True))
 
+    def to_contour(self) -> np.ndarray:
+        return np.array(self.to_int().to_list()).reshape(-1, 1, self.dimensionality)
+
     def to_bbox(self) -> BBox:
         points = np.array(self.to_list(demarcation=True))
         xmin, ymin = points.min(axis=0)
@@ -219,6 +222,9 @@ class Segmentation:
 
     def to_shapely(self) -> list:
         return [polygon.to_shapely() for polygon in self.polygon_list]
+
+    def to_contour(self) -> list:
+        return [polygon.to_contour() for polygon in self.polygon_list]
 
     def to_bbox(self) -> list:
         return [polygon.to_bbox() for polygon in self.polygon_list]
