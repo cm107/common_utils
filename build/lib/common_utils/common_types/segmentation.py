@@ -285,7 +285,7 @@ class Segmentation:
         return [polygon.within_polygon() for polygon in self.polygon_list]
 
     def within_bbox(self, bbox: BBox) -> list:
-        return [polygon.within_bbox() for polygon in self.polygon_list]
+        return [polygon.within_bbox(bbox) for polygon in self.polygon_list]
 
     def within(self, obj) -> list:
         check_type(item=obj, valid_type_list=[Polygon, BBox])
