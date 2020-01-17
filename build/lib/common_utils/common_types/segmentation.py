@@ -31,6 +31,13 @@ class Polygon:
     def __repr__(self):
         return self.__str__()
     
+    @classmethod
+    def buffer(self, polygon: Polygon) -> Polygon:
+        return polygon
+
+    def copy(self) -> Polygon:
+        return Polygon(points=self.points, dimensionality=self.dimensionality)
+
     def to_int(self) -> Polygon:
         return Polygon(points=[int(val) for val in self.points], dimensionality=self.dimensionality)
 
@@ -92,6 +99,25 @@ class Polygon:
 
     def size(self) -> tuple:
         return np.array(self.points).reshape(-1, self.dimensionality).shape
+
+    def resize(self, orig_frame_shape: list, new_frame_shape: list) -> Polygon:
+        if self.dimensionality != 2:
+            logger.error(f"Only resize of dimensionality 2 is supported at this time.")
+            logger.error(f"This polygon is dimensionality: {self.dimensionality}")
+            raise Exception
+        orig_frame_h, orig_frame_w = orig_frame_shape[:2]
+        new_frame_h, new_frame_w = new_frame_shape[:2]
+        h_scale = new_frame_h / orig_frame_h
+        w_scale = new_frame_w / orig_frame_w
+        new_point_list = []
+        for point in self.to_point_list():
+            point = Point.buffer(point)
+            [x, y] = point.coords
+            x *= w_scale
+            y *= h_scale
+            new_point = Point([x, y])
+            new_point_list.append(new_point)
+        return Polygon.from_point_list(point_list=new_point_list, dimensionality=2)
 
     @classmethod
     def from_list(self, points: list, dimensionality: int=2, demarcation: bool=False) -> Polygon:
@@ -208,6 +234,13 @@ class Segmentation:
     def __repr__(self):
         return self.__str__()
 
+    @classmethod
+    def buffer(self, segmentation: Segmentation) -> Segmentation:
+        return segmentation
+
+    def copy(self) -> Segmentation:
+        return Segmentation(polygon_list=self.polygon_list)
+
     def to_int(self) -> Polygon:
         return Segmentation([polygon.to_int() for polygon in self.polygon_list])
 
@@ -264,6 +297,16 @@ class Segmentation:
                 polygon_list=self.polygon_list
             )]
         )
+
+    def resize(self, orig_frame_shape: list, new_frame_shape: list) -> Segmentation:
+        new_polygon_list = []
+        for polygon in self.polygon_list:
+            polygon = Polygon.buffer(polygon)
+            new_polygon = polygon.resize(
+                orig_frame_shape=orig_frame_shape, new_frame_shape=new_frame_shape
+            )
+            new_polygon_list.append(new_polygon)
+        return Segmentation(polygon_list=new_polygon_list)
 
     @classmethod
     def from_list(self, points_list: list, demarcation: bool=False) -> Segmentation:

@@ -20,7 +20,14 @@ class Point:
 
     def __repr__(self):
         return self.__str__()
-    
+
+    @classmethod
+    def buffer(self, point: Point) -> Point:
+        return point
+
+    def copy(self) -> Point:
+        return Point(coords=self.coords)
+
     def to_int(self) -> Point:
         return Point(coords=[int(val) for val in self.coords])
 

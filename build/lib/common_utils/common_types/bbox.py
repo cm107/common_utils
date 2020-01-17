@@ -205,6 +205,11 @@ class BBox:
 class ConstantAR_BBox(BBox):
     def __init__(self, xmin, ymin, xmax, ymax):
         super().__init__(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
+        self.requires_zero_pad = False
+        self.left_offset = None
+        self.right_offset = None
+        self.up_offset = None
+        self.down_offset = None
 
     def from_BBox(self, bbox: BBox) -> ConstantAR_BBox:
         return ConstantAR_BBox(xmin=bbox.xmin, ymin=bbox.ymin, xmax=bbox.xmax, ymax=bbox.ymax)
@@ -570,11 +575,24 @@ class ConstantAR_BBox(BBox):
             if new_result.is_in_bounds(frame_shape=frame_shape):
                 return new_result
             else:
-                if side_mode == 'max':
-                    return self.square_pad(frame_shape=frame_shape, side_mode='min')
-                else:
-                    logger.error(f"Couldn't resolve bbox.")
-                    raise Exception
+                bbox_h, bbox_w = new_result.shape()
+                old_xmin, old_ymin, old_xmax, old_ymax = new_result.to_list()
+                left_offset = old_xmin - 0 if old_xmin - 0 > 0 else 0
+                right_offset = old_xmax - (frame_w - 1) if old_xmax - (frame_w - 1) > 0 else 0
+                up_offset = old_ymin - 0 if old_ymin - 0 > 0 else 0
+                down_offset = old_ymax - (frame_h - 1) if old_ymax - (frame_h - 1) > 0 else 0
+                xmin, xmax = old_xmin + left_offset, old_xmax + left_offset
+                ymin, ymax = old_ymin + up_offset, old_ymax + up_offset
+                new_result = ConstantAR_BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
+                new_result.requires_zero_pad = True
+                new_result.left_offset, new_result.right_offset = left_offset, right_offset
+                new_result.up_offset, new_result.down_offset = up_offset, down_offset
+                return new_result
+                # if side_mode == 'max':
+                #     return self.square_pad(frame_shape=frame_shape, side_mode='min')
+                # else:
+                #     logger.error(f"Couldn't resolve bbox.")
+                #     raise Exception
 
     def adjust_to_target_shape(
         self, frame_shape: list, target_shape: list, method: str='conservative_pad'
