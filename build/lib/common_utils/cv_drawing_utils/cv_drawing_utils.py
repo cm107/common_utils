@@ -7,7 +7,7 @@ from ..common_types import Point, Size
 from ..common_types.bbox import BBox
 from ..common_types.segmentation import Segmentation
 from ..color_constants import Color
-from ..check_utils import check_type_from_list
+from ..check_utils import check_type_from_list, check_type
 from ..image_utils import resize_img
 
 class PointDrawer:
@@ -112,8 +112,14 @@ def draw_skeleton(
     img: np.ndarray, keypoints: np.ndarray, keypoint_skeleton: list, index_offset: int=0, thickness: int=5, color: list=[255, 0, 0],
     color_list: list=None
 ) -> np.ndarray:
+    check_type(keypoints, valid_type_list=[list, tuple, np.ndarray])
+    if type(keypoints) is np.ndarray:
+        kpts = keypoints.tolist()
+    elif type(keypoints) is list or type(keypoints) is tuple:
+        kpts = keypoints
+    else:
+        raise Exception
     result = img.copy()
-    kpts = keypoints.tolist()
     color_list = [color] * len(keypoint_skeleton) if color_list is None else color_list
     if len(color_list) != len(keypoint_skeleton):
         logger.error(f"Length Mismatch: len(color_list) == {len(color_list)} != {len(keypoint_skeleton)} == len(keypoint_skeleton)")
