@@ -11,7 +11,7 @@ Description: # common_utils
         
         ## Installation
         ```console
-        pip install git+https://github.com/cm107/common_utils#egg=common_utils
+        pip install https://github.com/cm107/common_utils/archive/master.zip
         ```
 Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3
