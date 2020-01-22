@@ -75,28 +75,73 @@ def draw_mask_on_img(img: np.ndarray, mask: np.ndarray, color: list, scale: int,
 def draw_bbox_text(img: np.ndarray, bbox: BBox, text: str, color: list=[0, 255, 255], font_face: int=cv2.FONT_HERSHEY_COMPLEX, thickness: int=2):
     result = img.copy()
     bbox_h, bbox_w = bbox.shape()
-    font_scale = 1 * (bbox_w / 93) # Needs adjustment
+    target_textbox_w = bbox_w
+    font_scale = 1 * (target_textbox_w / 93)
+
     [textbox_w, textbox_h], _ = cv2.getTextSize(text=text, fontFace=font_face, fontScale=font_scale, thickness=thickness)
     retry_count = 0
-    while abs(textbox_w - bbox_w) / bbox_w > 0.1 and retry_count < 3:
+    while abs(textbox_w - target_textbox_w) / target_textbox_w > 0.1 and retry_count < 3:
         retry_count += 1
-        font_scale = font_scale * (bbox_w / textbox_w)
+        font_scale = font_scale * (target_textbox_w / textbox_w)
         [textbox_w, textbox_h], _ = cv2.getTextSize(text=text, fontFace=font_face, fontScale=font_scale, thickness=thickness)
-    textbox_org_x = int(0.5 * (bbox_w - textbox_w) + bbox.xmin)
+    textbox_org_x = int(0.5 * (target_textbox_w - textbox_w) + bbox.xmin)
     textbox_org_y = int(bbox.ymin - 0.3 * textbox_h)
     textbox_org = (textbox_org_x, textbox_org_y)
     cv2.putText(img=result, text=text, org=textbox_org, fontFace=font_face, fontScale=font_scale, color=color, thickness=thickness, bottomLeftOrigin=False)
     return result
 
-def draw_bbox(img: np.ndarray, bbox: BBox, color: list=[0, 255, 255], thickness: int=2, text: str=None) -> np.ndarray:
+def draw_bbox(img: np.ndarray, bbox: BBox, color: list=[0, 255, 255], thickness: int=2, text: str=None, label_thickness: int=None) -> np.ndarray:
     result = img.copy()
     xmin, ymin, xmax, ymax = bbox.to_int().to_list()
     cv2.rectangle(img=result, pt1=(xmin, ymin), pt2=(xmax, ymax), color=color, thickness=thickness)
     if text is not None:
-        result = draw_bbox_text(img=result, bbox=bbox, text=text, color=color, thickness=thickness)
+        text_thickness = label_thickness if label_thickness is not None else thickness
+        result = draw_bbox_text(img=result, bbox=bbox, text=text, color=color, thickness=text_thickness)
     return result
 
-def draw_keypoints(img: np.ndarray, keypoints: list, radius: int=10, color: list=[0, 0, 255]) -> np.ndarray:
+def draw_keypoints_labels(img: np.ndarray, keypoints: list, keypoint_labels: list, color: list=[0, 0, 255], font_face: int=cv2.FONT_HERSHEY_COMPLEX, thickness: int=1):
+    result = img.copy()
+
+    # Define BBox enclosing keypoints
+    np_kpts = np.array(keypoints)
+    kpts_xmin, kpts_ymin = np.min(np_kpts, axis=0)
+    kpts_xmax, kpts_ymax = np.max(np_kpts, axis=0)
+    kpts_bbox = BBox(xmin=kpts_xmin, ymin=kpts_ymin, xmax=kpts_xmax, ymax=kpts_ymax)
+    bbox_h, bbox_w = kpts_bbox.shape()
+    
+    # Define target_textbox_w and initial font_scale guess.
+    target_textbox_w = 0.1 * bbox_w # Needs adjustment
+    font_scale = 1 * (target_textbox_w / 93)
+
+    # Find max_size_label_idx
+    textbox_w, textbox_h = None, None
+    max_size_label_idx = None
+    for i, keypoint_label in enumerate(keypoint_labels):
+        [label_w, label_h], _ = cv2.getTextSize(text=keypoint_label, fontFace=font_face, fontScale=font_scale, thickness=thickness)
+        if textbox_w is None or label_w > textbox_w:
+            textbox_w, textbox_h = label_w, label_h
+            max_size_label_idx = i
+
+    # Adjust to target_textbox_w
+    retry_count = 0
+    while abs(textbox_w - target_textbox_w) / target_textbox_w > 0.1 and retry_count < 3:
+        retry_count += 1
+        font_scale = font_scale * (target_textbox_w / textbox_w)
+        [textbox_w, textbox_h], _ = cv2.getTextSize(text=keypoint_labels[max_size_label_idx], fontFace=font_face, fontScale=font_scale, thickness=thickness)
+    
+    # Draw Label
+    for [x, y], keypoint_label in zip(keypoints, keypoint_labels):
+        textbox_org_x = int(x - 0.5 * textbox_w)
+        textbox_org_y = int(y - 0.5 * textbox_h)
+        textbox_org = (textbox_org_x, textbox_org_y)
+        cv2.putText(img=result, text=keypoint_label, org=textbox_org, fontFace=font_face, fontScale=font_scale, color=color, thickness=thickness, bottomLeftOrigin=False)
+    return result
+
+def draw_keypoints(
+    img: np.ndarray, keypoints: list,
+    radius: int=10, color: list=[0, 0, 255],
+    keypoint_labels: list=None, show_keypoints_labels: bool=False, label_thickness: int=1
+) -> np.ndarray:
     result = img.copy()
     for x, y in keypoints:
         cv2.circle(
@@ -106,6 +151,12 @@ def draw_keypoints(img: np.ndarray, keypoints: list, radius: int=10, color: list
             color,
             -1,
         )
+    if show_keypoints_labels:
+        if keypoint_labels is not None:
+            result = draw_keypoints_labels(img=result, keypoints=keypoints, keypoint_labels=keypoint_labels, color=color, thickness=label_thickness)
+        else:
+            logger.error(f"Need to provide keypoint_labels in order to show labels.")
+            raise Exception
     return result
 
 def draw_skeleton(
