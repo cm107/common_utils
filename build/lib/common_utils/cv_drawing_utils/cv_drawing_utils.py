@@ -90,10 +90,11 @@ def draw_bbox_text(img: np.ndarray, bbox: BBox, text: str, color: list=[0, 255, 
     cv2.putText(img=result, text=text, org=textbox_org, fontFace=font_face, fontScale=font_scale, color=color, thickness=thickness, bottomLeftOrigin=False)
     return result
 
-def draw_bbox(img: np.ndarray, bbox: BBox, color: list=[0, 255, 255], thickness: int=2, text: str=None, label_thickness: int=None) -> np.ndarray:
+def draw_bbox(img: np.ndarray, bbox: BBox, color: list=[0, 255, 255], thickness: int=2, text: str=None, label_thickness: int=None, label_only: bool=False) -> np.ndarray:
     result = img.copy()
     xmin, ymin, xmax, ymax = bbox.to_int().to_list()
-    cv2.rectangle(img=result, pt1=(xmin, ymin), pt2=(xmax, ymax), color=color, thickness=thickness)
+    if not (text is not None and label_only):
+        cv2.rectangle(img=result, pt1=(xmin, ymin), pt2=(xmax, ymax), color=color, thickness=thickness)
     if text is not None:
         text_thickness = label_thickness if label_thickness is not None else thickness
         result = draw_bbox_text(img=result, bbox=bbox, text=text, color=color, thickness=text_thickness)
@@ -140,18 +141,19 @@ def draw_keypoints_labels(img: np.ndarray, keypoints: list, keypoint_labels: lis
 def draw_keypoints(
     img: np.ndarray, keypoints: list,
     radius: int=10, color: list=[0, 0, 255],
-    keypoint_labels: list=None, show_keypoints_labels: bool=False, label_thickness: int=1
+    keypoint_labels: list=None, show_keypoints_labels: bool=False, label_thickness: int=1, label_only: bool=False
 ) -> np.ndarray:
     result = img.copy()
-    for x, y in keypoints:
-        cv2.circle(
-            result,
-            (int(x), int(y)),
-            radius,
-            color,
-            -1,
-        )
-    if show_keypoints_labels:
+    if not (keypoint_labels is not None and label_only):
+        for x, y in keypoints:
+            cv2.circle(
+                result,
+                (int(x), int(y)),
+                radius,
+                color,
+                -1,
+            )
+    if show_keypoints_labels or label_only:
         if keypoint_labels is not None:
             result = draw_keypoints_labels(img=result, keypoints=keypoints, keypoint_labels=keypoint_labels, color=color, thickness=label_thickness)
         else:
