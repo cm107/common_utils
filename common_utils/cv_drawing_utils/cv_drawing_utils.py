@@ -100,7 +100,10 @@ def draw_bbox(img: np.ndarray, bbox: BBox, color: list=[0, 255, 255], thickness:
         result = draw_bbox_text(img=result, bbox=bbox, text=text, color=color, thickness=text_thickness)
     return result
 
-def draw_keypoints_labels(img: np.ndarray, keypoints: list, keypoint_labels: list, color: list=[0, 0, 255], font_face: int=cv2.FONT_HERSHEY_COMPLEX, thickness: int=1):
+def draw_keypoints_labels(
+    img: np.ndarray, keypoints: list, keypoint_labels: list, color: list=[0, 0, 255], font_face: int=cv2.FONT_HERSHEY_COMPLEX, thickness: int=1,
+    ignore_kpt_idx: list=[]
+):
     result = img.copy()
 
     # Define BBox enclosing keypoints
@@ -131,31 +134,40 @@ def draw_keypoints_labels(img: np.ndarray, keypoints: list, keypoint_labels: lis
         [textbox_w, textbox_h], _ = cv2.getTextSize(text=keypoint_labels[max_size_label_idx], fontFace=font_face, fontScale=font_scale, thickness=thickness)
     
     # Draw Label
-    for [x, y], keypoint_label in zip(keypoints, keypoint_labels):
-        textbox_org_x = int(x - 0.5 * textbox_w)
-        textbox_org_y = int(y - 0.5 * textbox_h)
-        textbox_org = (textbox_org_x, textbox_org_y)
-        cv2.putText(img=result, text=keypoint_label, org=textbox_org, fontFace=font_face, fontScale=font_scale, color=color, thickness=thickness, bottomLeftOrigin=False)
+    for i, [[x, y], keypoint_label] in enumerate(zip(keypoints, keypoint_labels)):
+        if i not in ignore_kpt_idx:
+            textbox_org_x = int(x - 0.5 * textbox_w)
+            textbox_org_y = int(y - 0.5 * textbox_h)
+            textbox_org = (textbox_org_x, textbox_org_y)
+            cv2.putText(
+                img=result, text=keypoint_label, org=textbox_org, fontFace=font_face, fontScale=font_scale, color=color,
+                thickness=thickness, bottomLeftOrigin=False
+            )
     return result
 
 def draw_keypoints(
     img: np.ndarray, keypoints: list,
     radius: int=10, color: list=[0, 0, 255],
-    keypoint_labels: list=None, show_keypoints_labels: bool=False, label_thickness: int=1, label_only: bool=False
+    keypoint_labels: list=None, show_keypoints_labels: bool=False, label_thickness: int=1, label_only: bool=False,
+    ignore_kpt_idx: list=[]
 ) -> np.ndarray:
     result = img.copy()
     if not (keypoint_labels is not None and label_only):
-        for x, y in keypoints:
-            cv2.circle(
-                result,
-                (int(x), int(y)),
-                radius,
-                color,
-                -1,
-            )
+        for i, [x, y] in enumerate(keypoints):
+            if i not in ignore_kpt_idx:
+                cv2.circle(
+                    result,
+                    (int(x), int(y)),
+                    radius,
+                    color,
+                    -1,
+                )
     if show_keypoints_labels or label_only:
         if keypoint_labels is not None:
-            result = draw_keypoints_labels(img=result, keypoints=keypoints, keypoint_labels=keypoint_labels, color=color, thickness=label_thickness)
+            result = draw_keypoints_labels(
+                img=result, keypoints=keypoints, keypoint_labels=keypoint_labels, color=color, thickness=label_thickness,
+                ignore_kpt_idx=ignore_kpt_idx
+            )
         else:
             logger.error(f"Need to provide keypoint_labels in order to show labels.")
             raise Exception
@@ -163,7 +175,7 @@ def draw_keypoints(
 
 def draw_skeleton(
     img: np.ndarray, keypoints: np.ndarray, keypoint_skeleton: list, index_offset: int=0, thickness: int=5, color: list=[255, 0, 0],
-    color_list: list=None
+    color_list: list=None, ignore_kpt_idx: list=[]
 ) -> np.ndarray:
     check_type(keypoints, valid_type_list=[list, tuple, np.ndarray])
     if type(keypoints) is np.ndarray:
@@ -178,15 +190,16 @@ def draw_skeleton(
         logger.error(f"Length Mismatch: len(color_list) == {len(color_list)} != {len(keypoint_skeleton)} == len(keypoint_skeleton)")
         raise Exception
     for [joint_start_index, joint_end_index], joint_color in zip(keypoint_skeleton, color_list):
-        line_start_x, line_start_y = kpts[joint_start_index+index_offset]
-        line_end_x, line_end_y = kpts[joint_end_index+index_offset]
-        cv2.line(
-            img=result,
-            pt1=(int(line_start_x), int(line_start_y)),
-            pt2=(int(line_end_x), int(line_end_y)),
-            color=joint_color,
-            thickness=thickness
-        )
+        if joint_start_index+index_offset not in ignore_kpt_idx and joint_end_index+index_offset not in ignore_kpt_idx:
+            line_start_x, line_start_y = kpts[joint_start_index+index_offset]
+            line_end_x, line_end_y = kpts[joint_end_index+index_offset]
+            cv2.line(
+                img=result,
+                pt1=(int(line_start_x), int(line_start_y)),
+                pt2=(int(line_end_x), int(line_end_y)),
+                color=joint_color,
+                thickness=thickness
+            )
     return result
 
 def draw_bool_mask(
