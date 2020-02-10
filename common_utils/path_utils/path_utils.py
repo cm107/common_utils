@@ -106,7 +106,11 @@ def get_next_dump_path(
     dump_dir: str, file_extension: str, label_length: int=6,
     starting_number: int=0, increment: int=1
     ):
-    newest_filepath = get_newest_filepath(dump_dir, extension=file_extension)
+    img_paths = get_all_files_of_extension(dir_path=dump_dir, extension=file_extension)
+    img_paths.sort()
+    img_filenames = [get_filename(img_path) for img_path in img_paths]
+
+    newest_filepath = img_paths[-1] if len(img_paths) > 0 else None
     next_label_number = \
         int(get_rootname_from_path(newest_filepath)) + increment \
             if newest_filepath is not None else starting_number
