@@ -5,7 +5,7 @@ from shapely.geometry import Point as ShapelyPoint
 from logger import logger
 
 from .constants import number_types
-from ..check_utils import check_type, check_type_from_list
+from ..check_utils import check_type, check_type_from_list, check_list_length
 from ..utils import get_class_string
 
 class Point:
@@ -50,3 +50,42 @@ class Point:
 
     def within(self, obj) -> bool:
         return self.to_shapely().within(obj.to_shapely())
+
+class Point2D:
+    def __init__(self, x: float, y: float):
+        self.x = x
+        self.y = y
+
+    def __str__(self):
+        return f"Point2D({self.x},{self.y})"
+
+    def __repr__(self):
+        return self.__str__()
+
+    def to_list(self) -> list:
+        return [self.x, self.y]
+
+    @classmethod
+    def from_list(cls, coords: list) -> Point3D:
+        check_list_length(coords, correct_length=2)
+        return Point2D(x=coords[0], y=coords[1])
+
+class Point3D:
+    def __init__(self, x: float, y: float, z: float):
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def __str__(self):
+        return f"Point3D({self.x},{self.y},{self.z})"
+
+    def __repr__(self):
+        return self.__str__()
+
+    def to_list(self) -> list:
+        return [self.x, self.y, self.z]
+
+    @classmethod
+    def from_list(cls, coords: list) -> Point3D:
+        check_list_length(coords, correct_length=3)
+        return Point3D(x=coords[0], y=coords[1], z=coords[2])
