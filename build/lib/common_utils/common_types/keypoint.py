@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import List
 import numpy as np
-
+from imgaug.augmentables.kps import Keypoint as ImgAug_Keypoint, KeypointsOnImage as ImgAug_Keypoints
 from logger import logger
 from .point import Point2D, Point3D
 from ..check_utils import check_type, check_type_from_list, \
@@ -37,6 +37,13 @@ class Keypoint2D:
     @classmethod
     def from_numpy(cls, arr: np.ndarray) -> Keypoint2D:
         return cls.from_list(arr.tolist())
+
+    def to_imgaug(self) -> ImgAug_Keypoint:
+        return ImgAug_Keypoint(x=self.point.x, y=self.point.y)
+
+    @classmethod
+    def from_imgaug(cls, imgaug_kpt: ImgAug_Keypoint, visibility: int=2) -> Keypoint2D:
+        return Keypoint2D(point=Point2D(x=imgaug_kpt.x, y=imgaug_kpt.y), visibility=visibility)
 
 class Keypoint3D:
     def __init__(self, point: Point3D, visibility: int):
@@ -142,6 +149,18 @@ class Keypoint2D_List:
     @classmethod
     def from_list(cls, value_list: list, demarcation: bool=False) -> Keypoint2D_List:
         return cls.from_numpy(arr=np.array(value_list), demarcation=demarcation)
+
+    def to_imgaug(self, img_shape: list) -> ImgAug_Keypoints:
+        return ImgAug_Keypoints(
+            keypoints=[kpt.to_imgaug() for kpt in self],
+            shape=img_shape
+        )
+
+    @classmethod
+    def from_imgaug(cls, imgaug_kpts: ImgAug_Keypoints) -> Keypoint2D_List:
+        return Keypoint2D_List(
+            kpt_list=[Keypoint2D.from_imgaug(imgaug_kpt) for imgaug_kpt in imgaug_kpts.keypoints]
+        )
 
 class Keypoint3D_List:
     def __init__(self, kpt_list: List[Keypoint3D]):

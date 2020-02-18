@@ -3,6 +3,7 @@ import numpy as np
 from shapely.geometry import Point as ShapelyPoint
 from shapely.geometry.polygon import Polygon as ShapelyPolygon
 from shapely.ops import cascaded_union
+from imgaug.augmentables.polys import Polygon as ImgAugPolygon, PolygonsOnImage as ImgAugPolygons
 
 from logger import logger
 
@@ -217,6 +218,16 @@ class Polygon:
         union = cascaded_union([valid_polygon.to_shapely() for valid_polygon in valid_polygon_list])
         return self.from_shapely(union)
 
+    def to_imgaug(self) -> ImgAugPolygon:
+        if self.dimensionality == 2:
+            return ImgAugPolygon(self.to_list(demarcation=True))
+        else:
+            raise NotImplementedError
+
+    @classmethod
+    def from_imgaug(cls, imgaug_polygon: ImgAugPolygon) -> Polygon:
+        return Polygon.from_shapely(imgaug_polygon.to_shapely_polygon())
+
 class Segmentation:
     def __init__(self, polygon_list: list):
         check_type(item=polygon_list, valid_type_list=[list])
@@ -346,4 +357,16 @@ class Segmentation:
                     contour=contour
                 ) for contour in contour_list
             ]
+        )
+
+    def to_imgaug(self, img_shape: np.ndarray) -> ImgAugPolygons:
+        return ImgAugPolygons(
+            polygons=[poly.to_imgaug() for poly in self.polygon_list],
+            shape=img_shape
+        )
+
+    @classmethod
+    def from_imgaug(cls, imgaug_polygons: ImgAugPolygons) -> Segmentation:
+        return Segmentation(
+            polygon_list=[Polygon.from_imgaug(imgaug_polygon) for imgaug_polygon in imgaug_polygons.polygons]
         )

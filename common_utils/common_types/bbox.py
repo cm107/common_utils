@@ -2,6 +2,7 @@ from __future__ import annotations
 import numpy as np
 from shapely.geometry import Point as ShapelyPoint
 from shapely.geometry.polygon import Polygon as ShapelyPolygon
+from imgaug.augmentables.bbs import BoundingBox as ImgAugBBox, BoundingBoxesOnImage as ImgAugBBoxes
 
 from logger import logger
 from ..check_utils import check_type_from_list, check_value
@@ -201,6 +202,18 @@ class BBox:
         right_adjacent = True if self.xmax == frame_w - 1 else False
         bottom_adjacent = True if self.ymax == frame_h - 1 else False
         return left_adjacent, top_adjacent, right_adjacent, bottom_adjacent
+
+    def to_imgaug(self) -> ImgAugBBox:
+        return ImgAugBBox(x1=self.xmin, y1=self.ymin, x2=self.xmax, y2=self.ymax)
+
+    @classmethod
+    def from_imgaug(cls, imgaug_bbox: ImgAugBBox) -> BBox:
+        return BBox(
+            xmin=imgaug_bbox.x1,
+            ymin=imgaug_bbox.y1,
+            xmax=imgaug_bbox.x2,
+            ymax=imgaug_bbox.y2
+        )
 
 class ConstantAR_BBox(BBox):
     def __init__(self, xmin, ymin, xmax, ymax):
