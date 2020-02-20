@@ -1,3 +1,4 @@
+from typing import List
 import cv2
 import numpy as np
 
@@ -72,7 +73,7 @@ def draw_mask_on_img(img: np.ndarray, mask: np.ndarray, color: list, scale: int,
     return result
 
 # Basic
-def draw_bbox_text(img: np.ndarray, bbox: BBox, text: str, color: list=[0, 255, 255], font_face: int=cv2.FONT_HERSHEY_COMPLEX, thickness: int=2):
+def draw_bbox_text(img: np.ndarray, bbox: BBox, text: str, color: list=[0, 255, 255], font_face: int=cv2.FONT_HERSHEY_COMPLEX, thickness: int=2) -> np.ndarray:
     result = img.copy()
     bbox_h, bbox_w = bbox.shape()
     target_textbox_w = bbox_w
@@ -88,6 +89,64 @@ def draw_bbox_text(img: np.ndarray, bbox: BBox, text: str, color: list=[0, 255, 
     textbox_org_y = int(bbox.ymin - 0.3 * textbox_h)
     textbox_org = (textbox_org_x, textbox_org_y)
     cv2.putText(img=result, text=text, org=textbox_org, fontFace=font_face, fontScale=font_scale, color=color, thickness=thickness, bottomLeftOrigin=False)
+    return result
+
+def draw_text_inside_bbox(img: np.ndarray, bbox: BBox, text: str, color: list=[0, 255, 255], font_face: int=cv2.FONT_HERSHEY_COMPLEX, thickness: int=2) -> np.ndarray:
+    result = img.copy()
+    bbox_h, bbox_w = bbox.shape()
+    target_textbox_w = bbox_w
+    font_scale = 1 * (target_textbox_w / 93)
+
+    [textbox_w, textbox_h], _ = cv2.getTextSize(text=text, fontFace=font_face, fontScale=font_scale, thickness=thickness)
+    retry_count = 0
+    while abs(textbox_w - target_textbox_w) / target_textbox_w > 0.1 and retry_count < 3:
+        retry_count += 1
+        font_scale = font_scale * (target_textbox_w / textbox_w)
+        [textbox_w, textbox_h], _ = cv2.getTextSize(text=text, fontFace=font_face, fontScale=font_scale, thickness=thickness)
+    height_adjustment_count = 0
+    while textbox_h >= bbox_h and height_adjustment_count < 3:
+        height_adjustment_count += 1
+        font_scale = font_scale * (bbox_h / textbox_h)
+        [textbox_w, textbox_h], _ = cv2.getTextSize(text=text, fontFace=font_face, fontScale=font_scale, thickness=thickness)
+
+    textbox_org_x = int(0.5 * (target_textbox_w - textbox_w) + bbox.xmin)
+    textbox_org_y = int(bbox.ymin + 0.5 * (bbox_h + textbox_h))
+    textbox_org = (textbox_org_x, textbox_org_y)
+    cv2.putText(img=result, text=text, org=textbox_org, fontFace=font_face, fontScale=font_scale, color=color, thickness=thickness, bottomLeftOrigin=False)
+    return result
+
+def draw_text_at_point(
+    img: np.ndarray, text: str, x: int, y: int, target_height: int,
+    leeway: float=0.4, color: list=[0, 255, 255], font_face: int=cv2.FONT_HERSHEY_COMPLEX, thickness: int=2
+) -> np.ndarray:
+    result = img.copy()
+    target_text_h = target_height * (1 - leeway)
+    font_scale = 1 * (target_text_h / 10)
+    [textbox_w, textbox_h], _ = cv2.getTextSize(text=text, fontFace=font_face, fontScale=font_scale, thickness=thickness)
+    retry_count = 0
+    while abs(textbox_h - target_text_h) / target_text_h > 0.1 and textbox_h >= target_text_h and retry_count < 3:
+        retry_count += 1
+        font_scale = font_scale * (target_text_h / textbox_h)
+        [textbox_w, textbox_h], _ = cv2.getTextSize(text=text, fontFace=font_face, fontScale=font_scale, thickness=thickness)
+    textbox_org_x = int(x)
+    textbox_org_y = int(y + textbox_h + 0.5 * leeway * target_height)
+    textbox_org = (textbox_org_x, textbox_org_y)
+    cv2.putText(img=result, text=text, org=textbox_org, fontFace=font_face, fontScale=font_scale, color=color, thickness=thickness, bottomLeftOrigin=False)
+    return result
+
+def draw_text_rows_at_point(
+    img: np.ndarray, row_text_list: List[str], x: int, y: int, combined_row_height: int,
+    leeway: float=0.4, color: list=[0, 255, 255], font_face: int=cv2.FONT_HERSHEY_COMPLEX, thickness: int=2
+) -> np.ndarray:
+    result = img.copy()
+    n_rows = len(row_text_list)
+    row_height = int(combined_row_height / n_rows)
+    y_coord_list = [y + row_height * i for i in range(n_rows)]
+    for row_text, y_coord in zip(row_text_list, y_coord_list):
+        result = draw_text_at_point(
+            img=result, text=row_text, x=x, y=y_coord, target_height=row_height,
+            leeway=leeway, color=color, font_face=font_face, thickness=thickness
+        )
     return result
 
 def draw_bbox(img: np.ndarray, bbox: BBox, color: list=[0, 255, 255], thickness: int=2, text: str=None, label_thickness: int=None, label_only: bool=False) -> np.ndarray:
@@ -147,7 +206,7 @@ def draw_keypoints_labels(
 
 def draw_keypoints(
     img: np.ndarray, keypoints: list,
-    radius: int=10, color: list=[0, 0, 255],
+    radius: int=4, color: list=[0, 0, 255],
     keypoint_labels: list=None, show_keypoints_labels: bool=False, label_thickness: int=1, label_only: bool=False,
     ignore_kpt_idx: list=[]
 ) -> np.ndarray:
