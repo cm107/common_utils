@@ -24,7 +24,7 @@ def cv_simple_image_viewer(img: np.ndarray, preview_width: int, window_name: str
     
     return quit_flag
 
-def cv_simple_video_viewer(img: np.ndarray, preview_width: int, window_name: str="Simple Image Viewer") -> bool:
+def cv_simple_video_viewer(img: np.ndarray, preview_width: int, window_name: str="Simple Video Viewer") -> bool:
     quit_flag = False
 
     # Window Declaration
@@ -95,3 +95,37 @@ def cv_dynamic_video_viewer(
             elif key0 == ord('p'):
                 break
     return quit_flag, next_step
+
+class SimpleVideoViewer:
+    def __init__(self, preview_width: int, window_name: str="Simple Video Viewer"):
+        self.preview_width = preview_width
+        self.window_name = window_name
+        self.resize_done = False
+
+    def show(self, img: np.ndarray) -> bool:
+        quit_flag = False
+
+        # Window Declaration
+        if not self.resize_done:
+            img_h, img_w = img.shape[:2]
+            scale_factor = self.preview_width / img_w
+            window_w, window_h = int(scale_factor * img_w), int(scale_factor * img_h)
+            cv2.namedWindow(self.window_name, cv2.WINDOW_NORMAL)
+            cv2.resizeWindow(self.window_name, (window_w, window_h))
+            self.resize_done = True
+        cv2.imshow(self.window_name, img)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'):
+            quit_flag = True
+        elif key == ord('p'):
+            while True:
+                key0 = cv2.waitKey(1) & 0xFF
+                if key0 == ord('q'):
+                    quit_flag = True
+                    break
+                elif key0 == ord('p'):
+                    break
+        return quit_flag
+
+    def close(self):
+        cv2.destroyAllWindows()
