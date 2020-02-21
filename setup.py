@@ -31,6 +31,7 @@ setup(
         'pylint>=2.4.2',
         'tqdm>=4.36.1',
         'scipy>=1.4.1',
+        'imgaug>=0.3.0',
         'logger @ https://github.com/cm107/logger/archive/master.zip#egg=logger-0.1'
     ],
     python_requires='>=3.6'
