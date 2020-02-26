@@ -215,6 +215,46 @@ class BBox:
             ymax=imgaug_bbox.y2
         )
 
+    @classmethod
+    def from_p0p1(cls, p0p1: np.ndarray) -> BBox:
+        """
+        Parses from format np.ndarray([[x0, y0], [x1, y1]]), where
+        it is not known which values are min and max.
+        """
+        if type(p0p1) is list:
+            arr = np.array(p0p1)
+        elif type(p0p1) is np.ndarray:
+            arr = p0p1.copy()
+        else:
+            raise TypeError
+        if arr.shape != (2,2):
+            logger.error(f'arr.shape == {arr.shape} != (2,2)')
+            raise Exception
+        xmin, ymin = arr.min(axis=0)
+        xmax, ymax = arr.max(axis=0)
+        return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
+
+    def clip_at_bounds(self, frame_shape: list) -> BBox:
+        frame_h, frame_w = frame_shape[:2]
+        xmin = 0 if self.xmin < 0 else frame_w - 1 if self.xmin >= frame_w else self.xmin
+        ymin = 0 if self.ymin < 0 else frame_h - 1 if self.ymin >= frame_h else self.ymin
+        xmax = 0 if self.xmax < 0 else frame_w - 1 if self.xmax >= frame_w else self.xmax
+        ymax = 0 if self.ymax < 0 else frame_h - 1 if self.ymax >= frame_h else self.ymax
+        return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
+
+    def scale_about_center(self, scale_factor: float, frame_shape: list) -> BBox:
+        frame_h, frame_w = frame_shape[:2]
+        bbox = self.copy()
+        bbox_h, bbox_w = bbox.shape()
+        dx = bbox_w * (scale_factor - 1.0) / 2
+        dy = bbox_h * (scale_factor - 1.0) / 2            
+        bbox.xmin -= dx
+        bbox.ymin -= dy
+        bbox.xmax += dx
+        bbox.ymax += dy
+        bbox = bbox.clip_at_bounds(frame_shape=[frame_h, frame_w])
+        return bbox
+
 class ConstantAR_BBox(BBox):
     def __init__(self, xmin, ymin, xmax, ymax):
         super().__init__(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
