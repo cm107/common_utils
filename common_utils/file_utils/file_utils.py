@@ -48,22 +48,32 @@ def make_dir_if_not_exists(dir_path: str):
     if not dir_exists(dir_path):
         make_dir(dir_path)
 
+def get_dir_contents_len(dir_path: str) -> int:
+    return len(os.listdir(dir_path))
+
+def dir_is_empty(dir_path: str) -> bool:
+    return get_dir_contents_len(dir_path) == 0
+
 def delete_all_files_in_dir(dir_path: str, ask_permission: bool=True, verbose: bool=False):
-    if ask_permission:
-        logger.warning('Are you sure that you want to delete of of the files in {}?'.format(dir_path))
-        consent = input('yes/no: ')
-        if consent != 'yes':
-            logger.warning('Program terminated')
-            sys.exit()
-    names = os.listdir(dir_path)
-    for name in names:
-        path = os.path.join(dir_path, name)
-        if file_exists(path):
-            delete_file(path)
-        else:
-            delete_dir(path)
+    if not dir_is_empty(dir_path):
+        if ask_permission:
+            logger.warning(f'Are you sure that you want to delete all of the files in {dir_path}?')
+            consent = input('yes/no: ')
+            if consent != 'yes':
+                logger.warning('Program terminated')
+                sys.exit()
+        names = os.listdir(dir_path)
+        for name in names:
+            path = os.path.join(dir_path, name)
+            if file_exists(path):
+                delete_file(path)
+            else:
+                delete_dir(path)
+            if verbose:
+                logger.info('Deleted {}'.format(path.split('/')[-1]))
+    else:
         if verbose:
-            logger.info('Deleted {}'.format(path.split('/')[-1]))
+            logger.warning('Directory is empty. Nothing to delete.')
 
 def init_dir(dir_path: str, ask_permission: bool=True):
     dir_name = dir_path.split('/')[-1]
