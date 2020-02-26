@@ -245,6 +245,35 @@ class Segmentation:
     def __repr__(self):
         return self.__str__()
 
+    def __len__(self) -> int:
+        return len(self.polygon_list)
+
+    def __getitem__(self, idx: int) -> Polygon:
+        if len(self.polygon_list) == 0:
+            logger.error(f"polygon_list is empty.")
+            raise IndexError
+        elif idx < 0 or idx >= len(self.polygon_list):
+            logger.error(f"Index out of range: {idx}")
+            raise IndexError
+        else:
+            return self.polygon_list[idx]
+
+    def __setitem__(self, idx: int, value: Polygon):
+        check_type(value, valid_type_list=[Polygon])
+        self.polygon_list[idx] = value
+
+    def __iter__(self):
+        self.n = 0
+        return self
+
+    def __next__(self) -> Polygon:
+        if self.n < len(self.polygon_list) - 1:
+            result = self.polygon_list[self.n]
+            self.n += 1
+            return result
+        else:
+            raise StopIteration
+
     @classmethod
     def buffer(self, segmentation: Segmentation) -> Segmentation:
         return segmentation
@@ -252,10 +281,14 @@ class Segmentation:
     def copy(self) -> Segmentation:
         return Segmentation(polygon_list=self.polygon_list)
 
-    def to_int(self) -> Polygon:
+    def append(self, item: Polygon):
+        check_type(item, valid_type_list=[Polygon])
+        self.polygon_list.append(item)
+
+    def to_int(self) -> Segmentation:
         return Segmentation([polygon.to_int() for polygon in self.polygon_list])
 
-    def to_float(self) -> Polygon:
+    def to_float(self) -> Segmentation:
         return Segmentation([polygon.to_float() for polygon in self.polygon_list])
 
     def to_list(self, demarcation: bool=False) -> list:
