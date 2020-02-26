@@ -82,3 +82,17 @@ def check_key_not_in_dict(item_dict: dict, key):
     if key in item_dict:
         logger.error(f"Key {key} already exists in dictionary.")
         raise Exception
+
+def check_required_keys(item_dict: dict, required_keys: list):
+    missing_keys = []
+    provided_keys = []
+    for required_key in required_keys:
+        if required_key not in item_dict.keys():
+            missing_keys.append(required_key)        
+        else:
+            provided_keys.append(required_key)
+    if len(missing_keys) > 0:
+        logger.error(f"Required keys are missing from item_dict.")
+        logger.error(f"provided_keys: {provided_keys}")
+        logger.error(f"missing_keys: {missing_keys}")
+        raise KeyError
