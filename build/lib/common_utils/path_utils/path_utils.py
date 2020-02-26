@@ -66,6 +66,9 @@ def truncate_path(path: str, degree: int) -> str:
 def rel_to_abs_path(rel_path: str) -> str:
     return os.path.abspath(rel_path)
 
+def get_abs_path(rel_path: str, ref_dir: str):
+    return os.path.normpath(f'{ref_dir}/{rel_path}')
+
 def get_all_files_of_extension(dir_path: str, extension: str=None) -> list:
     filepaths = get_pathlist(dir_path)
     if extension is not None:
