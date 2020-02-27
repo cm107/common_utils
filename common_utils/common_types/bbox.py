@@ -52,8 +52,38 @@ class BBox:
             ymax=float(self.ymax)
         )
 
-    def to_list(self) -> list:
-        return [self.xmin, self.ymin, self.xmax, self.ymax]
+    def to_list(self, output_format: str='pminpmax') -> list:
+        """
+        output_format options:
+            'pminpmax': [xmin, ymin, xmax, ymax]
+            'pminsize': [xmin, ymin, width, height]
+        """
+        check_value(output_format, valid_value_list=['pminpmax', 'pminsize'])
+        if output_format == 'pminpmax':
+            return [self.xmin, self.ymin, self.xmax, self.ymax]
+        elif output_format == 'pminsize':
+            bbox_h, bbox_w = self.shape()
+            return [self.xmin, self.ymin, bbox_w, bbox_h]
+        else:
+            raise Exception
+
+    @classmethod
+    def from_list(self, bbox: list, input_format: str='pminpmax') -> BBox:
+        """
+        input_format options:
+            'pminpmax': [xmin, ymin, xmax, ymax]
+            'pminsize': [xmin, ymin, width, height]
+        """
+        check_value(input_format, valid_value_list=['pminpmax', 'pminsize'])
+        if input_format == 'pminpmax':
+            xmin, ymin, xmax, ymax = bbox
+            return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
+        elif input_format == 'pminsize':
+            xmin, ymin, bbox_w, bbox_h = bbox
+            xmax, ymax = xmin + bbox_w, ymin + bbox_h
+            return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
+        else:
+            raise Exception
 
     def to_shapely(self) -> ShapelyPolygon:
         p0 = [self.xmin, self.ymin]
@@ -61,6 +91,48 @@ class BBox:
         p2 = [self.xmax, self.ymax]
         p3 = [self.xmin, self.ymax]
         return ShapelyPolygon([p0, p1, p2, p3])
+
+    @classmethod
+    def from_shapely(self, shapely_polygon: ShapelyPolygon) -> BBox:
+        vals_tuple = shapely_polygon.exterior.coords.xy
+        numpy_array = np.array(vals_tuple).T[:-1]
+        if numpy_array.shape != (4, 2):
+            logger.error(f"Expected shapely object of size (4, 2). Got {numpy_array.shape}")
+            raise Exception
+        xmin, ymin = numpy_array.min(axis=0)
+        xmax, ymax = numpy_array.max(axis=0)
+        return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
+
+    def to_imgaug(self) -> ImgAugBBox:
+        return ImgAugBBox(x1=self.xmin, y1=self.ymin, x2=self.xmax, y2=self.ymax)
+
+    @classmethod
+    def from_imgaug(cls, imgaug_bbox: ImgAugBBox) -> BBox:
+        return BBox(
+            xmin=imgaug_bbox.x1,
+            ymin=imgaug_bbox.y1,
+            xmax=imgaug_bbox.x2,
+            ymax=imgaug_bbox.y2
+        )
+
+    @classmethod
+    def from_p0p1(cls, p0p1: np.ndarray) -> BBox:
+        """
+        Parses from format np.ndarray([[x0, y0], [x1, y1]]), where
+        it is not known which values are min and max.
+        """
+        if type(p0p1) is list:
+            arr = np.array(p0p1)
+        elif type(p0p1) is np.ndarray:
+            arr = p0p1.copy()
+        else:
+            raise TypeError
+        if arr.shape != (2,2):
+            logger.error(f'arr.shape == {arr.shape} != (2,2)')
+            raise Exception
+        xmin, ymin = arr.min(axis=0)
+        xmax, ymax = arr.max(axis=0)
+        return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
 
     def area(self) -> float:
         return (self.xmax - self.xmin) * (self.ymax - self.ymin)
@@ -84,22 +156,6 @@ class BBox:
         """
         height, width = self.shape()
         return height / width
-
-    @classmethod
-    def from_list(self, bbox: list) -> BBox:
-        xmin, ymin, xmax, ymax = bbox
-        return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
-
-    @classmethod
-    def from_shapely(self, shapely_polygon: ShapelyPolygon) -> BBox:
-        vals_tuple = shapely_polygon.exterior.coords.xy
-        numpy_array = np.array(vals_tuple).T[:-1]
-        if numpy_array.shape != (4, 2):
-            logger.error(f"Expected shapely object of size (4, 2). Got {numpy_array.shape}")
-            raise Exception
-        xmin, ymin = numpy_array.min(axis=0)
-        xmax, ymax = numpy_array.max(axis=0)
-        return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
 
     def contains(self, obj) -> bool:
         return self.to_shapely().contains(obj.to_shapely())
@@ -202,37 +258,6 @@ class BBox:
         right_adjacent = True if self.xmax == frame_w - 1 else False
         bottom_adjacent = True if self.ymax == frame_h - 1 else False
         return left_adjacent, top_adjacent, right_adjacent, bottom_adjacent
-
-    def to_imgaug(self) -> ImgAugBBox:
-        return ImgAugBBox(x1=self.xmin, y1=self.ymin, x2=self.xmax, y2=self.ymax)
-
-    @classmethod
-    def from_imgaug(cls, imgaug_bbox: ImgAugBBox) -> BBox:
-        return BBox(
-            xmin=imgaug_bbox.x1,
-            ymin=imgaug_bbox.y1,
-            xmax=imgaug_bbox.x2,
-            ymax=imgaug_bbox.y2
-        )
-
-    @classmethod
-    def from_p0p1(cls, p0p1: np.ndarray) -> BBox:
-        """
-        Parses from format np.ndarray([[x0, y0], [x1, y1]]), where
-        it is not known which values are min and max.
-        """
-        if type(p0p1) is list:
-            arr = np.array(p0p1)
-        elif type(p0p1) is np.ndarray:
-            arr = p0p1.copy()
-        else:
-            raise TypeError
-        if arr.shape != (2,2):
-            logger.error(f'arr.shape == {arr.shape} != (2,2)')
-            raise Exception
-        xmin, ymin = arr.min(axis=0)
-        xmax, ymax = arr.max(axis=0)
-        return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
 
     def clip_at_bounds(self, frame_shape: list) -> BBox:
         frame_h, frame_w = frame_shape[:2]
