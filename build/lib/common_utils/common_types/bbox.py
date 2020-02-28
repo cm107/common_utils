@@ -9,6 +9,7 @@ from ..check_utils import check_type_from_list, check_value
 from ..utils import get_class_string
 from .common import Point, Interval
 from .constants import number_types
+from .point import Point2D_List
 
 class BBox:
     def __init__(self, xmin, ymin, xmax, ymax):
@@ -133,6 +134,13 @@ class BBox:
         xmin, ymin = arr.min(axis=0)
         xmax, ymax = arr.max(axis=0)
         return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
+
+    def to_point2d_list(self) -> Point2D_List:
+        return Point2D_List.from_list(self.to_list(output_format='pminpmax'))
+
+    @classmethod
+    def from_point2d_list(cls, point2d_list: Point2D_List) -> BBox:
+        return BBox.from_p0p1(p0p1=point2d_list.to_numpy(demarcation=True))
 
     def area(self) -> float:
         return (self.xmax - self.xmin) * (self.ymax - self.ymin)

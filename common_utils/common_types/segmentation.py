@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import List
 import numpy as np
 from shapely.geometry import Point as ShapelyPoint
 from shapely.geometry.polygon import Polygon as ShapelyPolygon
@@ -11,7 +12,7 @@ from .constants import number_types
 from ..check_utils import check_type, check_type_from_list
 from ..utils import get_class_string
 
-from .point import Point
+from .point import Point, Point2D_List
 from .bbox import BBox
 
 class Polygon:
@@ -228,6 +229,17 @@ class Polygon:
     def from_imgaug(cls, imgaug_polygon: ImgAugPolygon) -> Polygon:
         return Polygon.from_shapely(imgaug_polygon.to_shapely_polygon())
 
+    def to_point2d_list(self) -> Point2D_List:
+        return Point2D_List.from_list(self.to_list(demarcation=True))
+
+    @classmethod
+    def from_point2d_list(cls, point2d_list: Point2D_List) -> Polygon:
+        return Polygon.from_list(
+            points=point2d_list.to_list(demarcation=True),
+            dimensionality=2,
+            demarcation=True
+        )
+
 class Segmentation:
     def __init__(self, polygon_list: list):
         check_type(item=polygon_list, valid_type_list=[list])
@@ -331,8 +343,26 @@ class Segmentation:
     def within_bbox(self, bbox: BBox) -> list:
         return [polygon.within_bbox(bbox) for polygon in self.polygon_list]
 
-    def within(self, obj) -> list:
+    def within(self, obj) -> bool:
         check_type(item=obj, valid_type_list=[Polygon, BBox])
+        if type(obj) is BBox:
+            bbox_contains_seg = None
+            for polygon in self:
+                if len(polygon.to_list(demarcation=True)) < 3:
+                    continue
+                poly_in_bbox = obj.contains(polygon)
+                bbox_contains_seg = bbox_contains_seg and poly_in_bbox if bbox_contains_seg is not None else poly_in_bbox
+            bbox_contains_seg = bbox_contains_seg if bbox_contains_seg is not None else False
+            return bbox_contains_seg
+        elif type(obj) is Polygon:
+            poly_contains_seg = None
+            for polygon in self:
+                if len(polygon.to_list(demarcation=True)) < 3:
+                    continue
+                poly_in_poly = obj.contains(polygon)
+                poly_contains_seg = poly_contains_seg and poly_in_poly if poly_contains_seg is not None else poly_in_poly
+            poly_contains_seg = poly_contains_seg if poly_contains_seg is not None else False
+            return poly_contains_seg
         return [polygon.within() for polygon in self.polygon_list]
 
     def merge(self) -> Segmentation:
@@ -402,4 +432,13 @@ class Segmentation:
     def from_imgaug(cls, imgaug_polygons: ImgAugPolygons) -> Segmentation:
         return Segmentation(
             polygon_list=[Polygon.from_imgaug(imgaug_polygon) for imgaug_polygon in imgaug_polygons.polygons]
+        )
+
+    def to_point2d_list_list(self) -> List[Point2D_List]:
+        return [polygon.to_point2d_list() for polygon in self]
+
+    @classmethod
+    def from_point2d_list(cls, point2d_list_list: List[Point2D_List]) -> Segmentation:
+        return Segmentation(
+            polygon_list=[Polygon.from_point2d_list(point2d_list) for point2d_list in point2d_list_list]
         )
