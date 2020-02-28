@@ -267,7 +267,7 @@ class Segmentation:
         return self
 
     def __next__(self) -> Polygon:
-        if self.n < len(self.polygon_list) - 1:
+        if self.n < len(self.polygon_list):
             result = self.polygon_list[self.n]
             self.n += 1
             return result
