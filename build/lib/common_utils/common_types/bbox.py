@@ -136,7 +136,8 @@ class BBox:
         return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax)
 
     def to_point2d_list(self) -> Point2D_List:
-        return Point2D_List.from_list(self.to_list(output_format='pminpmax'))
+        arr = np.array(self.to_list(output_format='pminpmax'))
+        return Point2D_List.from_numpy(arr.reshape(2,2))
 
     @classmethod
     def from_point2d_list(cls, point2d_list: Point2D_List) -> BBox:
