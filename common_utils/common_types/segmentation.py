@@ -234,6 +234,7 @@ class Polygon:
 
     @classmethod
     def from_point2d_list(cls, point2d_list: Point2D_List) -> Polygon:
+        check_type(point2d_list, valid_type_list=[Point2D_List])
         return Polygon.from_list(
             points=point2d_list.to_list(demarcation=True),
             dimensionality=2,
@@ -438,7 +439,7 @@ class Segmentation:
         return [polygon.to_point2d_list() for polygon in self]
 
     @classmethod
-    def from_point2d_list(cls, point2d_list_list: List[Point2D_List]) -> Segmentation:
+    def from_point2d_list_list(cls, point2d_list_list: List[Point2D_List]) -> Segmentation:
         return Segmentation(
             polygon_list=[Polygon.from_point2d_list(point2d_list) for point2d_list in point2d_list_list]
         )

@@ -81,6 +81,16 @@ class Point2D:
             raise Exception
         return cls.from_list(arr.tolist())
 
+    def to_shapely(self) -> ShapelyPoint:
+        return ShapelyPoint(self.to_list())
+
+    @classmethod
+    def from_shapely(self, shapely_point: ShapelyPoint) -> Point2D:
+        return Point2D.from_list(coords=[list(val)[0] for val in shapely_point.coords.xy])
+
+    def within(self, obj) -> bool:
+        return self.to_shapely().within(obj.to_shapely())
+
 class Point2D_List:
     def __init__(self, point_list: List[Point2D]):
         check_type_from_list(point_list, valid_type_list=[Point2D])
@@ -132,6 +142,7 @@ class Point2D_List:
         if demarcation:
             if arr.shape[-1] != 2:
                 logger.error(f"arr.shape[-1] != 2")
+                logger.error(f'arr.shape: {arr.shape}')
                 raise Exception
             return Point2D_List(
                 point_list=[Point2D.from_numpy(arr_part) for arr_part in arr]
@@ -154,6 +165,21 @@ class Point2D_List:
     @classmethod
     def from_list(cls, value_list: list, demarcation: bool=True) -> Point2D_List:
         return cls.from_numpy(arr=np.array(value_list), demarcation=demarcation)
+
+    def to_shapely_list(self) -> List[ShapelyPoint]:
+        return [point.to_shapely() for point in self]
+
+    @classmethod
+    def from_shapely(self, shapely_point_list: List[ShapelyPoint]) -> Point2D_List:
+        return Point2D_List(point_list=[Point2D.from_shapely(shapely_point) for shapely_point in shapely_point_list])
+
+    def within(self, obj) -> bool:
+        if len(self) == 0:
+            return False
+        for point in self:
+            if not point.within(obj):
+                return False
+        return True
 
 class Point3D:
     def __init__(self, x: float, y: float, z: float):
