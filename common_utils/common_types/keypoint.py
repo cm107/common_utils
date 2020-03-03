@@ -77,9 +77,12 @@ class Keypoint3D:
         return cls.from_list(arr.tolist())
 
 class Keypoint2D_List:
-    def __init__(self, kpt_list: List[Keypoint2D]):
-        check_type_from_list(kpt_list, valid_type_list=[Keypoint2D])
-        self.kpt_list = kpt_list
+    def __init__(self, kpt_list: List[Keypoint2D]=None):
+        if kpt_list is not None:
+            check_type_from_list(kpt_list, valid_type_list=[Keypoint2D])
+            self.kpt_list = kpt_list
+        else:
+            self.kpt_list = []
 
     def __str__(self) -> str:
         return str(self.to_list(demarcation=False))
@@ -115,6 +118,10 @@ class Keypoint2D_List:
             return result
         else:
             raise StopIteration
+
+    def append(self, kpt: Keypoint2D):
+        check_type(kpt, valid_type_list=[Keypoint2D])
+        self.kpt_list.append(kpt)
 
     def to_numpy(self, demarcation: bool=False) -> np.ndarray:
         if demarcation:
@@ -163,9 +170,12 @@ class Keypoint2D_List:
         )
 
 class Keypoint3D_List:
-    def __init__(self, kpt_list: List[Keypoint3D]):
-        check_type_from_list(kpt_list, valid_type_list=[Keypoint3D])
-        self.kpt_list = kpt_list
+    def __init__(self, kpt_list: List[Keypoint3D]=None):
+        if kpt_list is not None:
+            check_type_from_list(kpt_list, valid_type_list=[Keypoint3D])
+            self.kpt_list = kpt_list
+        else:
+            self.kpt_list = []
 
     def __str__(self) -> str:
         return str(self.to_list(demarcation=False))
@@ -201,6 +211,10 @@ class Keypoint3D_List:
             return result
         else:
             raise StopIteration
+
+    def append(self, kpt: Keypoint3D):
+        check_type(kpt, valid_type_list=[Keypoint3D])
+        self.kpt_list.append(kpt)
 
     def to_numpy(self, demarcation: bool=False) -> np.ndarray:
         if demarcation:
