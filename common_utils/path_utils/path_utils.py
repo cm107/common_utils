@@ -128,6 +128,10 @@ def get_possible_rel_paths(path: str) -> List[str]:
     path_parts = path.split('/')
     return ['/'.join(path_parts[i:]) for i in range(len(path_parts))]
 
+def get_possible_container_dirs(path: str) -> List[str]:
+    path_parts = path.split('/')
+    return ['/'] + ['/'.join(path_parts[:i]) for i in range(2, len(path_parts))]
+
 def find_moved_abs_path(
     old_path: str, container_dir: str,
     get_first_match: bool=True
@@ -153,3 +157,25 @@ def find_moved_abs_path(
         print(error_str)
         raise Exception
     return new_path
+
+def find_longest_container_dir(path_list: List[str]) -> str:
+    for path in path_list:
+        if '/' not in path:
+            raise Exception(f"'/' not in {path}")
+    
+    possible_container_dirs_set_list = [set(get_possible_container_dirs(path)) for path in path_list]
+    common_container_dir_list = list(set.intersection(*possible_container_dirs_set_list))
+    if len(common_container_dir_list) > 0:
+        longest_idx, longest_str_len = None, None
+        for i, common_container_dir in enumerate(common_container_dir_list):
+            if longest_str_len is None or longest_str_len < len(common_container_dir):
+                longest_idx = i
+                longest_str_len = len(common_container_dir)
+        return common_container_dir_list[longest_idx]
+    else:
+        error_str = "Couldn't find any common container directories from the paths:"
+        for path in path_list:
+            error_str += f'\n\t{path}'
+        print(error_str)
+        raise Exception
+
