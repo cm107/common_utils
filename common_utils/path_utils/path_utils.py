@@ -1,3 +1,4 @@
+from typing import List
 import os, inspect, glob
 from ..file_utils import dir_exists
 
@@ -109,11 +110,10 @@ def get_next_dump_path(
     dump_dir: str, file_extension: str, label_length: int=6,
     starting_number: int=0, increment: int=1
     ):
-    img_paths = get_all_files_of_extension(dir_path=dump_dir, extension=file_extension)
-    img_paths.sort()
-    img_filenames = [get_filename(img_path) for img_path in img_paths]
+    file_paths = get_all_files_of_extension(dir_path=dump_dir, extension=file_extension)
+    file_paths.sort()
 
-    newest_filepath = img_paths[-1] if len(img_paths) > 0 else None
+    newest_filepath = file_paths[-1] if len(file_paths) > 0 else None
     next_label_number = \
         int(get_rootname_from_path(newest_filepath)) + increment \
             if newest_filepath is not None else starting_number
@@ -123,3 +123,33 @@ def get_next_dump_path(
     dump_filename = f'{next_label_str}.{file_extension}'
     dump_path = f'{dump_dir}/{dump_filename}'
     return dump_path
+
+def get_possible_rel_paths(path: str) -> List[str]:
+    path_parts = path.split('/')
+    return ['/'.join(path_parts[i:]) for i in range(len(path_parts))]
+
+def find_moved_abs_path(
+    old_path: str, container_dir: str,
+    get_first_match: bool=True
+) -> str:
+    container_dirname = container_dir.split('/')[-1]
+    new_path_list = []
+    for possible_path in get_possible_rel_paths(path=old_path):
+        if possible_path.split('/')[0] == container_dirname:
+            found_path = f"{container_dir}/{'/'.join(possible_path.split('/')[1:])}"
+            new_path_list.append(found_path)
+            if get_first_match:
+                break
+
+    if len(new_path_list) == 0:
+        new_path = None
+    elif len(new_path_list) == 1:
+        new_path = new_path_list[0]
+    else:
+        error_str = 'Found two possible matches with the given search criteria:'
+        for path in new_path_list:
+            error_str += f'\n\t{path}'
+        error_str += 'In order to avoid unexpected behavior, please modify container_dir to contain only the desired path.'
+        print(error_str)
+        raise Exception
+    return new_path
