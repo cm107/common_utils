@@ -242,15 +242,18 @@ class Polygon:
         )
 
 class Segmentation:
-    def __init__(self, polygon_list: list):
-        check_type(item=polygon_list, valid_type_list=[list])
-        check_type_from_list(item_list=polygon_list, valid_type_list=[Polygon])
-        for i, polygon in enumerate(polygon_list):
-            if polygon.dimensionality != 2:
-                logger.error(f"Found polygon of dimensionality {polygon.dimensionality} at index {i}")
-                logger.error(f"All polygons must be of dimensionality 2.")
-                raise Exception
-        self.polygon_list = polygon_list
+    def __init__(self, polygon_list: list=None):
+        if polygon_list is not None:
+            check_type(item=polygon_list, valid_type_list=[list])
+            check_type_from_list(item_list=polygon_list, valid_type_list=[Polygon])
+            for i, polygon in enumerate(polygon_list):
+                if polygon.dimensionality != 2:
+                    logger.error(f"Found polygon of dimensionality {polygon.dimensionality} at index {i}")
+                    logger.error(f"All polygons must be of dimensionality 2.")
+                    raise Exception
+            self.polygon_list = polygon_list
+        else:
+            self.polygon_list = []
 
     def __str__(self):
         return f"{get_class_string(self)}: {self.polygon_list}"
