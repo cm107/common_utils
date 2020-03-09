@@ -1,3 +1,4 @@
+from typing import List
 import cv2
 import numpy as np
 from ..common_types import Size
@@ -142,3 +143,35 @@ def concat_n_images_from_pathlist(img_pathlist: list, orientation: int=0):
         else:
             output = concat_images(output, img, orientation=orientation)
     return output
+
+def scale_to_max(img: np.ndarray, target_shape: List[int]) -> np.ndarray:
+    """
+    Scales an image to a given target_shape, where the image is fitted
+    to either the vertical borders or horizontal borders of the frame,
+    depending on the current shape of the image.
+    """
+    result = img.copy()
+    target_h, target_w = target_shape[:2]
+    img_h, img_w = img.shape[:2]
+    h_ratio, w_ratio = target_h / img_h, target_w / img_w
+    if abs(h_ratio - 1) <= abs(w_ratio - 1): # Fit height to max
+        fit_h, fit_w = int(target_h), int(img_w * h_ratio)
+    else: # Fit width to max
+        fit_h, fit_w = int(img_h * w_ratio), int(target_w)
+    result = cv2.resize(src=result, dsize=(fit_w, fit_h))
+    return result
+
+def pad_to_max(img: np.ndarray, target_shape: List[int]) -> np.ndarray:
+    """
+    Pads an image to a given target_shape.
+    The padded region is filled with [0, 0, 0] (Black)
+    """
+    target_h, target_w = target_shape[:2]
+    img_h, img_w = img.shape[:2]
+    if img_h > target_h or img_w > target_w:
+        logger.error(f"img.shape[:2]={img.shape[:2]} doesn't fit inside of target_shape[:2]={target_shape[:2]}")
+        raise Exception
+    dy, dx = int((target_h - img_h)/2), int((target_w - img_w)/2)
+    result = np.zeros([target_h, target_w, 3]).astype('uint8')
+    result[dy:dy+img_h, dx:dx+img_w, :] = img
+    return result
