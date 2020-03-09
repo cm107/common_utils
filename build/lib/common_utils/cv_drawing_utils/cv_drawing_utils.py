@@ -167,41 +167,42 @@ def draw_keypoints_labels(
 
     # Define BBox enclosing keypoints
     np_kpts = np.array(keypoints)
-    kpts_xmin, kpts_ymin = np.min(np_kpts, axis=0)
-    kpts_xmax, kpts_ymax = np.max(np_kpts, axis=0)
-    kpts_bbox = BBox(xmin=kpts_xmin, ymin=kpts_ymin, xmax=kpts_xmax, ymax=kpts_ymax)
-    bbox_h, bbox_w = kpts_bbox.shape()
-    
-    # Define target_textbox_w and initial font_scale guess.
-    target_textbox_w = 0.1 * bbox_w # Needs adjustment
-    font_scale = 1 * (target_textbox_w / 93)
+    if len(np_kpts) > 0:
+        kpts_xmin, kpts_ymin = np.min(np_kpts, axis=0)
+        kpts_xmax, kpts_ymax = np.max(np_kpts, axis=0)
+        kpts_bbox = BBox(xmin=kpts_xmin, ymin=kpts_ymin, xmax=kpts_xmax, ymax=kpts_ymax)
+        bbox_h, bbox_w = kpts_bbox.shape()
+        
+        # Define target_textbox_w and initial font_scale guess.
+        target_textbox_w = 0.1 * bbox_w # Needs adjustment
+        font_scale = 1 * (target_textbox_w / 93)
 
-    # Find max_size_label_idx
-    textbox_w, textbox_h = None, None
-    max_size_label_idx = None
-    for i, keypoint_label in enumerate(keypoint_labels):
-        [label_w, label_h], _ = cv2.getTextSize(text=keypoint_label, fontFace=font_face, fontScale=font_scale, thickness=thickness)
-        if textbox_w is None or label_w > textbox_w:
-            textbox_w, textbox_h = label_w, label_h
-            max_size_label_idx = i
+        # Find max_size_label_idx
+        textbox_w, textbox_h = None, None
+        max_size_label_idx = None
+        for i, keypoint_label in enumerate(keypoint_labels):
+            [label_w, label_h], _ = cv2.getTextSize(text=keypoint_label, fontFace=font_face, fontScale=font_scale, thickness=thickness)
+            if textbox_w is None or label_w > textbox_w:
+                textbox_w, textbox_h = label_w, label_h
+                max_size_label_idx = i
 
-    # Adjust to target_textbox_w
-    retry_count = 0
-    while abs(textbox_w - target_textbox_w) / target_textbox_w > 0.1 and retry_count < 3:
-        retry_count += 1
-        font_scale = font_scale * (target_textbox_w / textbox_w)
-        [textbox_w, textbox_h], _ = cv2.getTextSize(text=keypoint_labels[max_size_label_idx], fontFace=font_face, fontScale=font_scale, thickness=thickness)
-    
-    # Draw Label
-    for i, [[x, y], keypoint_label] in enumerate(zip(keypoints, keypoint_labels)):
-        if i not in ignore_kpt_idx:
-            textbox_org_x = int(x - 0.5 * textbox_w)
-            textbox_org_y = int(y - 0.5 * textbox_h)
-            textbox_org = (textbox_org_x, textbox_org_y)
-            cv2.putText(
-                img=result, text=keypoint_label, org=textbox_org, fontFace=font_face, fontScale=font_scale, color=color,
-                thickness=thickness, bottomLeftOrigin=False
-            )
+        # Adjust to target_textbox_w
+        retry_count = 0
+        while abs(textbox_w - target_textbox_w) / target_textbox_w > 0.1 and retry_count < 3:
+            retry_count += 1
+            font_scale = font_scale * (target_textbox_w / textbox_w)
+            [textbox_w, textbox_h], _ = cv2.getTextSize(text=keypoint_labels[max_size_label_idx], fontFace=font_face, fontScale=font_scale, thickness=thickness)
+        
+        # Draw Label
+        for i, [[x, y], keypoint_label] in enumerate(zip(keypoints, keypoint_labels)):
+            if i not in ignore_kpt_idx:
+                textbox_org_x = int(x - 0.5 * textbox_w)
+                textbox_org_y = int(y - 0.5 * textbox_h)
+                textbox_org = (textbox_org_x, textbox_org_y)
+                cv2.putText(
+                    img=result, text=keypoint_label, org=textbox_org, fontFace=font_face, fontScale=font_scale, color=color,
+                    thickness=thickness, bottomLeftOrigin=False
+                )
     return result
 
 def draw_keypoints(
@@ -244,34 +245,35 @@ def draw_skeleton(
     else:
         raise Exception
     result = img.copy()
-    color_list = [color] * len(keypoint_skeleton) if color_list is None else color_list
-    if len(color_list) != len(keypoint_skeleton):
-        logger.error(f"Length Mismatch: len(color_list) == {len(color_list)} != {len(keypoint_skeleton)} == len(keypoint_skeleton)")
-        raise Exception
-    flat_skeleton = np.array(keypoint_skeleton).reshape(-1)+index_offset
-    if np.any(flat_skeleton < 0):
-        logger.error(f'Found a negative index. Currently using index_offset={index_offset}')
-        min_idx = np.min(flat_skeleton)
-        logger.error(f'Minimum index found: {min_idx}')
-        logger.error(f'Please use index_offset={-min_idx+index_offset}')
-        raise IndexError
-    if np.any(flat_skeleton >= len(keypoints)):
-        logger.error(f'Found index that exceeds size of keypoint array ({len(keypoints)}). Currently using index_offset={index_offset}')
-        max_idx = np.max(flat_skeleton)
-        logger.error(f'Maximum index found: {max_idx}')
-        logger.error(f'Please use index_offset={-(max_idx-(len(keypoints)-1))+index_offset}')
-        raise IndexError
-    for [joint_start_index, joint_end_index], joint_color in zip(keypoint_skeleton, color_list):
-        if joint_start_index+index_offset not in ignore_kpt_idx and joint_end_index+index_offset not in ignore_kpt_idx:
-            line_start_x, line_start_y = kpts[joint_start_index+index_offset]
-            line_end_x, line_end_y = kpts[joint_end_index+index_offset]
-            cv2.line(
-                img=result,
-                pt1=(int(line_start_x), int(line_start_y)),
-                pt2=(int(line_end_x), int(line_end_y)),
-                color=joint_color,
-                thickness=thickness
-            )
+    if len(kpts) > 0:
+        color_list = [color] * len(keypoint_skeleton) if color_list is None else color_list
+        if len(color_list) != len(keypoint_skeleton):
+            logger.error(f"Length Mismatch: len(color_list) == {len(color_list)} != {len(keypoint_skeleton)} == len(keypoint_skeleton)")
+            raise Exception
+        flat_skeleton = np.array(keypoint_skeleton).reshape(-1)+index_offset
+        if np.any(flat_skeleton < 0):
+            logger.error(f'Found a negative index. Currently using index_offset={index_offset}')
+            min_idx = np.min(flat_skeleton)
+            logger.error(f'Minimum index found: {min_idx}')
+            logger.error(f'Please use index_offset={-min_idx+index_offset}')
+            raise IndexError
+        if np.any(flat_skeleton >= len(keypoints)):
+            logger.error(f'Found index that exceeds size of keypoint array ({len(keypoints)}). Currently using index_offset={index_offset}')
+            max_idx = np.max(flat_skeleton)
+            logger.error(f'Maximum index found: {max_idx}')
+            logger.error(f'Please use index_offset={-(max_idx-(len(keypoints)-1))+index_offset}')
+            raise IndexError
+        for [joint_start_index, joint_end_index], joint_color in zip(keypoint_skeleton, color_list):
+            if joint_start_index+index_offset not in ignore_kpt_idx and joint_end_index+index_offset not in ignore_kpt_idx:
+                line_start_x, line_start_y = kpts[joint_start_index+index_offset]
+                line_end_x, line_end_y = kpts[joint_end_index+index_offset]
+                cv2.line(
+                    img=result,
+                    pt1=(int(line_start_x), int(line_start_y)),
+                    pt2=(int(line_end_x), int(line_end_y)),
+                    color=joint_color,
+                    thickness=thickness
+                )
     return result
 
 def draw_bool_mask(
