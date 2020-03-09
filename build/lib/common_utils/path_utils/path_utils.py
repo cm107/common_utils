@@ -132,6 +132,9 @@ def get_possible_container_dirs(path: str) -> List[str]:
     path_parts = path.split('/')
     return ['/'] + ['/'.join(path_parts[:i]) for i in range(2, len(path_parts))]
 
+def recursively_get_all_filepaths_of_extension(dirpath: str, extension: str):
+    return [y for x in os.walk(dirpath) for y in glob.glob(os.path.join(x[0], f'*.{extension}'))]
+
 def find_moved_abs_path(
     old_path: str, container_dir: str,
     get_first_match: bool=True

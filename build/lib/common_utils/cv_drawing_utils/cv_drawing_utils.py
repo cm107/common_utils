@@ -248,6 +248,19 @@ def draw_skeleton(
     if len(color_list) != len(keypoint_skeleton):
         logger.error(f"Length Mismatch: len(color_list) == {len(color_list)} != {len(keypoint_skeleton)} == len(keypoint_skeleton)")
         raise Exception
+    flat_skeleton = np.array(keypoint_skeleton).reshape(-1)+index_offset
+    if np.any(flat_skeleton < 0):
+        logger.error(f'Found a negative index. Currently using index_offset={index_offset}')
+        min_idx = np.min(flat_skeleton)
+        logger.error(f'Minimum index found: {min_idx}')
+        logger.error(f'Please use index_offset={-min_idx+index_offset}')
+        raise IndexError
+    if np.any(flat_skeleton >= len(keypoints)):
+        logger.error(f'Found index that exceeds size of keypoint array ({len(keypoints)}). Currently using index_offset={index_offset}')
+        max_idx = np.max(flat_skeleton)
+        logger.error(f'Maximum index found: {max_idx}')
+        logger.error(f'Please use index_offset={-(max_idx-(len(keypoints)-1))+index_offset}')
+        raise IndexError
     for [joint_start_index, joint_end_index], joint_color in zip(keypoint_skeleton, color_list):
         if joint_start_index+index_offset not in ignore_kpt_idx and joint_end_index+index_offset not in ignore_kpt_idx:
             line_start_x, line_start_y = kpts[joint_start_index+index_offset]
