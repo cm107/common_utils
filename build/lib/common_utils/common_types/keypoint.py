@@ -20,6 +20,13 @@ class Keypoint2D:
     def __repr__(self) -> str:
         return self.__str__()
 
+    @classmethod
+    def buffer(self, kpt: Keypoint2D) -> Keypoint2D:
+        return kpt
+
+    def copy(self) -> Keypoint2D:
+        return Keypoint2D(point=self.point, visibility=self.visibility)
+
     def to_list(self) -> list:
         return self.point.to_list() + [self.visibility]
 
@@ -57,6 +64,13 @@ class Keypoint3D:
 
     def __repr__(self) -> str:
         return self.__str__()
+
+    @classmethod
+    def buffer(self, kpt: Keypoint3D) -> Keypoint3D:
+        return kpt
+
+    def copy(self) -> Keypoint3D:
+        return Keypoint3D(point=self.point, visibility=self.visibility)
 
     def to_list(self) -> list:
         return self.point.to_list() + [self.visibility]
@@ -118,6 +132,13 @@ class Keypoint2D_List:
             return result
         else:
             raise StopIteration
+
+    @classmethod
+    def buffer(self, kpt_list: Keypoint2D_List) -> Keypoint2D_List:
+        return kpt_list
+
+    def copy(self) -> Keypoint2D_List:
+        return Keypoint2D_List(kpt_list=self.kpt_list.copy())
 
     def append(self, kpt: Keypoint2D):
         check_type(kpt, valid_type_list=[Keypoint2D])
@@ -211,6 +232,13 @@ class Keypoint3D_List:
             return result
         else:
             raise StopIteration
+
+    @classmethod
+    def buffer(self, kpt_list: Keypoint3D_List) -> Keypoint3D_List:
+        return kpt_list
+
+    def copy(self) -> Keypoint3D_List:
+        return Keypoint3D_List(kpt_list=self.kpt_list.copy())
 
     def append(self, kpt: Keypoint3D):
         check_type(kpt, valid_type_list=[Keypoint3D])
