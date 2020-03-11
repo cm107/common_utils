@@ -25,6 +25,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
+        'Cython>=0.29.14',
         'opencv-python>=4.1.1.26',
         'numpy>=1.17.2',
         'requests>=2.22.0',
@@ -32,7 +33,8 @@ setup(
         'tqdm>=4.36.1',
         'scipy>=1.4.1',
         'imgaug>=0.3.0',
-        'logger @ https://github.com/cm107/logger/archive/master.zip#egg=logger-0.1'
+        'logger @ https://github.com/cm107/logger/archive/master.zip#egg=logger-0.1',
+        'streamer @ https://github.com/cm107/streamer/archive/master.zip#egg=streamer-0.1'
     ],
     python_requires='>=3.6'
 )
