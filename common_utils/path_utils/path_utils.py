@@ -182,3 +182,23 @@ def find_longest_container_dir(path_list: List[str]) -> str:
         print(error_str)
         raise Exception
 
+def find_shortest_common_rel_path(path_list: List[str]) -> str:
+    for path in path_list:
+        if '/' not in path:
+            raise Exception(f"'/' not in {path}")
+
+    possible_rel_paths_set_list = [set(get_possible_rel_paths(path)) for path in path_list]
+    common_rel_path_list = list(set.intersection(*possible_rel_paths_set_list))
+    if len(common_rel_path_list) > 0:
+        shortest_idx, shortest_str_len = None, None
+        for i, common_rel_path in enumerate(common_rel_path_list):
+            if shortest_str_len is None or shortest_str_len < len(common_rel_path):
+                shortest_idx = i
+                shortest_str_len = len(common_rel_path)
+        return common_rel_path_list[shortest_idx]
+    else:
+        error_str = "Couldn't find any common relative paths from the paths in path_list:"
+        for path in path_list:
+            error_str += f'\n\t{path}'
+        print(error_str)
+        raise Exception
