@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import List
 import numpy as np
+import cv2
 from shapely.geometry import Point as ShapelyPoint
 from shapely.geometry.polygon import Polygon as ShapelyPolygon
 from shapely.ops import cascaded_union
@@ -9,7 +10,7 @@ from imgaug.augmentables.polys import Polygon as ImgAugPolygon, PolygonsOnImage 
 from logger import logger
 
 from .constants import number_types
-from ..check_utils import check_type, check_type_from_list
+from ..check_utils import check_type, check_type_from_list, check_value
 from ..utils import get_class_string
 
 from .point import Point, Point2D_List
@@ -240,7 +241,7 @@ class Polygon:
             dimensionality=2,
             demarcation=True
         )
-
+    
 class Segmentation:
     def __init__(self, polygon_list: list=None):
         if polygon_list is not None:
@@ -302,54 +303,72 @@ class Segmentation:
         self.polygon_list.append(item)
 
     def to_int(self) -> Segmentation:
-        return Segmentation([polygon.to_int() for polygon in self.polygon_list])
+        return Segmentation([polygon.to_int() for polygon in self])
 
     def to_float(self) -> Segmentation:
-        return Segmentation([polygon.to_float() for polygon in self.polygon_list])
+        return Segmentation([polygon.to_float() for polygon in self])
 
     def to_list(self, demarcation: bool=False) -> list:
-        return [polygon.to_list(demarcation=demarcation) for polygon in self.polygon_list]
+        return [polygon.to_list(demarcation=demarcation) for polygon in self]
 
     def to_point_list(self) -> list:
-        return [polygon.to_point_list() for polygon in self.polygon_list]
+        return [polygon.to_point_list() for polygon in self]
 
     def to_shapely(self) -> list:
-        return [polygon.to_shapely() for polygon in self.polygon_list]
+        return [polygon.to_shapely() for polygon in self]
 
-    def to_contour(self) -> list:
-        return [polygon.to_contour() for polygon in self.polygon_list]
+    def to_contour(self) -> list: # combine?
+        return [polygon.to_contour() for polygon in self]
 
-    def to_bbox(self) -> list:
-        return [polygon.to_bbox() for polygon in self.polygon_list]
+    def to_bbox(self) -> BBox:
+        seg_bbox_list = [polygon.to_bbox() for polygon in self]
+        seg_bbox_xmin = min([seg_bbox.xmin for seg_bbox in seg_bbox_list])
+        seg_bbox_ymin = min([seg_bbox.ymin for seg_bbox in seg_bbox_list])
+        seg_bbox_xmax = max([seg_bbox.xmax for seg_bbox in seg_bbox_list])
+        seg_bbox_ymax = max([seg_bbox.ymax for seg_bbox in seg_bbox_list])
+        result_bbox = BBox(xmin=seg_bbox_xmin, ymin=seg_bbox_ymin, xmax=seg_bbox_xmax, ymax=seg_bbox_ymax)
+        return result_bbox
 
-    def area(self) -> list:
-        return [polygon.area() for polygon in self.polygon_list]
+    def area(self) -> float:
+        return sum([polygon.area() for polygon in self])
     
-    def centroid(self) -> list:
-        return [polygon.centroid() for polygon in self.polygon_list]
+    def centroid(self) -> Point:
+        poly_dim_valid = [polygon.dimensionality == 2 for polygon in self]
+        if False in poly_dim_valid:
+            logger.error(f'Found polygon of dimensionality != 2 in segmentation.')
+            logger.error(f'Dimensionalities found: {[polygon.dimensionality for polygon in self]}')
+            logger.error(f'Cannot calculate centroid.')
+            raise Exception
+        poly_c = [polygon.centroid() for polygon in self]
+        poly_a = [polygon.area() for polygon in self]
+        cxa = [c.coords[0] * a for c, a in zip(poly_c, poly_a)]
+        cya = [c.coords[1] * a for c, a in zip(poly_c, poly_a)]
+        sum_cxa, sum_cya, sum_a = sum(cxa), sum(cya), sum(poly_a)
+        calc_cx, calc_cy = sum_cxa / sum_a, sum_cya / sum_a
+        return Point(coords=[calc_cx, calc_cy])
 
-    def contains_point(self, point: Point) -> list:
-        return [polygon.contains_point() for polygon in self.polygon_list]
+    def contains_point(self, point: Point) -> bool:
+        return any([polygon.contains_point() for polygon in self])
 
-    def contains_polygon(self, polygon: Polygon) -> list:
-        return [polygon.contains_polygon() for polygon in self.polygon_list]
+    def contains_polygon(self, polygon: Polygon) -> bool:
+        return any([polygon.contains_polygon() for polygon in self])
 
-    def contains_bbox(self, bbox: BBox) -> list:
-        return [polygon.contains_bbox() for polygon in self.polygon_list]
+    def contains_bbox(self, bbox: BBox) -> bool:
+        return any([polygon.contains_bbox() for polygon in self])
 
-    def contains(self, obj) -> list:
+    def contains(self, obj) -> bool:
         check_type(item=obj, valid_type_list=[Point, Polygon, BBox])
-        return [polygon.contains() for polygon in self.polygon_list]
+        return any([polygon.contains() for polygon in self])
 
-    def within_polygon(self, polygon: Polygon) -> list:
-        return [polygon.within_polygon() for polygon in self.polygon_list]
+    def within_polygon(self, polygon: Polygon) -> bool:
+        return all([polygon.within_polygon() for polygon in self])
 
-    def within_bbox(self, bbox: BBox) -> list:
-        return [polygon.within_bbox(bbox) for polygon in self.polygon_list]
+    def within_bbox(self, bbox: BBox) -> bool:
+        return all([polygon.within_bbox(bbox) for polygon in self])
 
     def within(self, obj) -> bool:
         check_type(item=obj, valid_type_list=[Polygon, BBox])
-        if type(obj) is BBox:
+        if type(obj) is BBox: # necessary?
             bbox_contains_seg = None
             for polygon in self:
                 if len(polygon.to_list(demarcation=True)) < 3:
@@ -358,7 +377,7 @@ class Segmentation:
                 bbox_contains_seg = bbox_contains_seg and poly_in_bbox if bbox_contains_seg is not None else poly_in_bbox
             bbox_contains_seg = bbox_contains_seg if bbox_contains_seg is not None else False
             return bbox_contains_seg
-        elif type(obj) is Polygon:
+        elif type(obj) is Polygon: # necessary?
             poly_contains_seg = None
             for polygon in self:
                 if len(polygon.to_list(demarcation=True)) < 3:
@@ -367,7 +386,7 @@ class Segmentation:
                 poly_contains_seg = poly_contains_seg and poly_in_poly if poly_contains_seg is not None else poly_in_poly
             poly_contains_seg = poly_contains_seg if poly_contains_seg is not None else False
             return poly_contains_seg
-        return [polygon.within() for polygon in self.polygon_list]
+        return all([polygon.within(obj) for polygon in self])
 
     def merge(self) -> Segmentation:
         return Segmentation(
@@ -378,7 +397,7 @@ class Segmentation:
 
     def resize(self, orig_frame_shape: list, new_frame_shape: list) -> Segmentation:
         new_polygon_list = []
-        for polygon in self.polygon_list:
+        for polygon in self:
             polygon = Polygon.buffer(polygon)
             new_polygon = polygon.resize(
                 orig_frame_shape=orig_frame_shape, new_frame_shape=new_frame_shape
