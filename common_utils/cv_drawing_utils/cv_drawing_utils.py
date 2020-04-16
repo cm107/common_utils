@@ -293,9 +293,9 @@ def draw_segmentation(
 ):
     result = img.copy()
     if not transparent:
-        result = cv2.drawContours(image=result, contours=segmentation.to_contour(), contourIdx=0, color=color, thickness=-1)
+        result = cv2.drawContours(image=result, contours=segmentation.to_contour(), contourIdx=-1, color=color, thickness=-1)
     else:
         mask = np.zeros(img.shape[:2], np.uint8)
-        mask = cv2.drawContours(image=mask, contours=segmentation.to_contour(), contourIdx=0, color=(255, 255, 255), thickness=-1)
+        mask = cv2.drawContours(image=mask, contours=segmentation.to_contour(), contourIdx=-1, color=(255, 255, 255), thickness=-1)
         result = draw_mask_on_img(img=result, mask=mask, color=color, scale=255)
     return result
