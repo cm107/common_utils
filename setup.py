@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+import common_utils
 
 packages = find_packages(
         where='.',
@@ -9,8 +10,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name='common_utils',
-    version='0.1',
+    name='pyclay-common_utils',
+    version=common_utils.__version__,
     description='Common utilities for convenience.',
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -33,8 +34,8 @@ setup(
         'tqdm>=4.36.1',
         'scipy>=1.4.1',
         'imgaug>=0.3.0',
-        'logger @ https://github.com/cm107/logger/archive/master.zip#egg=logger-0.1',
-        'streamer @ https://github.com/cm107/streamer/archive/master.zip#egg=streamer-0.1'
+        'pyclay-logger @ https://github.com/cm107/logger/archive/master.zip',
+        'pyclay-streamer @ https://github.com/cm107/streamer/archive/master.zip'
     ],
     python_requires='>=3.6'
 )
