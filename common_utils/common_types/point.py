@@ -9,6 +9,8 @@ from .constants import number_types
 from ..check_utils import check_type, check_type_from_list, check_list_length
 from ..utils import get_class_string
 
+# TODO: Create a base class for Point2D, Point3D, Point2D_List, Point3D_List
+
 class Point:
     def __init__(self, coords: list):
         check_type(item=coords, valid_type_list=[list])
@@ -23,7 +25,7 @@ class Point:
         return self.__str__()
 
     @classmethod
-    def buffer(self, point: Point) -> Point:
+    def buffer(cls, point: Point) -> Point:
         return point
 
     def copy(self) -> Point:
@@ -42,11 +44,11 @@ class Point:
         return ShapelyPoint(self.to_list())
 
     @classmethod
-    def from_list(self, coords: list) -> Point:
+    def from_list(cls, coords: list) -> Point:
         return Point(coords=coords)
 
     @classmethod
-    def from_shapely(self, shapely_point: ShapelyPoint) -> Point:
+    def from_shapely(cls, shapely_point: ShapelyPoint) -> Point:
         return Point(coords=[list(val)[0] for val in shapely_point.coords.xy])
 
     def within(self, obj) -> bool:
@@ -85,7 +87,7 @@ class Point2D:
         return ShapelyPoint(self.to_list())
 
     @classmethod
-    def from_shapely(self, shapely_point: ShapelyPoint) -> Point2D:
+    def from_shapely(cls, shapely_point: ShapelyPoint) -> Point2D:
         return Point2D.from_list(coords=[list(val)[0] for val in shapely_point.coords.xy])
 
     def within(self, obj) -> bool:
@@ -170,7 +172,7 @@ class Point2D_List:
         return [point.to_shapely() for point in self]
 
     @classmethod
-    def from_shapely(self, shapely_point_list: List[ShapelyPoint]) -> Point2D_List:
+    def from_shapely(cls, shapely_point_list: List[ShapelyPoint]) -> Point2D_List:
         return Point2D_List(point_list=[Point2D.from_shapely(shapely_point) for shapely_point in shapely_point_list])
 
     def within(self, obj) -> bool:
@@ -200,3 +202,88 @@ class Point3D:
     def from_list(cls, coords: list) -> Point3D:
         check_list_length(coords, correct_length=3)
         return Point3D(x=coords[0], y=coords[1], z=coords[2])
+
+    def to_numpy(self) -> np.ndarray:
+        return np.array(self.to_list())
+
+    @classmethod
+    def from_numpy(cls, arr: np.ndarray) -> Point3D:
+        if arr.shape != (3,):
+            logger.error(f'Expected shape: (3,), got {arr.shape} instead.')
+            raise Exception
+        return cls.from_list(arr.tolist())
+
+class Point3D_List:
+    def __init__(self, point_list: List[Point3D]):
+        check_type_from_list(point_list, valid_type_list=[Point3D])
+        self.point_list = point_list
+
+    def __str__(self) -> str:
+        return str(self.to_list(demarcation=True))
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
+    def __len__(self) -> int:
+        return len(self.point_list)
+
+    def __getitem__(self, idx: int) -> Point3D:
+        if len(self.point_list) == 0:
+            logger.error(f"Point3D_List is empty.")
+            raise IndexError
+        elif idx < 0 or idx >= len(self.point_list):
+            logger.error(f"Index out of range: {idx}")
+            raise IndexError
+        else:
+            return self.point_list[idx]
+
+    def __setitem__(self, idx: int, value: Point3D):
+        check_type(value, valid_type_list=[Point3D])
+        self.point_list[idx] = value
+
+    def __iter__(self):
+        self.n = 0
+        return self
+
+    def __next__(self) -> Point3D:
+        if self.n < len(self.point_list):
+            result = self.point_list[self.n]
+            self.n += 1
+            return result
+        else:
+            raise StopIteration
+
+    def to_numpy(self, demarcation: bool=True) -> np.ndarray:
+        if demarcation:
+            return np.array([point.to_list() for point in self])
+        else:
+            return np.array([point.to_list() for point in self]).reshape(-1)
+
+    @classmethod
+    def from_numpy(cls, arr: np.ndarray, demarcation: bool=True) -> Point3D_List:
+        if demarcation:
+            if arr.shape[-1] != 3:
+                logger.error(f"arr.shape[-1] != 3")
+                logger.error(f'arr.shape: {arr.shape}')
+                raise Exception
+            return Point3D_List(
+                point_list=[Point3D.from_numpy(arr_part) for arr_part in arr]
+            )
+        else:
+            if len(arr.shape) != 1:
+                logger.error(f"Expecting flat array when demarcation=False")
+                logger.error(f"arr.shape: {arr.shape}")
+                raise Exception
+            elif arr.shape[0] % 3 != 0:
+                logger.error(f"arr.shape[0] % 3 == {arr.shape[0]} % 3 == {arr.shape[0] % 3} != 0")
+                raise Exception
+            return Point3D_List(
+                point_list=[Point3D.from_numpy(arr_part) for arr_part in arr.reshape(-1, 3)]
+            )
+
+    def to_list(self, demarcation: bool=True) -> list:
+        return self.to_numpy(demarcation=demarcation).tolist()
+
+    @classmethod
+    def from_list(cls, value_list: list, demarcation: bool=True) -> Point3D_List:
+        return cls.from_numpy(arr=np.array(value_list), demarcation=demarcation)
