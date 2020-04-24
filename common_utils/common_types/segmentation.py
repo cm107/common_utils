@@ -9,7 +9,7 @@ from imgaug.augmentables.polys import Polygon as ImgAugPolygon, PolygonsOnImage 
 
 from logger import logger
 
-from .constants import number_types
+from ..constants import number_types
 from ..check_utils import check_type, check_type_from_list, check_value
 from ..utils import get_class_string
 

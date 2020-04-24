@@ -7,7 +7,7 @@ from logger import logger
 from ..common_types import Point, Size
 from ..common_types.bbox import BBox
 from ..common_types.segmentation import Segmentation
-from ..color_constants import Color
+from ..constants import Color
 from ..check_utils import check_type_from_list, check_type
 from ..image_utils import resize_img
 

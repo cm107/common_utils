@@ -1,7 +1,7 @@
 from __future__ import annotations
 import math
-from common_utils.check_utils import check_type_from_list
-from common_utils.common_types.constants import number_types
+from ..check_utils import check_type_from_list
+from ..constants import number_types
 from scipy.spatial.transform import Rotation
 
 class EulerAngle:

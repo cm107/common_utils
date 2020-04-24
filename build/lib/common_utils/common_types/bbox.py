@@ -8,7 +8,7 @@ from logger import logger
 from ..check_utils import check_type_from_list, check_value
 from ..utils import get_class_string
 from .common import Point, Interval
-from .constants import number_types
+from ..constants import number_types
 from .point import Point2D_List
 
 class BBox:

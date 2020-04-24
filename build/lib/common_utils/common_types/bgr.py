@@ -1,7 +1,7 @@
 from __future__ import annotations
 from logger import logger
 from .common import Interval
-from .constants import int_types
+from ..constants import int_types
 from ..check_utils import check_value, check_type, check_type_from_list
 
 class BGR:

@@ -1,6 +1,7 @@
 from typing import List
 import os, inspect, glob
 from ..file_utils import dir_exists
+from ..constants import opencv_compatible_img_extensions
 
 def get_script_path() -> str:
     caller_script_path = os.path.abspath((inspect.stack()[1])[1])
@@ -202,3 +203,11 @@ def find_shortest_common_rel_path(path_list: List[str]) -> str:
             error_str += f'\n\t{path}'
         print(error_str)
         raise Exception
+
+def has_valid_img_extension(img_path: str) -> bool:
+    img_extension = get_extension_from_path(img_path)
+    return img_extension in opencv_compatible_img_extensions
+
+def get_valid_image_paths(dir_path: str) -> List[str]:
+    paths = get_pathlist(dir_path)
+    return [path for path in paths if has_valid_img_extension(path)]

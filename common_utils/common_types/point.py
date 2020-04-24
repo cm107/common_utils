@@ -5,7 +5,7 @@ from shapely.geometry import Point as ShapelyPoint
 
 from logger import logger
 
-from .constants import number_types
+from ..constants import number_types
 from ..check_utils import check_type, check_type_from_list, check_list_length
 from ..utils import get_class_string
 

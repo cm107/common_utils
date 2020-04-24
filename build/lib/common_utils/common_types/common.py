@@ -4,7 +4,7 @@ from collections import namedtuple
 from logger import logger
 from ..check_utils import check_type, check_type_from_list, check_list_length, check_value
 from math import pi, asin, tan
-from .constants import number_types, int_types, float_types
+from ..constants import number_types, int_types, float_types
 from shapely.geometry import Point as ShapelyPoint
 
 Keypoint = namedtuple('Keypoint', ['x', 'y', 'v'])
