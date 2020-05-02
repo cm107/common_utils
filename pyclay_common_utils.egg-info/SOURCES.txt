@@ -28,6 +28,9 @@ common_utils/cv_drawing_utils/cv_drawing_utils.py
 common_utils/cv_drawing_utils/cv_viewer.py
 common_utils/download_utils/__init__.py
 common_utils/download_utils/download_utils.py
+common_utils/error_utils/__init__.py
+common_utils/error_utils/decorators/__init__.py
+common_utils/error_utils/decorators/bypass.py
 common_utils/file_utils/__init__.py
 common_utils/file_utils/file_utils.py
 common_utils/image_utils/__init__.py
