@@ -31,7 +31,7 @@ def get_parent_dir(path: str) -> str:
     return path.split('/')[-2]
 
 def get_rootname_from_filename(filename: str) -> str:
-    return filename.split('.')[0]
+    return '.'.join(filename.split('.')[:-1])
 
 def get_rootname_from_path(path: str) -> str:
     filename = get_filename(path)
