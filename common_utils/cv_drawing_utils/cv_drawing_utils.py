@@ -80,11 +80,19 @@ def draw_bbox_text(img: np.ndarray, bbox: BBox, text: str, color: list=[0, 255, 
     font_scale = 1 * (target_textbox_w / 93)
 
     [textbox_w, textbox_h], _ = cv2.getTextSize(text=text, fontFace=font_face, fontScale=font_scale, thickness=thickness)
+
+    # Prevent Divide By Zero Errors
+    target_textbox_w = target_textbox_w if target_textbox_w > 1 else 1
+    textbox_w = textbox_w if textbox_w > 1 else 1
+    textbox_h = textbox_h if textbox_h > 1 else 1
+
     retry_count = 0
     while abs(textbox_w - target_textbox_w) / target_textbox_w > 0.1 and retry_count < 3:
         retry_count += 1
         font_scale = font_scale * (target_textbox_w / textbox_w)
         [textbox_w, textbox_h], _ = cv2.getTextSize(text=text, fontFace=font_face, fontScale=font_scale, thickness=thickness)
+        textbox_w = textbox_w if textbox_w > 1 else 1
+        textbox_h = textbox_h if textbox_h > 1 else 1
     textbox_org_x = int(0.5 * (target_textbox_w - textbox_w) + bbox.xmin)
     textbox_org_y = int(bbox.ymin - 0.3 * textbox_h)
     textbox_org = (textbox_org_x, textbox_org_y)
@@ -98,16 +106,27 @@ def draw_text_inside_bbox(img: np.ndarray, bbox: BBox, text: str, color: list=[0
     font_scale = 1 * (target_textbox_w / 93)
 
     [textbox_w, textbox_h], _ = cv2.getTextSize(text=text, fontFace=font_face, fontScale=font_scale, thickness=thickness)
+
+    # Prevent Divide By Zero Errors
+    target_textbox_w = target_textbox_w if target_textbox_w > 1 else 1
+    textbox_w = textbox_w if textbox_w > 1 else 1
+    textbox_h = textbox_h if textbox_h > 1 else 1
+
     retry_count = 0
     while abs(textbox_w - target_textbox_w) / target_textbox_w > 0.1 and retry_count < 3:
         retry_count += 1
         font_scale = font_scale * (target_textbox_w / textbox_w)
         [textbox_w, textbox_h], _ = cv2.getTextSize(text=text, fontFace=font_face, fontScale=font_scale, thickness=thickness)
+        textbox_w = textbox_w if textbox_w > 1 else 1
+        textbox_h = textbox_h if textbox_h > 1 else 1
+
     height_adjustment_count = 0
     while textbox_h >= bbox_h and height_adjustment_count < 3:
         height_adjustment_count += 1
         font_scale = font_scale * (bbox_h / textbox_h)
         [textbox_w, textbox_h], _ = cv2.getTextSize(text=text, fontFace=font_face, fontScale=font_scale, thickness=thickness)
+        textbox_w = textbox_w if textbox_w > 1 else 1
+        textbox_h = textbox_h if textbox_h > 1 else 1
 
     textbox_org_x = int(0.5 * (target_textbox_w - textbox_w) + bbox.xmin)
     textbox_org_y = int(bbox.ymin + 0.5 * (bbox_h + textbox_h))
@@ -124,10 +143,18 @@ def draw_text_at_point(
     font_scale = 1 * (target_text_h / 10)
     [textbox_w, textbox_h], _ = cv2.getTextSize(text=text, fontFace=font_face, fontScale=font_scale, thickness=thickness)
     retry_count = 0
+
+    # Prevent Divide By Zero Errors
+    target_text_h = target_text_h if target_text_h > 1 else 1
+    textbox_w = textbox_w if textbox_w > 1 else 1
+    textbox_h = textbox_h if textbox_h > 1 else 1
+
     while abs(textbox_h - target_text_h) / target_text_h > 0.1 and textbox_h >= target_text_h and retry_count < 3:
         retry_count += 1
         font_scale = font_scale * (target_text_h / textbox_h)
         [textbox_w, textbox_h], _ = cv2.getTextSize(text=text, fontFace=font_face, fontScale=font_scale, thickness=thickness)
+        textbox_w = textbox_w if textbox_w > 1 else 1
+        textbox_h = textbox_h if textbox_h > 1 else 1
     textbox_org_x = int(x)
     textbox_org_y = int(y + textbox_h + 0.5 * leeway * target_height)
     textbox_org = (textbox_org_x, textbox_org_y)
@@ -186,13 +213,19 @@ def draw_keypoints_labels(
                 textbox_w, textbox_h = label_w, label_h
                 max_size_label_idx = i
 
+        # Prevent Divide By Zero Errors
+        target_textbox_w = target_textbox_w if target_textbox_w > 1 else 1
+        textbox_w = textbox_w if textbox_w > 1 else 1
+
         # Adjust to target_textbox_w
         retry_count = 0
         while abs(textbox_w - target_textbox_w) / target_textbox_w > 0.1 and retry_count < 3:
             retry_count += 1
             font_scale = font_scale * (target_textbox_w / textbox_w)
             [textbox_w, textbox_h], _ = cv2.getTextSize(text=keypoint_labels[max_size_label_idx], fontFace=font_face, fontScale=font_scale, thickness=thickness)
-        
+            textbox_w = textbox_w if textbox_w > 1 else 1
+            textbox_h = textbox_h if textbox_h > 1 else 1
+
         # Draw Label
         for i, [[x, y], keypoint_label] in enumerate(zip(keypoints, keypoint_labels)):
             if i not in ignore_kpt_idx:
