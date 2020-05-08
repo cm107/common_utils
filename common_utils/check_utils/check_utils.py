@@ -9,6 +9,7 @@ def check_type(item, valid_type_list: list):
         raise TypeError
 
 def check_type_from_list(item_list: list, valid_type_list: list):
+    check_type(item_list, valid_type_list=[list])
     for item in item_list:
         check_type(item=item, valid_type_list=valid_type_list)
 

@@ -326,7 +326,7 @@ class Segmentation:
         seg_bbox_ymin = min([seg_bbox.ymin for seg_bbox in seg_bbox_list])
         seg_bbox_xmax = max([seg_bbox.xmax for seg_bbox in seg_bbox_list])
         seg_bbox_ymax = max([seg_bbox.ymax for seg_bbox in seg_bbox_list])
-        result_bbox = BBox(xmin=seg_bbox_xmin, ymin=seg_bbox_ymin, xmax=seg_bbox_xmax, ymax=seg_bbox_ymax)
+        result_bbox = BBox(xmin=seg_bbox_xmin, ymin=seg_bbox_ymin, xmax=seg_bbox_xmax, ymax=seg_bbox_ymax).to_float()
         return result_bbox
 
     def area(self) -> float:

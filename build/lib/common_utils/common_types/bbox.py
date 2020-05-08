@@ -144,7 +144,7 @@ class BBox:
         return BBox.from_p0p1(p0p1=point2d_list.to_numpy(demarcation=True))
 
     def area(self) -> float:
-        return (self.xmax - self.xmin) * (self.ymax - self.ymin)
+        return float((self.xmax - self.xmin) * (self.ymax - self.ymin))
 
     def shape(self) -> list:
         """
