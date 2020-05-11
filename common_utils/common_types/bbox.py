@@ -25,6 +25,13 @@ class BBox:
     def __repr__(self):
         return self.__str__()
 
+    def __add__(self, other: BBox) -> BBox:
+        xmin = min(self.xmin, other.xmin)
+        ymin = min(self.ymin, other.ymin)
+        xmax = max(self.xmax, other.xmax)
+        ymax = max(self.ymax, other.ymax)
+        return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax).to_float()
+
     @classmethod
     def buffer(self, bbox: BBox) -> BBox:
         return bbox

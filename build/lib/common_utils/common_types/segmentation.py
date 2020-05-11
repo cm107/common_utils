@@ -291,6 +291,18 @@ class Segmentation:
         else:
             raise StopIteration
 
+    def __add__(self, other: Segmentation) -> Segmentation:
+        # TODO: Figure out why this error is thrown upon the below check.
+        # "ValueError: A LinearRing must have at least 3 coordinate tuples "
+
+        # for poly in self:
+        #     if other.contains(poly):
+        #         logger.error(f'Cannot add two segmentations that overlap.')
+        #         raise Exception
+
+        # TODO: Figure out how to merge polygons properly.
+        return Segmentation(self.polygon_list + other.polygon_list)
+
     @classmethod
     def buffer(self, segmentation: Segmentation) -> Segmentation:
         return segmentation
@@ -358,7 +370,7 @@ class Segmentation:
 
     def contains(self, obj) -> bool:
         check_type(item=obj, valid_type_list=[Point, Polygon, BBox])
-        return any([polygon.contains() for polygon in self])
+        return any([polygon.contains(obj) for polygon in self])
 
     def within_polygon(self, polygon: Polygon) -> bool:
         return all([polygon.within_polygon() for polygon in self])
