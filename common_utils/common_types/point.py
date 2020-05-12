@@ -65,6 +65,44 @@ class Point2D:
     def __repr__(self):
         return self.__str__()
 
+    def __add__(self, other) -> Point2D:
+        if isinstance(other, Point2D):
+            return Point2D(x=self.x+other.x, y=self.y+other.y)
+        elif isinstance(other, (int, float)):
+            return Point2D(x=self.x+other, y=self.y+other)
+        else:
+            logger.error(f'Cannot add {type(other)} to Point2D')
+            raise TypeError
+    
+    def __sub__(self, other) -> Point2D:
+        if isinstance(other, Point2D):
+            return Point2D(x=self.x-other.x, y=self.y-other.y)
+        elif isinstance(other, (int, float)):
+            return Point2D(x=self.x-other, y=self.y-other)
+        else:
+            logger.error(f'Cannot subtract {type(other)} from Point2D')
+            raise TypeError
+    
+    def __mul__(self, other) -> Point2D:
+        if isinstance(other, (int, float)):
+            return Point2D(x=self.x*other, y=self.y*other)
+        else:
+            logger.error(f'Cannot multiply {type(other)} with Point2D')
+            raise TypeError
+
+    def __truediv__(self, other) -> Point2D:
+        if isinstance(other, (int, float)):
+            return Point2D(x=self.x/other, y=self.y/other)
+        else:
+            logger.error(f'Cannot divide {type(other)} from Point2D')
+            raise TypeError
+    
+    def __eq__(self, other: Point2D) -> bool:
+        if isinstance(other, Point2D):
+            return self.x == other.x and self.y == other.y
+        else:
+            return NotImplemented
+
     def to_list(self) -> list:
         return [self.x, self.y]
 
@@ -92,6 +130,10 @@ class Point2D:
 
     def within(self, obj) -> bool:
         return self.to_shapely().within(obj.to_shapely())
+    
+    @classmethod
+    def origin(cls, x: float=0.0, y: float=0.0) -> Point2D:
+        return Point2D(x=x, y=y)
 
 class Point2D_List:
     def __init__(self, point_list: List[Point2D]):
@@ -194,6 +236,44 @@ class Point3D:
 
     def __repr__(self):
         return self.__str__()
+    
+    def __add__(self, other) -> Point3D:
+        if isinstance(other, Point3D):
+            return Point3D(x=self.x+other.x, y=self.y+other.y, z=self.z+other.z)
+        elif isinstance(other, (int, float)):
+            return Point3D(x=self.x+other, y=self.y+other, z=self.z+other)
+        else:
+            logger.error(f'Cannot add {type(other)} to Point3D')
+            raise TypeError
+    
+    def __sub__(self, other) -> Point3D:
+        if isinstance(other, Point3D):
+            return Point3D(x=self.x-other.x, y=self.y-other.y, z=self.z-other.z)
+        elif isinstance(other, (int, float)):
+            return Point3D(x=self.x-other, y=self.y-other, z=self.z-other)
+        else:
+            logger.error(f'Cannot subtract {type(other)} from Point3D')
+            raise TypeError
+    
+    def __mul__(self, other) -> Point3D:
+        if isinstance(other, (int, float)):
+            return Point3D(x=self.x*other, y=self.y*other, z=self.z*other)
+        else:
+            logger.error(f'Cannot multiply {type(other)} with Point3D')
+            raise TypeError
+
+    def __truediv__(self, other) -> Point3D:
+        if isinstance(other, (int, float)):
+            return Point3D(x=self.x/other, y=self.y/other, z=self.z/other)
+        else:
+            logger.error(f'Cannot divide {type(other)} from Point3D')
+            raise TypeError
+
+    def __eq__(self, other: Point3D) -> bool:
+        if isinstance(other, Point3D):
+            return self.x == other.x and self.y == other.y and self.z == other.z
+        else:
+            return NotImplemented
 
     def to_list(self) -> list:
         return [self.x, self.y, self.z]
@@ -212,6 +292,10 @@ class Point3D:
             logger.error(f'Expected shape: (3,), got {arr.shape} instead.')
             raise Exception
         return cls.from_list(arr.tolist())
+
+    @classmethod
+    def origin(cls, x: float=0.0, y: float=0.0, z: float=0.0) -> Point3D:
+        return Point3D(x=x, y=y, z=z)
 
 class Point3D_List:
     def __init__(self, point_list: List[Point3D]):

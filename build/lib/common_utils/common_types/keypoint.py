@@ -52,6 +52,10 @@ class Keypoint2D:
     def from_imgaug(cls, imgaug_kpt: ImgAug_Keypoint, visibility: int=2) -> Keypoint2D:
         return Keypoint2D(point=Point2D(x=imgaug_kpt.x, y=imgaug_kpt.y), visibility=visibility)
 
+    @classmethod
+    def origin(cls, x: float=0.0, y: float=0.0, v: int=0) -> Keypoint2D:
+        return Keypoint2D(point=Point2D(x=x, y=y), visibility=v)
+
 class Keypoint3D:
     def __init__(self, point: Point3D, visibility: int):
         check_type(point, valid_type_list=[Point3D])
@@ -89,6 +93,10 @@ class Keypoint3D:
     @classmethod
     def from_numpy(cls, arr: np.ndarray) -> Keypoint3D:
         return cls.from_list(arr.tolist())
+
+    @classmethod
+    def origin(cls, x: float=0.0, y: float=0.0, z: float=0.0, v: int=0) -> Keypoint3D:
+        return Keypoint3D(point=Point3D(x=x, y=y, z=z), visibility=v)
 
 class Keypoint2D_List:
     def __init__(self, kpt_list: List[Keypoint2D]=None):
