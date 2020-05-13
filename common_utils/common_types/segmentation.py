@@ -13,7 +13,8 @@ from ..constants import number_types
 from ..check_utils import check_type, check_type_from_list, check_value
 from ..utils import get_class_string
 
-from .point import Point, Point2D_List
+from .point import Point, Point2D_List, Point3D_List, Point2D, Point3D
+from .keypoint import Keypoint2D, Keypoint3D
 from .bbox import BBox
 
 class Polygon:
@@ -33,6 +34,71 @@ class Polygon:
 
     def __repr__(self):
         return self.__str__()
+
+    def __add__(self, other) -> Polygon:
+        if isinstance(other, Point2D) and self.dimensionality == 2:
+            return Polygon.from_point2d_list(point2d_list=Point2D_List([point+other for point in self.to_point2d_list()]))
+        elif isinstance(other, Keypoint2D) and self.dimensionality == 2:
+            return Polygon.from_point2d_list(point2d_list=Point2D_List([point+other.point for point in self.to_point2d_list()]))
+        elif isinstance(other, Point3D) and self.dimensionality == 3:
+            return Polygon.from_point3d_list(point3d_list=Point3D_List([point+other for point in self.to_point3d_list()]))
+        elif isinstance(other, Keypoint3D) and self.dimensionality == 3:
+            return Polygon.from_point3d_list(point3d_list=Point3D_List([point+other.point for point in self.to_point3d_list()]))
+        elif isinstance(other, (int, float)):
+            return Polygon.from_list(
+                points=[val+other for val in self.to_list(demarcation=False)],
+                dimensionality=self.dimensionality, demarcation=False
+            )
+        else:
+            logger.error(f'Cannot add {type(other)} to Polygon')
+            raise TypeError
+
+    def __sub__(self, other) -> Polygon:
+        if isinstance(other, Point2D) and self.dimensionality == 2:
+            return Polygon.from_point2d_list(point2d_list=Point2D_List([point-other for point in self.to_point2d_list()]))
+        elif isinstance(other, Keypoint2D) and self.dimensionality == 2:
+            return Polygon.from_point2d_list(point2d_list=Point2D_List([point-other.point for point in self.to_point2d_list()]))
+        elif isinstance(other, Point3D) and self.dimensionality == 3:
+            return Polygon.from_point3d_list(point3d_list=Point3D_List([point-other for point in self.to_point3d_list()]))
+        elif isinstance(other, Keypoint3D) and self.dimensionality == 3:
+            return Polygon.from_point3d_list(point3d_list=Point3D_List([point-other.point for point in self.to_point3d_list()]))
+        elif isinstance(other, (int, float)):
+            return Polygon.from_list(
+                points=[val-other for val in self.to_list(demarcation=False)],
+                dimensionality=self.dimensionality, demarcation=False
+            )
+        else:
+            logger.error(f'Cannot subtract {type(other)} from Polygon')
+            raise TypeError
+
+    
+    def __mul__(self, other) -> Polygon:
+        if isinstance(other, (int, float)):
+            return Polygon.from_list(
+                points=[val*other for val in self.to_list(demarcation=False)],
+                dimensionality=self.dimensionality, demarcation=False
+            )
+        else:
+            logger.error(f'Cannot multiply {type(other)} with Polygon')
+            raise TypeError
+
+    def __truediv__(self, other) -> Polygon:
+        if isinstance(other, (int, float)):
+            return Polygon.from_list(
+                points=[val/other for val in self.to_list(demarcation=False)],
+                dimensionality=self.dimensionality, demarcation=False
+            )
+        else:
+            logger.error(f'Cannot divide {type(other)} from Polygon')
+            raise TypeError
+
+    def __eq__(self, other: Polygon) -> bool:
+        if isinstance(other, Polygon):
+            vals = self.to_list(demarcation=False)
+            other_vals = other.to_list(demarcation=False)
+            return len(vals) == len(other_vals) and all([val0 == val1 for val0, val1 in zip(vals, other_vals)])
+        else:
+            return NotImplemented
     
     @classmethod
     def buffer(self, polygon: Polygon) -> Polygon:
@@ -231,6 +297,9 @@ class Polygon:
         return Polygon.from_shapely(imgaug_polygon.to_shapely_polygon())
 
     def to_point2d_list(self) -> Point2D_List:
+        if self.dimensionality != 2:
+            logger.error(f'Cannot convert polygon to Point2D_List because self.dimensionality=={self.dimensionality}!=2')
+            raise TypeError
         return Point2D_List.from_list(self.to_list(demarcation=True))
 
     @classmethod
@@ -241,7 +310,22 @@ class Polygon:
             dimensionality=2,
             demarcation=True
         )
-    
+
+    def to_point3d_list(self) -> Point3D_List:
+        if self.dimensionality != 3:
+            logger.error(f'Cannot convert polygon to Point3D_List because self.dimensionality=={self.dimensionality}!=3')
+            raise TypeError
+        return Point3D_List.from_list(self.to_list(demarcation=True))
+
+    @classmethod
+    def from_point3d_list(cls, point3d_list: Point3D_List) -> Polygon:
+        check_type(point3d_list, valid_type_list=[Point3D_List])
+        return Polygon.from_list(
+            points=point3d_list.to_list(demarcation=True),
+            dimensionality=3,
+            demarcation=True
+        )
+
 class Segmentation:
     def __init__(self, polygon_list: list=None):
         if polygon_list is not None:
@@ -291,17 +375,52 @@ class Segmentation:
         else:
             raise StopIteration
 
-    def __add__(self, other: Segmentation) -> Segmentation:
-        # TODO: Figure out why this error is thrown upon the below check.
-        # "ValueError: A LinearRing must have at least 3 coordinate tuples "
+    def __add__(self, other) -> Segmentation:
+        if isinstance(other, Segmentation):
+            # TODO: Figure out why this error is thrown upon the below check.
+            # "ValueError: A LinearRing must have at least 3 coordinate tuples "
 
-        # for poly in self:
-        #     if other.contains(poly):
-        #         logger.error(f'Cannot add two segmentations that overlap.')
-        #         raise Exception
+            # for poly in self:
+            #     if other.contains(poly):
+            #         logger.error(f'Cannot add two segmentations that overlap.')
+            #         raise Exception
 
-        # TODO: Figure out how to merge polygons properly.
-        return Segmentation(self.polygon_list + other.polygon_list)
+            # TODO: Figure out how to merge polygons properly.
+            return Segmentation(self.polygon_list + other.polygon_list)
+        elif isinstance(other, (Point2D, Keypoint2D, int, float)):
+            return Segmentation([poly+other for poly in self])
+        else:
+            logger.error(f'Cannot add {type(other)} to Segmentation')
+            raise TypeError
+
+    def __sub__(self, other) -> Segmentation:
+        if isinstance(other, (Point2D, Keypoint2D, int, float)):
+            return Segmentation([poly-other for poly in self])
+        else:
+            logger.error(f'Cannot subtract {type(other)} from Segmentation')
+            raise TypeError
+    
+    def __mul__(self, other) -> Segmentation:
+        if isinstance(other, (int, float)):
+            return Segmentation([poly*other for poly in self])
+        else:
+            logger.error(f'Cannot multiply {type(other)} with Segmentation')
+            raise TypeError
+
+    def __truediv__(self, other) -> Segmentation:
+        if isinstance(other, (int, float)):
+            return Segmentation([poly/other for poly in self])
+        else:
+            logger.error(f'Cannot divide {type(other)} from Segmentation')
+            raise TypeError
+
+    def __eq__(self, other: Segmentation) -> bool:
+        if isinstance(other, Segmentation):
+            vals = self.to_list(demarcation=False)
+            other_vals = other.to_list(demarcation=False)
+            return len(self) == len(other) and all([poly0 == poly1 for poly0, poly1 in zip(self, other)])
+        else:
+            return NotImplemented
 
     @classmethod
     def buffer(self, segmentation: Segmentation) -> Segmentation:

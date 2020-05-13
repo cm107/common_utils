@@ -9,7 +9,8 @@ from ..check_utils import check_type_from_list, check_value
 from ..utils import get_class_string
 from .common import Point, Interval
 from ..constants import number_types
-from .point import Point2D_List
+from .point import Point2D, Point2D_List
+from .keypoint import Keypoint2D
 
 class BBox:
     def __init__(self, xmin, ymin, xmax, ymax):
@@ -26,11 +27,55 @@ class BBox:
         return self.__str__()
 
     def __add__(self, other: BBox) -> BBox:
-        xmin = min(self.xmin, other.xmin)
-        ymin = min(self.ymin, other.ymin)
-        xmax = max(self.xmax, other.xmax)
-        ymax = max(self.ymax, other.ymax)
-        return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax).to_float()
+        if isinstance(other, BBox):
+            xmin = min(self.xmin, other.xmin)
+            ymin = min(self.ymin, other.ymin)
+            xmax = max(self.xmax, other.xmax)
+            ymax = max(self.ymax, other.ymax)
+            return BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax).to_float()
+        elif isinstance(other, (int, float)):
+            return BBox(xmin=self.xmin+other, ymin=self.ymin+other, xmax=self.xmax+other, ymax=self.ymax+other)
+        elif isinstance(other, Point2D):
+            return BBox(xmin=self.xmin+other.x, ymin=self.ymin+other.y, xmax=self.xmax+other.x, ymax=self.ymax+other.y)
+        elif isinstance(other, Keypoint2D):
+            return BBox(xmin=self.xmin+other.point.x, ymin=self.ymin+other.point.y, xmax=self.xmax+other.point.x, ymax=self.ymax+other.point.y)
+        else:
+            logger.error(f'Cannot add {type(other)} to BBox')
+            raise TypeError
+
+    def __sub__(self, other) -> BBox:
+        if isinstance(other, BBox):
+            raise NotImplementedError
+        elif isinstance(other, (int, float)):
+            return BBox(xmin=self.xmin-other, ymin=self.ymin-other, xmax=self.xmax-other, ymax=self.ymax-other)
+        elif isinstance(other, Point2D):
+            return BBox(xmin=self.xmin-other.x, ymin=self.ymin-other.y, xmax=self.xmax-other.x, ymax=self.ymax-other.y)
+        elif isinstance(other, Keypoint2D):
+            return BBox(xmin=self.xmin-other.point.x, ymin=self.ymin-other.point.y, xmax=self.xmax-other.point.x, ymax=self.ymax-other.point.y)
+        else:
+            logger.error(f'Cannot subtract {type(other)} from BBox')
+            raise TypeError
+
+    def __mul__(self, other) -> BBox:
+        if isinstance(other, (int, float)):
+            return BBox(xmin=self.xmin*other, ymin=self.ymin*other, xmax=self.xmax*other, ymax=self.ymax*other)
+        else:
+            logger.error(f'Cannot multiply {type(other)} with BBox')
+            raise TypeError
+
+
+    def __truediv__(self, other) -> BBox:
+        if isinstance(other, (int, float)):
+            return BBox(xmin=self.xmin/other, ymin=self.ymin/other, xmax=self.xmax/other, ymax=self.ymax/other)
+        else:
+            logger.error(f'Cannot divide {type(other)} from BBox')
+            raise TypeError
+
+    def __eq__(self, other: BBox) -> bool:
+        if isinstance(other, BBox):
+            return self.xmin == other.xmin and self.ymin == other.ymin and self.xmax == other.xmax and self.ymax == other.ymax
+        else:
+            return NotImplemented
 
     @classmethod
     def buffer(self, bbox: BBox) -> BBox:
