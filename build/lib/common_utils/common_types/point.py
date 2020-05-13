@@ -103,6 +103,13 @@ class Point2D:
         else:
             return NotImplemented
 
+    @classmethod
+    def buffer(self, val: Point2D) -> Point2D:
+        return val
+
+    def copy(self) -> Point2D:
+        return Point2D(x=self.x, y=self.y)
+
     def to_list(self) -> list:
         return [self.x, self.y]
 
@@ -174,6 +181,47 @@ class Point2D_List:
             return result
         else:
             raise StopIteration
+
+    def __add__(self, other) -> Point2D_List:
+        if isinstance(other, (Point2D, int, float)):
+            return Point2D_List(point_list=[point+other for point in self])
+        else:
+            logger.error(f'Cannot add {type(other)} to Point2D_List')
+            raise TypeError
+    
+    def __sub__(self, other) -> Point2D_List:
+        if isinstance(other, (Point2D, int, float)):
+            return Point2D_List(point_list=[point-other for point in self])
+        else:
+            logger.error(f'Cannot subtract {type(other)} from Point2D_List')
+            raise TypeError
+    
+    def __mul__(self, other) -> Point2D_List:
+        if isinstance(other, (int, float)):
+            return Point2D_List(point_list=[point*other for point in self])
+        else:
+            logger.error(f'Cannot multiply {type(other)} with Point2D_List')
+            raise TypeError
+
+    def __truediv__(self, other) -> Point2D_List:
+        if isinstance(other, (int, float)):
+            return Point2D_List(point_list=[point/other for point in self])
+        else:
+            logger.error(f'Cannot divide {type(other)} from Point2D_List')
+            raise TypeError
+    
+    def __eq__(self, other: Point2D_List) -> bool:
+        if isinstance(other, Point2D_List):
+            return all([p0 == p1 for p0, p1 in zip(self, other)])
+        else:
+            return NotImplemented
+
+    @classmethod
+    def buffer(self, val: Point2D_List) -> Point2D_List:
+        return val
+
+    def copy(self) -> Point2D_List:
+        return Point2D_List(point_list=self.point_list.copy())
 
     def to_numpy(self, demarcation: bool=True) -> np.ndarray:
         if demarcation:
@@ -275,6 +323,13 @@ class Point3D:
         else:
             return NotImplemented
 
+    @classmethod
+    def buffer(self, val: Point3D) -> Point3D:
+        return val
+
+    def copy(self) -> Point3D:
+        return Point3D(x=self.x, y=self.y, z=self.z)
+
     def to_list(self) -> list:
         return [self.x, self.y, self.z]
 
@@ -336,6 +391,47 @@ class Point3D_List:
             return result
         else:
             raise StopIteration
+
+    def __add__(self, other) -> Point3D_List:
+        if isinstance(other, (Point3D, int, float)):
+            return Point3D_List(point_list=[point+other for point in self])
+        else:
+            logger.error(f'Cannot add {type(other)} to Point3D_List')
+            raise TypeError
+    
+    def __sub__(self, other) -> Point3D_List:
+        if isinstance(other, (Point3D, int, float)):
+            return Point3D_List(point_list=[point-other for point in self])
+        else:
+            logger.error(f'Cannot subtract {type(other)} from Point3D_List')
+            raise TypeError
+    
+    def __mul__(self, other) -> Point3D_List:
+        if isinstance(other, (int, float)):
+            return Point3D_List(point_list=[point*other for point in self])
+        else:
+            logger.error(f'Cannot multiply {type(other)} with Point3D_List')
+            raise TypeError
+
+    def __truediv__(self, other) -> Point3D_List:
+        if isinstance(other, (int, float)):
+            return Point3D_List(point_list=[point/other for point in self])
+        else:
+            logger.error(f'Cannot divide {type(other)} from Point3D_List')
+            raise TypeError
+    
+    def __eq__(self, other: Point3D_List) -> bool:
+        if isinstance(other, Point3D_List):
+            return all([p0 == p1 for p0, p1 in zip(self, other)])
+        else:
+            return NotImplemented
+
+    @classmethod
+    def buffer(self, val: Point3D_List) -> Point3D_List:
+        return val
+
+    def copy(self) -> Point3D_List:
+        return Point3D_List(point_list=self.point_list.copy())
 
     def to_numpy(self, demarcation: bool=True) -> np.ndarray:
         if demarcation:

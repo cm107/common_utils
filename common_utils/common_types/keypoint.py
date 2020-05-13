@@ -20,6 +20,44 @@ class Keypoint2D:
     def __repr__(self) -> str:
         return self.__str__()
 
+    def __add__(self, other) -> Keypoint2D:
+        if isinstance(other, (Point2D, int, float)):
+            return Keypoint2D(point=self.point+other, visibility=self.visibility)
+        elif isinstance(other, Keypoint2D):
+            return Keypoint2D(point=self.point+other.point, visibility=int(max(self.visibility, other.visibility)))
+        else:
+            logger.error(f'Cannot add {type(other)} to Keypoint2D')
+            raise TypeError
+
+    def __sub__(self, other) -> Keypoint2D:
+        if isinstance(other, (Point2D, int, float)):
+            return Keypoint2D(point=self.point-other, visibility=self.visibility)
+        elif isinstance(other, Keypoint2D):
+            return Keypoint2D(point=self.point-other.point, visibility=int(max(self.visibility, other.visibility)))
+        else:
+            logger.error(f'Cannot subtract {type(other)} from Keypoint2D')
+            raise TypeError
+    
+    def __mul__(self, other) -> Keypoint2D:
+        if isinstance(other, (int, float)):
+            return Keypoint2D(point=self.point*other, visibility=self.visibility)
+        else:
+            logger.error(f'Cannot multiply {type(other)} with Keypoint2D')
+            raise TypeError
+
+    def __truediv__(self, other) -> Keypoint2D:
+        if isinstance(other, (int, float)):
+            return Keypoint2D(point=self.point/other, visibility=self.visibility)
+        else:
+            logger.error(f'Cannot divide {type(other)} from Keypoint2D')
+            raise TypeError
+
+    def __eq__(self, other: Keypoint2D) -> bool:
+        if isinstance(other, Keypoint2D):
+            return self.point == other.point and self.visibility == other.visibility
+        else:
+            return NotImplemented
+
     @classmethod
     def buffer(self, kpt: Keypoint2D) -> Keypoint2D:
         return kpt
@@ -68,6 +106,44 @@ class Keypoint3D:
 
     def __repr__(self) -> str:
         return self.__str__()
+
+    def __add__(self, other) -> Keypoint3D:
+        if isinstance(other, (Point3D, int, float)):
+            return Keypoint3D(point=self.point+other, visibility=self.visibility)
+        elif isinstance(other, Keypoint3D):
+            return Keypoint3D(point=self.point+other.point, visibility=int(max(self.visibility, other.visibility)))
+        else:
+            logger.error(f'Cannot add {type(other)} to Keypoint3D')
+            raise TypeError
+
+    def __sub__(self, other) -> Keypoint3D:
+        if isinstance(other, (Point3D, int, float)):
+            return Keypoint3D(point=self.point-other, visibility=self.visibility)
+        elif isinstance(other, Keypoint3D):
+            return Keypoint3D(point=self.point-other.point, visibility=int(max(self.visibility, other.visibility)))
+        else:
+            logger.error(f'Cannot subtract {type(other)} from Keypoint3D')
+            raise TypeError
+    
+    def __mul__(self, other) -> Keypoint3D:
+        if isinstance(other, (int, float)):
+            return Keypoint3D(point=self.point*other, visibility=self.visibility)
+        else:
+            logger.error(f'Cannot multiply {type(other)} with Keypoint3D')
+            raise TypeError
+
+    def __truediv__(self, other) -> Keypoint3D:
+        if isinstance(other, (int, float)):
+            return Keypoint3D(point=self.point/other, visibility=self.visibility)
+        else:
+            logger.error(f'Cannot divide {type(other)} from Keypoint3D')
+            raise TypeError
+
+    def __eq__(self, other: Keypoint3D) -> bool:
+        if isinstance(other, Keypoint3D):
+            return self.point == other.point and self.visibility == other.visibility
+        else:
+            return NotImplemented
 
     @classmethod
     def buffer(self, kpt: Keypoint3D) -> Keypoint3D:
@@ -140,6 +216,40 @@ class Keypoint2D_List:
             return result
         else:
             raise StopIteration
+
+    def __add__(self, other) -> Keypoint2D_List:
+        if isinstance(other, (Keypoint2D, Point2D, int, float)):
+            return Keypoint2D_List(kpt_list=[kpt+other for kpt in self])
+        else:
+            logger.error(f'Cannot add {type(other)} to Keypoint2D_List')
+            raise TypeError
+
+    def __sub__(self, other) -> Keypoint2D_List:
+        if isinstance(other, (Keypoint2D, Point2D, int, float)):
+            return Keypoint2D_List(kpt_list=[kpt-other for kpt in self])
+        else:
+            logger.error(f'Cannot subtract {type(other)} from Keypoint2D_List')
+            raise TypeError
+    
+    def __mul__(self, other) -> Keypoint2D_List:
+        if isinstance(other, (int, float)):
+            return Keypoint2D_List(kpt_list=[kpt*other for kpt in self])
+        else:
+            logger.error(f'Cannot multiply {type(other)} with Keypoint2D_List')
+            raise TypeError
+
+    def __truediv__(self, other) -> Keypoint2D_List:
+        if isinstance(other, (int, float)):
+            return Keypoint2D_List(kpt_list=[kpt/other for kpt in self])
+        else:
+            logger.error(f'Cannot divide {type(other)} from Keypoint2D_List')
+            raise TypeError
+
+    def __eq__(self, other: Keypoint2D_List) -> bool:
+        if isinstance(other, Keypoint2D_List):
+            return all([kpt0 == kpt1 for kpt0, kpt1 in zip(self, other)])
+        else:
+            return NotImplemented
 
     @classmethod
     def buffer(self, kpt_list: Keypoint2D_List) -> Keypoint2D_List:
@@ -240,6 +350,40 @@ class Keypoint3D_List:
             return result
         else:
             raise StopIteration
+
+    def __add__(self, other) -> Keypoint3D_List:
+        if isinstance(other, (Keypoint3D, Point3D, int, float)):
+            return Keypoint3D_List(kpt_list=[kpt+other for kpt in self])
+        else:
+            logger.error(f'Cannot add {type(other)} to Keypoint3D_List')
+            raise TypeError
+
+    def __sub__(self, other) -> Keypoint3D_List:
+        if isinstance(other, (Keypoint3D, Point3D, int, float)):
+            return Keypoint3D_List(kpt_list=[kpt-other for kpt in self])
+        else:
+            logger.error(f'Cannot subtract {type(other)} from Keypoint3D_List')
+            raise TypeError
+    
+    def __mul__(self, other) -> Keypoint3D_List:
+        if isinstance(other, (int, float)):
+            return Keypoint3D_List(kpt_list=[kpt*other for kpt in self])
+        else:
+            logger.error(f'Cannot multiply {type(other)} with Keypoint3D_List')
+            raise TypeError
+
+    def __truediv__(self, other) -> Keypoint3D_List:
+        if isinstance(other, (int, float)):
+            return Keypoint3D_List(kpt_list=[kpt/other for kpt in self])
+        else:
+            logger.error(f'Cannot divide {type(other)} from Keypoint3D_List')
+            raise TypeError
+
+    def __eq__(self, other: Keypoint3D_List) -> bool:
+        if isinstance(other, Keypoint3D_List):
+            return all([kpt0 == kpt1 for kpt0, kpt1 in zip(self, other)])
+        else:
+            return NotImplemented
 
     @classmethod
     def buffer(self, kpt_list: Keypoint3D_List) -> Keypoint3D_List:
