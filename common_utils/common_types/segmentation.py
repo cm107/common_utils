@@ -22,12 +22,20 @@ class Polygon:
         check_type(item=points, valid_type_list=[list])
         check_type_from_list(item_list=points, valid_type_list=number_types)
         check_type(item=dimensionality, valid_type_list=[int])
-        if len(points) % dimensionality != 0:
-            logger.error(f"len(points) is not divisible by dimensionality={dimensionality}")
-            raise Exception
 
         self.points = points
         self.dimensionality = dimensionality
+        self._check_valid()
+
+    def _check_valid(self):
+        if len(self.points) % self.dimensionality != 0:
+            logger.error(f"len(self.points) is not divisible by self.dimensionality={self.dimensionality}")
+            raise Exception
+
+        if len(self.points) // self.dimensionality < 3:
+            logger.error(f'A polygon must be defined by at least 3 points.')
+            logger.error(f'len(self.points) // self.dimensionality == {len(self.points) // self.dimensionality} < 3')
+            raise Exception
 
     def __str__(self):
         return f"{get_class_string(self)}: {self.points}"
