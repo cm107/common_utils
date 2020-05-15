@@ -582,12 +582,21 @@ class Segmentation:
         )
 
     @classmethod
-    def from_contour(self, contour_list: list) -> Segmentation:
+    def from_contour(self, contour_list: list, exclude_invalid_polygons: bool=False) -> Segmentation:
+        contour_list0 = contour_list.copy()
+        if exclude_invalid_polygons:
+            del_idx_list = []
+            for i in range(len(contour_list0)):
+                if len(contour_list0[i]) < 3:
+                    del_idx_list.append(i)
+            for del_idx in del_idx_list:
+                del contour_list0[del_idx]
+        
         return Segmentation(
             polygon_list=[
                 Polygon.from_contour(
                     contour=contour
-                ) for contour in contour_list
+                ) for contour in contour_list0
             ]
         )
 
