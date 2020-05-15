@@ -4,7 +4,8 @@ import numpy as np
 import cv2
 from shapely.geometry import Point as ShapelyPoint
 from shapely.geometry.polygon import Polygon as ShapelyPolygon
-from shapely.ops import cascaded_union
+from shapely.ops import cascaded_union, unary_union, polygonize
+from shapely.geometry import LineString
 from imgaug.augmentables.polys import Polygon as ImgAugPolygon, PolygonsOnImage as ImgAugPolygons
 
 from logger import logger
@@ -217,7 +218,13 @@ class Polygon:
         return Polygon(points=result, dimensionality=dimensionality)
 
     @classmethod
-    def from_shapely(self, shapely_polygon: ShapelyPolygon) -> Polygon:
+    def from_shapely(self, shapely_polygon: ShapelyPolygon, fix_invalid: bool=False) -> Polygon:
+        if not shapely_polygon.is_valid and fix_invalid:
+            line_non_simple = LineString(shapely_polygon.coords)
+            mls = unary_union(line_non_simple)
+            polygons = list(polygonize(mls))
+            shapely_polygon = Polygon(polygons[0])
+        
         vals_tuple = shapely_polygon.exterior.coords.xy
         numpy_array = np.array(vals_tuple).T[:-1]
         flattened_list = numpy_array.reshape(-1).tolist()
