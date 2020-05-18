@@ -589,7 +589,7 @@ class Segmentation:
             for i in range(len(contour_list0)):
                 if len(contour_list0[i]) < 3:
                     del_idx_list.append(i)
-            for del_idx in del_idx_list:
+            for del_idx in del_idx_list[::-1]:
                 del contour_list0[del_idx]
         
         return Segmentation(
