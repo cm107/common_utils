@@ -34,8 +34,8 @@ setup(
         'tqdm>=4.36.1',
         'scipy>=1.4.1',
         'imgaug>=0.3.0',
-        'pyclay-logger @ https://github.com/cm107/logger/archive/master.zip',
-        'pyclay-streamer @ https://github.com/cm107/streamer/archive/master.zip'
+        'pyclay-logger==0.2',
+        'pyclay-streamer>=0.1.1'
     ],
     python_requires='>=3.6'
 )
