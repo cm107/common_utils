@@ -1,5 +1,6 @@
 from __future__ import annotations
 import numpy as np
+import cv2
 from shapely.geometry import Point as ShapelyPoint
 from shapely.geometry.polygon import Polygon as ShapelyPolygon
 from imgaug.augmentables.bbs import BoundingBox as ImgAugBBox, BoundingBoxesOnImage as ImgAugBBoxes
@@ -7,6 +8,7 @@ from imgaug.augmentables.bbs import BoundingBox as ImgAugBBox, BoundingBoxesOnIm
 from logger import logger
 from ..check_utils import check_type_from_list, check_value
 from ..utils import get_class_string
+from ..file_utils import file_exists
 from .common import Point, Interval
 from ..constants import number_types
 from .point import Point2D, Point2D_List
@@ -340,6 +342,26 @@ class BBox:
         bbox.ymax += dy
         bbox = bbox.clip_at_bounds(frame_shape=[frame_h, frame_w])
         return bbox
+
+    def crop_from(self, img: np.ndarray) -> np.ndarray:
+        img_h, img_w = img.shape[:2]
+        int_bbox = self.to_int()
+        if len(img.shape) == 3:
+            return img[int_bbox.ymin:int_bbox.ymax, int_bbox.xmin:int_bbox.xmax, :]
+        elif len(img.shape) == 2:
+            return img[int_bbox.ymin:int_bbox.ymax, int_bbox.xmin:int_bbox.xmax]
+        else:
+            logger.error(f'Expected len(img.shape) to be either 2 or 3. Encountered len(img.shape) == {len(img.shape)}')
+            raise Exception
+    
+    def crop_from_and_save_to(self, img: np.ndarray, save_path: str, overwrite: bool=False):
+        cropped_region = self.crop_from(img=img)
+        if file_exists(save_path) and not overwrite:
+            logger.error(f'File already exists at {save_path}')
+            logger.error(f'Hint: Use overwrite=True')
+            raise Exception
+        else:
+            cv2.imwrite(filename=save_path, img=cropped_region)
 
 class ConstantAR_BBox(BBox):
     def __init__(self, xmin, ymin, xmax, ymax):
