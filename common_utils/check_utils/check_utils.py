@@ -1,27 +1,40 @@
+from typing import List
 from logger import logger
 from ..file_utils import file_exists, dir_exists
 from ..path_utils import get_dirpath_from_filepath
 
-def check_type(item, valid_type_list: list):
+def check_type(item, valid_type_list: list, var_name: str=None):
     if type(item) not in valid_type_list:
+        if var_name:
+            logger.error(f"Variable Name: {var_name}")
         logger.error(f"Invalid type: {type(item)}")
         logger.error(f"Valid types: {valid_type_list}")
         raise TypeError
 
-def check_type_from_list(item_list: list, valid_type_list: list):
+def check_type_from_list(item_list: list, valid_type_list: list, var_names: List[str]=None):
     check_type(item_list, valid_type_list=[list])
-    for item in item_list:
-        check_type(item=item, valid_type_list=valid_type_list)
+    if var_names:
+        for item, var_name in zip(item_list, var_names):
+            check_type(item=item, valid_type_list=valid_type_list, var_name=var_name)
+    else:
+        for item in item_list:
+            check_type(item=item, valid_type_list=valid_type_list)
 
-def check_value(item, valid_value_list: list):
+def check_value(item, valid_value_list: list, var_name: str=None):
     if item not in valid_value_list:
+        if var_name:
+            logger.error(f"Variable Name: {var_name}")
         logger.error(f"Invalid value: {item}")
         logger.error(f"Valid values: {valid_value_list}")
         raise TypeError
 
-def check_value_from_list(item_list: list, valid_value_list: list):
-    for item in item_list:
-        check_value(item=item, valid_value_list=valid_value_list)
+def check_value_from_list(item_list: list, valid_value_list: list, var_names: List[str]=None):
+    if var_names:
+        for item, var_name in zip(item_list, var_names):
+            check_value(item=item, valid_value_list=valid_value_list, var_name=var_name)
+    else:
+        for item in item_list:
+            check_value(item=item, valid_value_list=valid_value_list)
 
 def check_file_exists(filepath: str):
     if not file_exists(filepath):
@@ -84,7 +97,7 @@ def check_key_not_in_dict(item_dict: dict, key):
         logger.error(f"Key {key} already exists in dictionary.")
         raise Exception
 
-def check_required_keys(item_dict: dict, required_keys: list):
+def check_required_keys(item_dict: dict, required_keys: list, var_name: str=None):
     missing_keys = []
     provided_keys = []
     for required_key in required_keys:
@@ -93,6 +106,8 @@ def check_required_keys(item_dict: dict, required_keys: list):
         else:
             provided_keys.append(required_key)
     if len(missing_keys) > 0:
+        if var_name:
+            logger.error(f"Variable Name: {var_name}")
         logger.error(f"Required keys are missing from item_dict.")
         logger.error(f"provided_keys: {provided_keys}")
         logger.error(f"missing_keys: {missing_keys}")

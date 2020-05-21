@@ -1,6 +1,7 @@
 from __future__ import annotations
 import numpy as np
 import cv2
+from math import floor, ceil
 from shapely.geometry import Point as ShapelyPoint
 from shapely.geometry.polygon import Polygon as ShapelyPolygon
 from imgaug.augmentables.bbs import BoundingBox as ImgAugBBox, BoundingBoxesOnImage as ImgAugBBoxes
@@ -98,6 +99,30 @@ class BBox:
             xmax=int(self.xmax),
             ymax=int(self.ymax)
         )
+    
+    def to_rounded_int(self, special: bool=False) -> BBox:
+        """Rounds BBox object to have integer coordinates.
+
+        Keyword Arguments:
+            special {bool} -- [Round xmin and ymin down using floor, and round xmax and ymax usin ceil.] (default: {False})
+
+        Returns:
+            BBox -- [description]
+        """
+        if not special:
+            return BBox(
+                xmin=round(self.xmin),
+                ymin=round(self.ymin),
+                xmax=round(self.xmax),
+                ymax=round(self.ymax)
+            )
+        else:
+            return BBox(
+                xmin=floor(self.xmin),
+                ymin=floor(self.ymin),
+                xmax=ceil(self.xmax),
+                ymax=ceil(self.ymax)
+            )
 
     def to_float(self) -> BBox:
         return BBox(
@@ -362,6 +387,40 @@ class BBox:
             raise Exception
         else:
             cv2.imwrite(filename=save_path, img=cropped_region)
+
+    def is_valid(self) -> bool:
+        return self.xmin < self.xmax and self.ymin < self.ymax
+
+    def intersect_with(self, other: BBox, check_valid: bool=True) -> BBox:
+        if isinstance(other, BBox):
+            xmin = max(self.xmin, other.xmin)
+            ymin = max(self.ymin, other.ymin)
+            xmax = min(self.xmax, other.xmax)
+            ymax = min(self.ymax, other.ymax)
+            result = BBox(xmin=xmin, ymin=ymin, xmax=xmax, ymax=ymax).to_float()
+            if check_valid:
+                if not result.is_valid():
+                    logger.error(f'Result of intersection is invalid.')
+                    logger.error(f'result: {result}')
+                    logger.error(f'The two bounding boxes are likely not overlapping.')
+                    raise Exception
+            return result
+        else:
+            logger.error(f'Cannot intersect BBox with {type(other)}')
+            raise Exception
+    
+    def iou(self, other: BBox) -> float:
+        if isinstance(other, BBox):
+            intersection = self.intersect_with(other, check_valid=False)
+            if intersection.is_valid():
+                intersection_area = intersection.area()
+                union_area = self.area() + (other.area() - intersection_area)
+                return intersection_area / union_area
+            else:
+                return 0.0
+        else:
+            logger.error(f'Cannot calculate iou of BBox with {type(other)}')
+            raise Exception
 
 class ConstantAR_BBox(BBox):
     def __init__(self, xmin, ymin, xmax, ymax):
