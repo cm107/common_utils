@@ -5,6 +5,10 @@ ColorTuple = namedtuple('RGB','red, green, blue')
 class RGB(ColorTuple):
     def hex_format(self):
         return '#{:02X}{:02X}{:02X}'.format(self.red,self.green,self.blue)
+    
+    @property
+    def bgr(self) -> tuple:
+        return tuple(list(self)[::-1])
 
 class Color:
     #Color Contants

@@ -7,6 +7,8 @@ from shapely.geometry.polygon import Polygon as ShapelyPolygon
 from shapely.ops import cascaded_union, unary_union, polygonize
 from shapely.geometry import LineString
 from imgaug.augmentables.polys import Polygon as ImgAugPolygon, PolygonsOnImage as ImgAugPolygons
+import imgaug
+import shapely
 
 from logger import logger
 
@@ -24,7 +26,13 @@ class Polygon:
         check_type_from_list(item_list=points, valid_type_list=number_types)
         check_type(item=dimensionality, valid_type_list=[int])
 
-        self.points = points
+        if isinstance(points, np.ndarray):
+            self.points = points.tolist()
+        elif isinstance(points, list):
+            self.points = points
+        else:
+            logger.error(f'Expected type(points) in [list, np.ndarray]')
+            raise Exception
         self.dimensionality = dimensionality
         self._check_valid()
 
@@ -33,7 +41,15 @@ class Polygon:
             logger.error(f"len(self.points) is not divisible by self.dimensionality={self.dimensionality}")
             raise Exception
 
-        if len(self.points) // self.dimensionality < 3:
+
+    def __len__(self) -> int:
+        return len(self.points) // self.dimensionality
+
+    def has_valid_num_points(self) -> bool:
+        return len(self) >= 3
+    
+    def check_valid_num_points(self):
+        if self.has_valid_num_points():
             logger.error(f'A polygon must be defined by at least 3 points.')
             logger.error(f'len(self.points) // self.dimensionality == {len(self.points) // self.dimensionality} < 3')
             raise Exception
@@ -218,12 +234,16 @@ class Polygon:
         return Polygon(points=result, dimensionality=dimensionality)
 
     @classmethod
+    def fix_shapely_invalid(self, shapely_polygon: ShapelyPolygon) -> ShapelyPolygon:
+        line_non_simple = LineString(shapely_polygon.exterior.coords)
+        mls = unary_union(line_non_simple)
+        polygons = list(polygonize(mls))
+        return polygons[0]
+
+    @classmethod
     def from_shapely(self, shapely_polygon: ShapelyPolygon, fix_invalid: bool=False) -> Polygon:
         if not shapely_polygon.is_valid and fix_invalid:
-            line_non_simple = LineString(shapely_polygon.coords)
-            mls = unary_union(line_non_simple)
-            polygons = list(polygonize(mls))
-            shapely_polygon = Polygon(polygons[0])
+            shapely_polygon = Polygon.fix_shapely_invalid(shapely_polygon)
         
         vals_tuple = shapely_polygon.exterior.coords.xy
         numpy_array = np.array(vals_tuple).T[:-1]
@@ -308,8 +328,8 @@ class Polygon:
             raise NotImplementedError
 
     @classmethod
-    def from_imgaug(cls, imgaug_polygon: ImgAugPolygon) -> Polygon:
-        return Polygon.from_shapely(imgaug_polygon.to_shapely_polygon())
+    def from_imgaug(cls, imgaug_polygon: ImgAugPolygon, fix_invalid: bool=False) -> Polygon:
+        return Polygon.from_shapely(imgaug_polygon.to_shapely_polygon(), fix_invalid=fix_invalid)
 
     def to_point2d_list(self) -> Point2D_List:
         if self.dimensionality != 2:
@@ -573,11 +593,18 @@ class Segmentation:
 
     @classmethod
     def from_shapely(self, shapely_polygon_list: list) -> Segmentation:
+        shapely_polygon_list0 = shapely_polygon_list.copy()
+        del_idx_list = []
+        for i, shapely_polygon in enumerate(shapely_polygon_list0):
+            if shapely_polygon.size()[0] < 3:
+                del_idx_list.append(i)
+        for i in del_idx_list[::-1]:
+            del shapely_polygon_list0[i]
         return Segmentation(
             polygon_list=[
                 Polygon.from_shapely(
                     shapely_polygon=shapely_polygon
-                ) for shapely_polygon in shapely_polygon_list
+                ) for shapely_polygon in shapely_polygon_list0
             ]
         )
 
@@ -607,9 +634,9 @@ class Segmentation:
         )
 
     @classmethod
-    def from_imgaug(cls, imgaug_polygons: ImgAugPolygons) -> Segmentation:
+    def from_imgaug(cls, imgaug_polygons: ImgAugPolygons, fix_invalid: bool=False) -> Segmentation:
         return Segmentation(
-            polygon_list=[Polygon.from_imgaug(imgaug_polygon) for imgaug_polygon in imgaug_polygons.polygons]
+            polygon_list=[Polygon.from_imgaug(imgaug_polygon, fix_invalid=fix_invalid) for imgaug_polygon in imgaug_polygons.polygons]
         )
 
     def to_point2d_list_list(self) -> List[Point2D_List]:
@@ -620,3 +647,101 @@ class Segmentation:
         return Segmentation(
             polygon_list=[Polygon.from_point2d_list(point2d_list) for point2d_list in point2d_list_list]
         )
+
+    @classmethod
+    def __remove_out_of_image(cls, img_aug_polys: ImgAugPolygons, fully: bool=True, partly: bool=False) -> ImgAugPolygons:
+        result = img_aug_polys.copy()
+        result.remove_out_of_image(fully=fully, partly=partly)
+
+        return result
+
+    def remove_out_of_image(self, img_shape: np.ndarray, fully: bool=True, partly: bool=False) -> Segmentation:
+        """Remove polygons in segmentation that are outside of the frame.
+
+        Arguments:
+            img_shape {np.ndarray} -- [Shape of the frame.]
+
+        Keyword Arguments:
+            fully {bool} -- [If true, polygons that are fully outside of the frame will be removed.] (default: {True})
+            partly {bool} -- [If true, polygons that are partially outside of the frame will be removed.] (default: {False})
+
+        Returns:
+            [Segmentation] -- [Segmentation object]
+        """
+        if len(self) > 0:
+            result = self.to_imgaug(img_shape)
+            result = self.__remove_out_of_image(result, fully=fully, partly=partly)
+            result = self.__prune_imgaug_polys(result, img_shape=img_shape)
+            return Segmentation.from_imgaug(result)
+        else:
+            return self
+
+    @classmethod
+    def __clip_out_of_image(cls, img_aug_polys: ImgAugPolygons) -> ImgAugPolygons:
+        result = img_aug_polys.copy()
+        result.clip_out_of_image()
+
+        return result
+
+    def clip_out_of_image(self, img_shape: np.ndarray) -> Segmentation:
+        """Clip off all parts from all polygons that are outside of an image.
+
+        .. note::
+
+            The result can contain fewer polygons than the input did. That
+            happens when a polygon is fully outside of the image plane.
+
+        .. note::
+
+            The result can also contain *more* polygons than the input
+            did. That happens when distinct parts of a polygon are only
+            connected by areas that are outside of the image plane and hence
+            will be clipped off, resulting in two or more unconnected polygon
+            parts that are left in the image plane.
+
+        Returns
+        -------
+        Segmentation object
+
+        """
+        if len(self) > 0:
+            result = self.to_imgaug(img_shape)
+            result = self.__clip_out_of_image(result)
+            result = self.__prune_imgaug_polys(result, img_shape=img_shape)
+            return Segmentation.from_imgaug(result)
+        else:
+            return self
+
+    @classmethod
+    def __get_multipoly_inter_shapely(cls, imgaug_polys: ImgAugPolygons, img_shape: np.ndarray) -> list:
+        h, w = img_shape[:2]
+        result = []
+        for imgaug_poly in imgaug_polys:
+            poly_shapely = imgaug_poly.to_shapely_polygon()
+            poly_image = shapely.geometry.Polygon([(0, 0), (w, 0), (w, h), (0, h)])
+            multipoly_inter_shapely = poly_shapely.intersection(poly_image)
+            result.append(multipoly_inter_shapely)
+        return result
+
+    @classmethod
+    def __prune_imgaug_polys(cls, imgaug_polys: ImgAugPolygons, img_shape: np.ndarray) -> ImgAugPolygons:
+        multipoly_inter_shapely = cls.__get_multipoly_inter_shapely(imgaug_polys=imgaug_polys, img_shape=img_shape)
+        polys = [ImgAugPolygon.from_shapely(shape_obj) for shape_obj in multipoly_inter_shapely if type(shape_obj) is ShapelyPolygon]
+        return ImgAugPolygons(polys, shape=img_shape)
+
+    def imgaug_based_prune(self, img_shape: np.ndarray, fully: bool=True, partly: bool=False) -> Segmentation:
+        """Removes all polygons that are fully outside of the frame, and then crops out
+        the portions of the remaining polygons that are outside of the frame.
+        It also deletes any Non-Polygon shapes that are generated as a result.
+
+        Arguments:
+            img_shape {np.ndarray} -- [Size of frame]
+
+        Returns:
+            Segmentation -- [Segmentation object]
+        """
+        result = self.to_imgaug(img_shape)
+        result = self.__remove_out_of_image(result, fully=fully, partly=partly)
+        result = self.__prune_imgaug_polys(result, img_shape=img_shape)
+        result = self.__clip_out_of_image(result)
+        return result

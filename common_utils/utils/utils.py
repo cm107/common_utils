@@ -1,6 +1,8 @@
 import numpy as np
 import json
+from typing import List, Any
 from logger import logger
+from ..check_utils import check_type_from_list, check_type
 
 def str2bool(text_str: str) -> bool:
     if text_str.lower() == 'true':
@@ -155,3 +157,24 @@ def check_sequence(sequence: list, valid_sequence_list: list, label: str='sequen
             logger.error(f"\t{valid_sequence}")
         raise Exception
 
+def sizes2slices(part_sizes: List[int]) -> List[slice]:
+    slice_list = []
+    left_idx = 0
+    right_idx = None
+    for part_size in part_sizes:
+        if right_idx is None:
+            right_idx = part_size
+        else:
+            left_idx = right_idx
+            right_idx += part_size
+        slice_list.append(slice(left_idx, right_idx))
+    return slice_list
+
+def unflatten_list(flat_list: List[Any], part_sizes: List[int]):
+    check_type(flat_list, valid_type_list=[list])
+    check_type_from_list(part_sizes, valid_type_list=[int])
+    if sum(part_sizes) != len(flat_list):
+        logger.error(f'sum(part_sizes) == {sum(part_sizes)} != {len(flat_list)} == len(flat_list)')
+        raise Exception
+    slice_list = sizes2slices(part_sizes=part_sizes)
+    return [flat_list[slice0] for slice0 in slice_list]
