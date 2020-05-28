@@ -115,8 +115,6 @@ def concat_n_images(img_list: list, orientation: int=0):
     0: horizontal
     1: vertical
     """
-    check_type_from_list(img_list, valid_type_list=[np.ndarray])
-
     output = None
     for i, img in enumerate(img_list):
         if i==0:
