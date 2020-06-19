@@ -717,6 +717,10 @@ class Segmentation:
         h, w = img_shape[:2]
         result = []
         for imgaug_poly in imgaug_polys:
+            if imgaug_poly.coords.shape[0] < 3:
+                logger.warning(f'Encountered imgaug_poly.coords.shape[0] < 3. imgaug_poly.coords.shape={imgaug_poly.coords.shape}')
+                logger.warning(f'Ignoring polygon.')
+                continue
             poly_shapely = imgaug_poly.to_shapely_polygon()
             poly_image = shapely.geometry.Polygon([(0, 0), (w, 0), (w, h), (0, h)])
             multipoly_inter_shapely = poly_shapely.intersection(poly_image)

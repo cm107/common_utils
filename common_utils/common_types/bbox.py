@@ -222,8 +222,16 @@ class BBox:
     def from_point2d_list(cls, point2d_list: Point2D_List) -> BBox:
         return BBox.from_p0p1(p0p1=point2d_list.to_numpy(demarcation=True))
 
+    @property
+    def width(self) -> float:
+        return float(self.xmax - self.xmin)
+    
+    @property
+    def height(self) -> float:
+        return float(self.ymax - self.ymin)
+
     def area(self) -> float:
-        return float((self.xmax - self.xmin) * (self.ymax - self.ymin))
+        return float(self.width * self.height)
 
     def shape(self) -> list:
         """
