@@ -211,3 +211,35 @@ def has_valid_img_extension(img_path: str) -> bool:
 def get_valid_image_paths(dir_path: str) -> List[str]:
     paths = get_pathlist(dir_path)
     return [path for path in paths if has_valid_img_extension(path)]
+
+def get_filepaths_in_dir(dir_path: str) -> List[str]:
+    pathlist = get_pathlist(dir_path)
+    return [path for path in pathlist if os.path.isfile(path)]
+
+def get_dirpaths_in_dir(dir_path: str) -> List[str]:
+    pathlist = get_pathlist(dir_path)
+    return [path for path in pathlist if os.path.isdir(path)]
+
+def get_linkpaths_in_dir(dir_path: str) -> List[str]:
+    pathlist = get_pathlist(dir_path)
+    return [path for path in pathlist if os.path.islink(path)]
+
+def get_mountpaths_in_dir(dir_path: str) -> List[str]:
+    pathlist = get_pathlist(dir_path)
+    return [path for path in pathlist if os.path.ismount(path)]
+
+def get_filenames_in_dir(dir_path: str) -> List[str]:
+    pathlist = get_pathlist(dir_path)
+    return [get_filename(path) for path in pathlist if os.path.isfile(path)]
+
+def get_dirnames_in_dir(dir_path: str) -> List[str]:
+    pathlist = get_pathlist(dir_path)
+    return [get_filename(path) for path in pathlist if os.path.isdir(path)]
+
+def get_linknames_in_dir(dir_path: str) -> List[str]:
+    pathlist = get_pathlist(dir_path)
+    return [get_filename(path) for path in pathlist if os.path.islink(path)]
+
+def get_mountnames_in_dir(dir_path: str) -> List[str]:
+    pathlist = get_pathlist(dir_path)
+    return [get_filename(path) for path in pathlist if os.path.ismount(path)]
