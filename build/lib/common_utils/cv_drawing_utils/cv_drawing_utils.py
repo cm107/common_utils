@@ -10,6 +10,7 @@ from ..common_types.segmentation import Segmentation
 from ..constants import Color
 from ..check_utils import check_type_from_list, check_type, check_value
 from ..image_utils import resize_img
+from ..common_types.keypoint import Keypoint2D_List
 
 class PointDrawer:
     def __init__(
@@ -320,6 +321,20 @@ def draw_keypoints(
             logger.error(f"Need to provide keypoint_labels in order to show labels.")
             raise Exception
     return result
+
+def draw_kpts2d(
+    img: np.ndarray, keypoints: Keypoint2D_List,
+    radius: int=4, color: list=[0, 0, 255],
+    keypoint_labels: list=None, show_keypoints_labels: bool=False, label_thickness: int=1, label_color: list=None, label_only: bool=False,
+    ignore_kpt_idx: list=[]
+):
+    kpts = keypoints.to_numpy(demarcation=True)[:, :2].tolist()
+    return draw_keypoints(
+        img=img, keypoints=kpts, radius=radius, color=color,
+        keypoint_labels=keypoint_labels, show_keypoints_labels=show_keypoints_labels,
+        label_thickness=label_thickness, label_color=label_color, label_only=label_only,
+        ignore_kpt_idx=ignore_kpt_idx
+    )
 
 def draw_skeleton(
     img: np.ndarray, keypoints: np.ndarray, keypoint_skeleton: list, index_offset: int=0, thickness: int=5, color: list=[255, 0, 0],
