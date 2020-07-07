@@ -142,6 +142,12 @@ class Point2D:
     def origin(cls, x: float=0.0, y: float=0.0) -> Point2D:
         return Point2D(x=x, y=y)
 
+    def distance(self, other: Point2D) -> float:
+        if isinstance(other, Point2D):
+            return ((self.x-other.x)**2 + (self.y-other.y)**2)**0.5
+        else:
+            raise TypeError
+
 class Point2D_List:
     def __init__(self, point_list: List[Point2D]):
         check_type_from_list(point_list, valid_type_list=[Point2D])
@@ -351,6 +357,12 @@ class Point3D:
     @classmethod
     def origin(cls, x: float=0.0, y: float=0.0, z: float=0.0) -> Point3D:
         return Point3D(x=x, y=y, z=z)
+
+    def distance(self, other: Point3D) -> float:
+        if isinstance(other, Point3D):
+            return ((self.x-other.x)**2 + (self.y-other.y)**2 + (self.z-other.z)**2)**0.5
+        else:
+            raise TypeError
 
 class Point3D_List:
     def __init__(self, point_list: List[Point3D]):
