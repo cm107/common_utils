@@ -8,6 +8,7 @@ from logger import logger
 from ..constants import number_types
 from ..check_utils import check_type, check_type_from_list, check_list_length
 from ..utils import get_class_string
+from ..base.basic import BasicHandler
 
 # TODO: Create a base class for Point2D, Point3D, Point2D_List, Point3D_List
 
@@ -148,45 +149,16 @@ class Point2D:
         else:
             raise TypeError
 
-class Point2D_List:
+class Point2D_List(BasicHandler['Point2D_List', 'Point2D']):
     def __init__(self, point_list: List[Point2D]):
-        check_type_from_list(point_list, valid_type_list=[Point2D])
-        self.point_list = point_list
+        super().__init__(obj_type=Point2D, obj_list=point_list)
+        self.point_list = self.obj_list
 
     def __str__(self) -> str:
         return str(self.to_list(demarcation=True))
 
     def __repr__(self) -> str:
         return self.__str__()
-
-    def __len__(self) -> int:
-        return len(self.point_list)
-
-    def __getitem__(self, idx: int) -> Point2D:
-        if len(self.point_list) == 0:
-            logger.error(f"Point2D_List is empty.")
-            raise IndexError
-        elif idx < 0 or idx >= len(self.point_list):
-            logger.error(f"Index out of range: {idx}")
-            raise IndexError
-        else:
-            return self.point_list[idx]
-
-    def __setitem__(self, idx: int, value: Point2D):
-        check_type(value, valid_type_list=[Point2D])
-        self.point_list[idx] = value
-
-    def __iter__(self):
-        self.n = 0
-        return self
-
-    def __next__(self) -> Point2D:
-        if self.n < len(self.point_list):
-            result = self.point_list[self.n]
-            self.n += 1
-            return result
-        else:
-            raise StopIteration
 
     def __add__(self, other) -> Point2D_List:
         if isinstance(other, (Point2D, int, float)):
@@ -221,13 +193,6 @@ class Point2D_List:
             return all([p0 == p1 for p0, p1 in zip(self, other)])
         else:
             return NotImplemented
-
-    @classmethod
-    def buffer(self, val: Point2D_List) -> Point2D_List:
-        return val
-
-    def copy(self) -> Point2D_List:
-        return Point2D_List(point_list=self.point_list.copy())
 
     def to_numpy(self, demarcation: bool=True) -> np.ndarray:
         if demarcation:
@@ -364,45 +329,16 @@ class Point3D:
         else:
             raise TypeError
 
-class Point3D_List:
+class Point3D_List(BasicHandler['Point3D_List', 'Point3D']):
     def __init__(self, point_list: List[Point3D]):
-        check_type_from_list(point_list, valid_type_list=[Point3D])
-        self.point_list = point_list
+        super().__init__(obj_type=Point3D, obj_list=point_list)
+        self.point_list = self.obj_list
 
     def __str__(self) -> str:
         return str(self.to_list(demarcation=True))
 
     def __repr__(self) -> str:
         return self.__str__()
-
-    def __len__(self) -> int:
-        return len(self.point_list)
-
-    def __getitem__(self, idx: int) -> Point3D:
-        if len(self.point_list) == 0:
-            logger.error(f"Point3D_List is empty.")
-            raise IndexError
-        elif idx < 0 or idx >= len(self.point_list):
-            logger.error(f"Index out of range: {idx}")
-            raise IndexError
-        else:
-            return self.point_list[idx]
-
-    def __setitem__(self, idx: int, value: Point3D):
-        check_type(value, valid_type_list=[Point3D])
-        self.point_list[idx] = value
-
-    def __iter__(self):
-        self.n = 0
-        return self
-
-    def __next__(self) -> Point3D:
-        if self.n < len(self.point_list):
-            result = self.point_list[self.n]
-            self.n += 1
-            return result
-        else:
-            raise StopIteration
 
     def __add__(self, other) -> Point3D_List:
         if isinstance(other, (Point3D, int, float)):
@@ -437,13 +373,6 @@ class Point3D_List:
             return all([p0 == p1 for p0, p1 in zip(self, other)])
         else:
             return NotImplemented
-
-    @classmethod
-    def buffer(self, val: Point3D_List) -> Point3D_List:
-        return val
-
-    def copy(self) -> Point3D_List:
-        return Point3D_List(point_list=self.point_list.copy())
 
     def to_numpy(self, demarcation: bool=True) -> np.ndarray:
         if demarcation:

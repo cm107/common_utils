@@ -182,7 +182,7 @@ class BasicHandler(Generic[H, T]):
             else:
                 return self.obj_list[idx]
         elif type(idx) is slice:
-            return self.obj_list[idx.start:idx.stop:idx.step]
+            return type(self)(self.obj_list[idx.start:idx.stop:idx.step])
         else:
             logger.error(f'Expected int or slice. Got type(idx)={type(idx)}')
             raise TypeError
@@ -224,6 +224,10 @@ class BasicHandler(Generic[H, T]):
             return result
         else:
             raise StopIteration
+
+    @classmethod
+    def buffer(cls: H, obj) -> H:
+        return obj
 
     def copy(self: H) -> H:
         return type(self)(self.obj_list.copy())

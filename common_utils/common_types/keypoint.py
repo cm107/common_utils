@@ -3,9 +3,10 @@ from typing import List
 import numpy as np
 from imgaug.augmentables.kps import Keypoint as ImgAug_Keypoint, KeypointsOnImage as ImgAug_Keypoints
 from logger import logger
-from .point import Point2D, Point3D
+from .point import Point2D, Point3D, Point2D_List, Point3D_List
 from ..check_utils import check_type, check_type_from_list, \
     check_value, check_list_length
+from ..base.basic import BasicHandler
 
 class Keypoint2D:
     def __init__(self, point: Point2D, visibility: int):
@@ -174,48 +175,16 @@ class Keypoint3D:
     def origin(cls, x: float=0.0, y: float=0.0, z: float=0.0, v: int=0) -> Keypoint3D:
         return Keypoint3D(point=Point3D(x=x, y=y, z=z), visibility=v)
 
-class Keypoint2D_List:
+class Keypoint2D_List(BasicHandler['Keypoint2D_List', 'Keypoint2D']):
     def __init__(self, kpt_list: List[Keypoint2D]=None):
-        if kpt_list is not None:
-            check_type_from_list(kpt_list, valid_type_list=[Keypoint2D])
-            self.kpt_list = kpt_list
-        else:
-            self.kpt_list = []
+        super().__init__(obj_type=Keypoint2D, obj_list=kpt_list)
+        self.kpt_list = self.obj_list
 
     def __str__(self) -> str:
         return str(self.to_list(demarcation=False))
 
     def __repr__(self) -> str:
         return self.__str__()
-
-    def __len__(self) -> int:
-        return len(self.kpt_list)
-
-    def __getitem__(self, idx: int) -> Keypoint2D:
-        if len(self.kpt_list) == 0:
-            logger.error(f"KeyPoint2D_List is empty.")
-            raise IndexError
-        elif idx < 0 or idx >= len(self.kpt_list):
-            logger.error(f"Index out of range: {idx}")
-            raise IndexError
-        else:
-            return self.kpt_list[idx]
-
-    def __setitem__(self, idx: int, value: Keypoint2D):
-        check_type(value, valid_type_list=[Keypoint2D])
-        self.kpt_list[idx] = value
-
-    def __iter__(self):
-        self.n = 0
-        return self
-
-    def __next__(self) -> Keypoint2D:
-        if self.n < len(self.kpt_list):
-            result = self.kpt_list[self.n]
-            self.n += 1
-            return result
-        else:
-            raise StopIteration
 
     def __add__(self, other) -> Keypoint2D_List:
         if isinstance(other, (Keypoint2D, Point2D, int, float)):
@@ -250,17 +219,6 @@ class Keypoint2D_List:
             return all([kpt0 == kpt1 for kpt0, kpt1 in zip(self, other)])
         else:
             return NotImplemented
-
-    @classmethod
-    def buffer(self, kpt_list: Keypoint2D_List) -> Keypoint2D_List:
-        return kpt_list
-
-    def copy(self) -> Keypoint2D_List:
-        return Keypoint2D_List(kpt_list=self.kpt_list.copy())
-
-    def append(self, kpt: Keypoint2D):
-        check_type(kpt, valid_type_list=[Keypoint2D])
-        self.kpt_list.append(kpt)
 
     def to_numpy(self, demarcation: bool=False) -> np.ndarray:
         if demarcation:
@@ -308,48 +266,19 @@ class Keypoint2D_List:
             kpt_list=[Keypoint2D.from_imgaug(imgaug_kpt) for imgaug_kpt in imgaug_kpts.keypoints]
         )
 
-class Keypoint3D_List:
+    def to_point_list(self) -> Point2D_List:
+        return Point2D_List([kpt.point for kpt in self])
+
+class Keypoint3D_List(BasicHandler['Keypoint3D_List', 'Keypoint3D']):
     def __init__(self, kpt_list: List[Keypoint3D]=None):
-        if kpt_list is not None:
-            check_type_from_list(kpt_list, valid_type_list=[Keypoint3D])
-            self.kpt_list = kpt_list
-        else:
-            self.kpt_list = []
+        super().__init__(obj_type=Keypoint3D, obj_list=kpt_list)
+        self.kpt_list = self.obj_list
 
     def __str__(self) -> str:
         return str(self.to_list(demarcation=False))
 
     def __repr__(self) -> str:
         return self.__str__()
-
-    def __len__(self) -> int:
-        return len(self.kpt_list)
-
-    def __getitem__(self, idx: int) -> Keypoint3D:
-        if len(self.kpt_list) == 0:
-            logger.error(f"Keypoint3D_List is empty.")
-            raise IndexError
-        elif idx < 0 or idx >= len(self.kpt_list):
-            logger.error(f"Index out of range: {idx}")
-            raise IndexError
-        else:
-            return self.kpt_list[idx]
-
-    def __setitem__(self, idx: int, value: Keypoint3D):
-        check_type(value, valid_type_list=[Keypoint3D])
-        self.kpt_list[idx] = value
-
-    def __iter__(self):
-        self.n = 0
-        return self
-
-    def __next__(self) -> Keypoint3D:
-        if self.n < len(self.kpt_list):
-            result = self.kpt_list[self.n]
-            self.n += 1
-            return result
-        else:
-            raise StopIteration
 
     def __add__(self, other) -> Keypoint3D_List:
         if isinstance(other, (Keypoint3D, Point3D, int, float)):
@@ -385,17 +314,6 @@ class Keypoint3D_List:
         else:
             return NotImplemented
 
-    @classmethod
-    def buffer(self, kpt_list: Keypoint3D_List) -> Keypoint3D_List:
-        return kpt_list
-
-    def copy(self) -> Keypoint3D_List:
-        return Keypoint3D_List(kpt_list=self.kpt_list.copy())
-
-    def append(self, kpt: Keypoint3D):
-        check_type(kpt, valid_type_list=[Keypoint3D])
-        self.kpt_list.append(kpt)
-
     def to_numpy(self, demarcation: bool=False) -> np.ndarray:
         if demarcation:
             return np.array([kpt.to_list() for kpt in self])
@@ -429,3 +347,6 @@ class Keypoint3D_List:
     @classmethod
     def from_list(cls, value_list: list, demarcation: bool=False) -> Keypoint3D_List:
         return cls.from_numpy(arr=np.array(value_list), demarcation=demarcation)
+
+    def to_point_list(self) -> Point3D_List:
+        return Point3D_List([kpt.point for kpt in self])
