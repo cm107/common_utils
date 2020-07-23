@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import abstractmethod
-from typing import TypeVar, Generic, List
+from typing import TypeVar, Generic, List, cast
 import json
 import operator
 import inspect
@@ -8,7 +8,7 @@ import random
 
 from logger import logger
 from ..check_utils import check_required_keys, check_type_from_list, \
-    check_type, check_file_exists
+    check_type, check_file_exists, check_issubclass, check_issubclass_from_list
 from ..file_utils import file_exists
 
 T = TypeVar('T')
@@ -143,6 +143,7 @@ class BasicHandler(Generic[H, T]):
     """
     Assumptions:
         1. Handler has only one class parameter: the object list.
+        2. All contained objects are of type obj_type.
     """
     def __init__(self: H, obj_type: type, obj_list: List[T]=None):
         check_type(obj_type, valid_type_list=[type])
@@ -188,10 +189,11 @@ class BasicHandler(Generic[H, T]):
             raise TypeError
 
     def __setitem__(self: H, idx: int, value: T):
-        check_type(value, valid_type_list=[self.obj_type])
         if type(idx) is int:
+            check_type(value, valid_type_list=[self.obj_type])
             self.obj_list[idx] = value
         elif type(idx) is slice:
+            check_type_from_list(value, valid_type_list=[self.obj_type])
             self.obj_list[idx.start:idx.stop:idx.step] = value
         else:
             logger.error(f'Expected int or slice. Got type(idx)={type(idx)}')
@@ -258,7 +260,8 @@ class BasicLoadableHandler(BasicHandler[H, T]):
     """
     Assumptions:
         1. Handler has only one class parameter: the object list.
-        2. Any to_dict or to_dict_list methods of any class object in the object list doesn't take any parameters.
+        2. All contained objects are of type obj_type.
+        3. Any to_dict or to_dict_list methods of any class object in the object list doesn't take any parameters.
     """
     def __init__(self: H, obj_type: type, obj_list: List[T]=None):
         super().__init__(obj_type=obj_type, obj_list=obj_list)
@@ -296,8 +299,9 @@ class BasicLoadableIdHandler(BasicLoadableHandler[H, T], BasicHandler[H, T]):
 
     Assumptions:
         1. Handler has only one class parameter: the object list.
-        2. Any to_dict or to_dict_list methods of any class object in the object list doesn't take any parameters.
-        3. All objects in handler must have an id class variable.
+        2. All contained objects are of type obj_type.
+        3. Any to_dict or to_dict_list methods of any class object in the object list doesn't take any parameters.
+        4. All objects in handler must have an id class variable.
     """
     def __init__(self: H, obj_type: type, obj_list: List[T]=None):
         super().__init__(obj_type=obj_type, obj_list=obj_list)
@@ -313,3 +317,271 @@ class BasicLoadableIdHandler(BasicLoadableHandler[H, T], BasicHandler[H, T]):
         logger.error(f"Couldn't find {self.obj_type.__name__} with id={id}")
         logger.error(f"Possible ids: {id_list}")
         raise Exception
+
+class BasicSubclassHandler(Generic[H, T]):
+    """
+    TODO: Test Functionality
+    Assumptions:
+        1. Handler has only one class parameter: the object list.
+        2. All contained objects are a subclass of obj_type.
+    """
+    def __init__(self: H, obj_parent_class: type, obj_list: List[T]=None):
+        logger.warning(f"Warning: BasicSubclassHandler hasn't been tested yet. Use with caution.")
+        check_type(obj_parent_class, valid_type_list=[type])
+        self.obj_parent_class = obj_parent_class
+        if obj_list is not None:
+            check_issubclass_from_list(obj_list, valid_parent_class_list=[obj_parent_class])
+        self.obj_list = obj_list if obj_list is not None else []
+
+    def __key(self) -> tuple:
+        return tuple([self.__class__] + list(self.__dict__.values()))
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, self.__class__):
+            return self.__key() == other.__key()
+        return NotImplemented
+
+    def __str__(self: H):
+        return f'{self.__class__.__name__}({[obj for obj in self]})'
+
+    def __repr__(self: H):
+        return self.__str__()
+
+    def __len__(self: H) -> int:
+        return len(self.obj_list)
+
+    def __getitem__(self: H, idx: int) -> T:
+        if type(idx) is int:
+            if len(self.obj_list) == 0:
+                logger.error(f"{type(self).__name__} is empty.")
+                raise IndexError
+            elif idx < 0 or idx >= len(self.obj_list):
+                logger.error(f"Index out of range: {idx}")
+                raise IndexError
+            else:
+                return self.obj_list[idx]
+        elif type(idx) is slice:
+            return type(self)(self.obj_list[idx.start:idx.stop:idx.step])
+        else:
+            logger.error(f'Expected int or slice. Got type(idx)={type(idx)}')
+            raise TypeError
+
+    def __setitem__(self: H, idx: int, value: T):
+        if type(idx) is int:
+            check_issubclass(value, valid_parent_class_list=[self.obj_parent_class])
+            self.obj_list[idx] = value
+        elif type(idx) is slice:
+            check_issubclass_from_list(value, valid_parent_class_list=[self.obj_parent_class])
+            self.obj_list[idx.start:idx.stop:idx.step] = value
+        else:
+            logger.error(f'Expected int or slice. Got type(idx)={type(idx)}')
+            raise TypeError
+
+    def __delitem__(self: H, idx: int):
+        if type(idx) is int:
+            if len(self.obj_list) == 0:
+                logger.error(f"{type(self).__name__} is empty.")
+                raise IndexError
+            elif idx < 0 or idx >= len(self.obj_list):
+                logger.error(f"Index out of range: {idx}")
+                raise IndexError
+            else:
+                del self.obj_list[idx]
+        elif type(idx) is slice:
+            del self.obj_list[idx.start:idx.stop:idx.step]
+        else:
+            logger.error(f'Expected int or slice. Got type(idx)={type(idx)}')
+            raise TypeError
+
+    def __iter__(self: H) -> H:
+        self.n = 0
+        return self
+
+    def __next__(self: H) -> T:
+        if self.n < len(self.obj_list):
+            result = self.obj_list[self.n]
+            self.n += 1
+            return result
+        else:
+            raise StopIteration
+
+    @classmethod
+    def buffer(cls: H, obj) -> H:
+        return obj
+
+    def copy(self: H) -> H:
+        return type(self)(self.obj_list.copy())
+
+    def append(self: H, item: T):
+        check_issubclass(item, valid_parent_class_list=[self.obj_parent_class])
+        self.obj_list.append(item)
+
+    def sort(self: H, attr_name: str, reverse: bool=False):
+        # TODO: Test that this works.
+        if len(self) > 0:
+            attr_list = None
+            class_list = []
+            for obj in self.obj_list:
+                if obj.__class__.__name__ not in class_list:
+                    class_list.append(obj.__class__.__name__)
+                if attr_list is None:
+                    attr_list = list(obj.__dict__.keys())
+                else:
+                    attr_list = cast(List[str], attr_list)
+                    for i in list(range(len(attr_list)))[::-1]:
+                        if attr_list[i] not in list(obj.__dict__.keys()):
+                            del attr_list[i]
+
+            if attr_name not in attr_list:
+                logger.error(f"'{attr_name}' is not an attribute shared by every class in this handler: {class_list}")
+                logger.error(f'Shared attribute names:')
+                for name in attr_list:
+                    logger.error(f'\t{name}')
+                raise Exception
+
+            self.obj_list.sort(key=operator.attrgetter(attr_name), reverse=reverse)
+        else:
+            logger.error(f"Cannot sort. {type(self).__name__} is empty.")
+            raise Exception
+
+    def shuffle(self: H):
+        random.shuffle(self.obj_list)
+
+class MultiParameterHandler(Generic[H, T]):
+    """
+    Assumptions:
+        1. Handler can have multiple class parameters, but one of them must be the object list. (This mainly affects constructor calls via type(self)(~).)
+        2. All contained objects are of type obj_type.
+    """
+    def __init__(self: H, obj_type: type, obj_list: List[T]=None):
+        check_type(obj_type, valid_type_list=[type])
+        self.obj_type = obj_type
+        if obj_list is not None:
+            check_type_from_list(obj_list, valid_type_list=[obj_type])
+        self.obj_list = obj_list if obj_list is not None else []
+
+    @classmethod
+    def get_constructor_params(cls) -> list:
+        return [param for param in list(inspect.signature(cls.__init__).parameters.keys()) if param != 'self']
+
+    def to_constructor_dict(self) -> dict:
+        constructor_dict = {}
+        for key, val in self.__dict__.items():
+            if key in self.get_constructor_params():
+                constructor_dict[key] = val
+        return constructor_dict
+
+    def __key(self) -> tuple:
+        return tuple([self.__class__] + list(self.__dict__.values()))
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, self.__class__):
+            return self.__key() == other.__key()
+        return NotImplemented
+
+    def __str__(self: H):
+        return f'{self.__class__.__name__}({[obj for obj in self]})'
+
+    def __repr__(self: H):
+        return self.__str__()
+
+    def __len__(self: H) -> int:
+        return len(self.obj_list)
+
+    def __getitem__(self: H, idx: int) -> T:
+        if type(idx) is int:
+            if len(self.obj_list) == 0:
+                logger.error(f"{type(self).__name__} is empty.")
+                raise IndexError
+            elif idx < 0 or idx >= len(self.obj_list):
+                logger.error(f"Index out of range: {idx}")
+                raise IndexError
+            else:
+                return self.obj_list[idx]
+        elif type(idx) is slice:
+            # TODO: Test Functionality
+            new_instance = self.copy()
+            new_instance.obj_list = new_instance.obj_list[idx.start:idx.stop:idx.step]
+            return new_instance
+        else:
+            logger.error(f'Expected int or slice. Got type(idx)={type(idx)}')
+            raise TypeError
+
+    def __setitem__(self: H, idx: int, value: T):
+        if type(idx) is int:
+            check_type(value, valid_type_list=[self.obj_type])
+            self.obj_list[idx] = value
+        elif type(idx) is slice:
+            check_type_from_list(value, valid_type_list=[self.obj_type])
+            self.obj_list[idx.start:idx.stop:idx.step] = value
+        else:
+            logger.error(f'Expected int or slice. Got type(idx)={type(idx)}')
+            raise TypeError
+
+    def __delitem__(self: H, idx: int):
+        if type(idx) is int:
+            if len(self.obj_list) == 0:
+                logger.error(f"{type(self).__name__} is empty.")
+                raise IndexError
+            elif idx < 0 or idx >= len(self.obj_list):
+                logger.error(f"Index out of range: {idx}")
+                raise IndexError
+            else:
+                del self.obj_list[idx]
+        elif type(idx) is slice:
+            del self.obj_list[idx.start:idx.stop:idx.step]
+        else:
+            logger.error(f'Expected int or slice. Got type(idx)={type(idx)}')
+            raise TypeError
+
+    def __iter__(self: H) -> H:
+        self.n = 0
+        return self
+
+    def __next__(self: H) -> T:
+        if self.n < len(self.obj_list):
+            result = self.obj_list[self.n]
+            self.n += 1
+            return result
+        else:
+            raise StopIteration
+
+    @classmethod
+    def buffer(cls: H, obj) -> H:
+        return obj
+
+    def copy(self: H) -> H:
+        # TODO: Test functionality
+        new_instance = type(self)(*self.to_constructor_dict().values())
+        for key, val in self.__dict__.items():
+            if key not in self.get_constructor_params():
+                new_instance.__dict__[key] = val
+        return new_instance
+
+    def append(self: H, item: T):
+        check_type(item, valid_type_list=[self.obj_type])
+        self.obj_list.append(item)
+
+    def sort(self: H, attr_name: str, reverse: bool=False):
+        if len(self) > 0:
+            attr_list = list(self.obj_list[0].__dict__.keys())    
+            if attr_name not in attr_list:
+                logger.error(f"{self.obj_type.__name__} class has not attribute: '{attr_name}'")
+                logger.error(f'Possible attribute names:')
+                for name in attr_list:
+                    logger.error(f'\t{name}')
+                raise Exception
+
+            self.obj_list.sort(key=operator.attrgetter(attr_name), reverse=reverse)
+        else:
+            logger.error(f"Cannot sort. {type(self).__name__} is empty.")
+            raise Exception
+
+    def shuffle(self: H):
+        random.shuffle(self.obj_list)

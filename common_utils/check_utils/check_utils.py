@@ -20,6 +20,23 @@ def check_type_from_list(item_list: list, valid_type_list: list, var_names: List
         for item in item_list:
             check_type(item=item, valid_type_list=valid_type_list)
 
+def check_issubclass(item, valid_parent_class_list: list, var_name: str=None):
+    if not issubclass(item, tuple(valid_parent_class_list)):
+        if var_name:
+            logger.error(f'Variable Name: {var_name}')
+        logger.error(f'Invalid Class: {item.__class__}')
+        logger.error(f'Class must be a subclass of one of the following:\n{valid_parent_class_list}')
+        raise TypeError
+
+def check_issubclass_from_list(item_list: list, valid_parent_class_list: list, var_names: List[str]=None):
+    check_type(item_list, valid_type_list=[list])
+    if var_names:
+        for item, var_name in zip(item_list, var_names):
+            check_issubclass(item=item, valid_parent_class_list=valid_parent_class_list, var_name=var_name)
+    else:
+        for item in item_list:
+            check_issubclass(item=item, valid_parent_class_list=valid_parent_class_list)
+
 def check_value(item, valid_value_list: list, var_name: str=None):
     if item not in valid_value_list:
         if var_name:
