@@ -21,7 +21,8 @@ def check_type_from_list(item_list: list, valid_type_list: list, var_names: List
             check_type(item=item, valid_type_list=valid_type_list)
 
 def check_issubclass(item, valid_parent_class_list: list, var_name: str=None):
-    if not issubclass(item, tuple(valid_parent_class_list)):
+    class_type = item if type(item) is type else type(item)
+    if not issubclass(class_type, tuple(valid_parent_class_list)):
         if var_name:
             logger.error(f'Variable Name: {var_name}')
         logger.error(f'Invalid Class: {item.__class__}')
