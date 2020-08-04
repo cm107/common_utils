@@ -243,3 +243,35 @@ def get_linknames_in_dir(dir_path: str) -> List[str]:
 def get_mountnames_in_dir(dir_path: str) -> List[str]:
     pathlist = get_pathlist(dir_path)
     return [get_filename(path) for path in pathlist if os.path.ismount(path)]
+
+def recursively_get_all_matches_under_dirpath(dirpath: str, target_name: str, target_type: str) -> list:
+    """
+    target_type
+    'directory' or 'd': Recursively search for directory names that match target_name
+    'file' or 'f': Recursively search for file names that match target_name
+    """
+    target_type = target_type.lower()
+    assert target_type in ['directory', 'd', 'file', 'f']
+    matches = []
+    dirpath_queue = [dirpath]
+    done_dirpaths = []
+    while len(dirpath_queue) > 0:
+        for current_dir in dirpath_queue:
+            dirpaths = get_dirpaths_in_dir(current_dir)
+            dirpath_queue.extend(dirpaths)
+            if target_type in ['directory', 'd']:
+                for path in dirpaths:
+                    if get_filename(path) == target_name:
+                        matches.append(path)
+            elif target_type in ['file', 'f']:
+                filepaths = get_filepaths_in_dir(current_dir)
+                for path in filepaths:
+                    if get_filename(path) == target_name:
+                        matches.append(path)
+            else:
+                raise Exception
+            done_dirpaths.append(current_dir)
+        for done_dirpath in done_dirpaths:
+            del dirpath_queue[dirpath_queue.index(done_dirpath)]
+        done_dirpaths = []
+    return matches
