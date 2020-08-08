@@ -240,7 +240,9 @@ class BasicHandler(Generic[H, T]):
 
     def sort(self: H, attr_name: str, reverse: bool=False):
         if len(self) > 0:
-            attr_list = list(self.obj_list[0].__dict__.keys())    
+            attr_list = list(self.obj_list[0].__dict__.keys())
+            property_names = [p for p in dir(type(self.obj_list[0])) if isinstance(getattr(type(self.obj_list[0]), p), property)]
+            attr_list.extend(property_names)
             if attr_name not in attr_list:
                 logger.error(f"{self.obj_type.__name__} class has not attribute: '{attr_name}'")
                 logger.error(f'Possible attribute names:')

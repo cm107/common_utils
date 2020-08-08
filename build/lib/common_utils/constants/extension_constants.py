@@ -1,6 +1,6 @@
 opencv_compatible_img_extensions = [
     'jpg', 'JPG',
-    'JPEG', 'JPEG',
+    'jpeg', 'JPEG',
     'jpe', 'JPE',
     'png', 'PNG',
     'bmp', 'BMP',
