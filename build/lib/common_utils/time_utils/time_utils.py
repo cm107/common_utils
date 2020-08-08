@@ -50,3 +50,17 @@ def get_mtime_HMS(path: str) -> str:
 
 def duration_to_HMS(duration: int) -> str:
     return time.strftime("%H:%M:%S", time.gmtime(duration))
+
+# Time usec based functions
+def get_utc_time_from_time_usec(time_usec: int) -> datetime.datetime:
+    return datetime.datetime.utcfromtimestamp(time_usec/(10**6))
+
+def get_utc_time_elapsed_from_time_usec(time_usec: int) -> datetime.timedelta:
+    return datetime.datetime.now() - get_utc_time_from_time_usec(time_usec)
+
+def get_days_elapsed_from_time_usec(time_usec: int) -> float:
+    time_elapsed = get_utc_time_elapsed_from_time_usec(time_usec)
+    return time_elapsed.days + (time_elapsed.seconds / (24*3600)) + (time_elapsed.microseconds / (24*3600*10**6))
+
+def get_years_elapsed_from_time_usec(time_usec: int) -> float:
+    return get_days_elapsed_from_time_usec(time_usec) / 365
