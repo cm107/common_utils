@@ -10,6 +10,7 @@ from logger import logger
 from ..check_utils import check_required_keys, check_type_from_list, \
     check_type, check_file_exists, check_issubclass, check_issubclass_from_list
 from ..file_utils import file_exists
+from ..constants.number_constants import jsonable_types
 
 T = TypeVar('T')
 H = TypeVar('H')
@@ -272,7 +273,7 @@ class BasicLoadableHandler(BasicHandler[H, T]):
         return f'{self.__class__.__name__}({self.to_dict_list()})'
 
     def to_dict_list(self: H) -> List[dict]:
-        return [item.to_dict() for item in self]
+        return [item.to_dict() if not isinstance(item, tuple(jsonable_types)) else item for item in self]
 
     @classmethod
     @abstractmethod

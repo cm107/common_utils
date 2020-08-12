@@ -6,3 +6,9 @@ float_types = [float, np.float16, np.float32, np.float64]
 number_types = []
 number_types.extend(int_types)
 number_types.extend(float_types)
+
+jsonable_types = [
+    dict, list, tuple, str,
+    int, float, bool,
+    type(None)
+]
