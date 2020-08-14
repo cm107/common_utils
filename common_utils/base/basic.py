@@ -159,6 +159,23 @@ class BasicHandler(Generic[H, T]):
     def __hash__(self):
         return hash(self.__key())
 
+    def __add__(self, other: H) -> H:
+        if isinstance(other, type(self)):
+            if self.obj_type == other.obj_type:
+                return type(self)(self.obj_list + other.obj_list)
+            else:
+                raise TypeError(
+                    f"""
+                    Cannot add {type(self).__name__} of {self.obj_type.__name__} and {type(other).__name__} of {other.obj_type.__name__}
+                    """
+                )
+        else:
+            raise TypeError(
+                f"""
+                Cannot add {type(self).__name__} and {type(other).__name__}
+                """
+            )
+
     def __eq__(self, other) -> bool:
         if isinstance(other, self.__class__):
             return self.__key() == other.__key()
@@ -238,6 +255,10 @@ class BasicHandler(Generic[H, T]):
     def append(self: H, item: T):
         check_type(item, valid_type_list=[self.obj_type])
         self.obj_list.append(item)
+
+    def extend(self: H, item_list: List[T]):
+        for item in item_list:
+            self.append(item)
 
     def sort(self: H, attr_name: str, reverse: bool=False):
         if len(self) > 0:
