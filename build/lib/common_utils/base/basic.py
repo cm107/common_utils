@@ -51,7 +51,7 @@ class BasicObject(Generic[T]):
         return obj
 
     def copy(self: T) -> T:
-        return type(self)(*self.to_constructor_dict().values())
+        return type(self)(**self.to_constructor_dict())
 
 class BasicLoadableObject(BasicObject[T]):
     """
@@ -582,7 +582,7 @@ class MultiParameterHandler(Generic[H, T]):
 
     def copy(self: H) -> H:
         # TODO: Test functionality
-        new_instance = type(self)(*self.to_constructor_dict().values())
+        new_instance = type(self)(**self.to_constructor_dict())
         for key, val in self.__dict__.items():
             if key not in self.get_constructor_params():
                 new_instance.__dict__[key] = val
