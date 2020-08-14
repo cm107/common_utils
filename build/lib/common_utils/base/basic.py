@@ -65,7 +65,7 @@ class BasicLoadableObject(BasicObject[T]):
         super().__init__()
 
     def __key(self) -> tuple:
-        return tuple([self.__class__.__name__] + list(self.to_dict()))
+        return tuple([self.__class__.__name__] + list(self.to_dict().items()))
 
     def __hash__(self):
         return hash(self.__key())
