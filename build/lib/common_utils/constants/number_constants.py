@@ -7,8 +7,11 @@ number_types = []
 number_types.extend(int_types)
 number_types.extend(float_types)
 
-jsonable_types = [
-    dict, list, tuple, str,
+iterable_jsonable_types = [
+    dict, list, tuple, str
+]
+noniterable_jsonable_types = [
     int, float, bool,
     type(None)
 ]
+jsonable_types = iterable_jsonable_types + noniterable_jsonable_types

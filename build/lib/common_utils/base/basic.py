@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import abstractmethod
-from typing import TypeVar, Generic, List, cast
+from typing import TypeVar, Generic, List, cast, Dict, Any
 import json
 import operator
 import inspect
@@ -10,7 +10,8 @@ from logger import logger
 from ..check_utils import check_required_keys, check_type_from_list, \
     check_type, check_file_exists, check_issubclass, check_issubclass_from_list
 from ..file_utils import file_exists
-from ..constants.number_constants import jsonable_types
+from ..constants.number_constants import jsonable_types, \
+    iterable_jsonable_types, noniterable_jsonable_types
 
 T = TypeVar('T')
 H = TypeVar('H')
@@ -127,6 +128,44 @@ class BasicLoadableObject(BasicObject[T]):
         check_file_exists(json_path)
         json_dict = json.load(open(json_path, 'r'))
         return cls.from_dict(json_dict)
+
+    def verify_jsonable(self):
+        def verify_obj(obj: Any, working_path: str):
+            if isinstance(obj, tuple(noniterable_jsonable_types + [str])):
+                pass
+            elif isinstance(obj, dict):
+                verify_dict(obj, working_path=working_path)
+            elif isinstance(obj, (list, tuple)):
+                verify_list(obj, working_path=working_path)
+            else:
+                has_to_dict = hasattr(obj, 'to_dict')
+                has_to_dict_list = hasattr(obj, 'to_dict_list')
+                class_name = obj.__class__.__name__
+                message = f"""
+                Found a non-jsonable type ({class_name}) at the following path:
+                {working_path}
+                """
+                if has_to_dict or has_to_dict_list:
+                    message += '\n\nNote:'
+                    if has_to_dict:
+                        message += f'\n{class_name}.to_dict() method exists.'
+                    if has_to_dict_list:
+                        message += f'\n{class_name}.to_dict_list() method exists.'
+                raise Exception(message)
+
+        def verify_dict(item_dict: Dict[str, Any], working_path: str):
+            for key, val in item_dict.items():
+                working_path0 = f"{working_path}['{key}']"
+                verify_obj(val, working_path=working_path0)
+
+        def verify_list(item_list: List[Any], working_path: str):
+            for i in range(len(item_list)):
+                working_path0 = f'{working_path}[{i}]'
+                verify_obj(item_list[i], working_path=working_path0)
+
+        assert hasattr(self, 'to_dict')
+        base_path = f'{self.__class__.__name__}(...).to_dict()'
+        verify_dict(self.to_dict(), working_path=base_path)
 
 class BasicLoadableIdObject(BasicLoadableObject[T]):
     """
@@ -316,6 +355,11 @@ class BasicLoadableHandler(BasicHandler[H, T]):
         check_file_exists(json_path)
         json_dict = json.load(open(json_path, 'r'))
         return cls.from_dict_list(json_dict)
+
+    def verify_jsonable(self):
+        for item in self:
+            assert hasattr(item, 'verify_jsonable')
+            item.verify_jsonable()
 
 class BasicLoadableIdHandler(BasicLoadableHandler[H, T], BasicHandler[H, T]):
     """
