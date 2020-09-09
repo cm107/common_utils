@@ -365,9 +365,6 @@ class BasicLoadableHandler(BasicHandler[H, T]):
     def split(self, ratio: List[int], shuffle: bool=True) -> List[H]:
         assert len(self) % sum(ratio) == 0, f'sum(ratio)={sum(ratio)} does not evenly divide into len(self)={len(self)}'
         locations = np.cumsum([val*int(len(self)/sum(ratio)) for val in ratio])
-        print(f'len(self): {len(self)}')
-        print(f'sum(ratio): {sum(ratio)}')
-        print(f'locations: {locations}')
         start_location = None
         end_location = 0
         count = 0
