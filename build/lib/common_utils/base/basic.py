@@ -5,6 +5,7 @@ import json
 import operator
 import inspect
 import random
+import numpy as np
 
 from logger import logger
 from ..check_utils import check_required_keys, check_type_from_list, \
@@ -361,6 +362,25 @@ class BasicLoadableHandler(BasicHandler[H, T]):
             assert hasattr(item, 'verify_jsonable')
             item.verify_jsonable()
 
+    def split(self, ratio: List[int], shuffle: bool=True) -> List[H]:
+        assert len(self) % sum(ratio) == 0, f'sum(ratio)={sum(ratio)} does not evenly divide into len(self)={len(self)}'
+        locations = np.cumsum([val*int(len(self)/sum(ratio)) for val in ratio])
+        print(f'len(self): {len(self)}')
+        print(f'sum(ratio): {sum(ratio)}')
+        print(f'locations: {locations}')
+        start_location = None
+        end_location = 0
+        count = 0
+        samples = []
+        if shuffle:
+            self.shuffle()
+        while count < len(locations):
+            start_location = end_location
+            end_location = locations[count]
+            count += 1
+            samples.append(self[start_location:end_location].copy())
+        return samples
+
 class BasicLoadableIdHandler(BasicLoadableHandler[H, T], BasicHandler[H, T]):
     """
     TODO: Figure out why VSCode shows syntax error unless I explicitly inherit from all levels of nested parent classes.
@@ -385,6 +405,10 @@ class BasicLoadableIdHandler(BasicLoadableHandler[H, T], BasicHandler[H, T]):
         logger.error(f"Couldn't find {self.obj_type.__name__} with id={id}")
         logger.error(f"Possible ids: {id_list}")
         raise Exception
+
+    @property
+    def ids(self) -> List[int]:
+        return [obj.id for obj in self]
 
 class BasicSubclassHandler(Generic[H, T]):
     """
