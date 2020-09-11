@@ -173,3 +173,16 @@ def pad_to_max(img: np.ndarray, target_shape: List[int]) -> np.ndarray:
     result = np.zeros([target_h, target_w, 3]).astype('uint8')
     result[dy:dy+img_h, dx:dx+img_w, :] = img
     return result
+
+def collage_from_img_buffer(img_buffer: List[np.ndarray], collage_shape: (int, int)) -> np.ndarray:
+    target_buffer_len = collage_shape[0] * collage_shape[1]
+    assert len(img_buffer) <= target_buffer_len, f"len(img_buffer)={len(img_buffer)} doesn't match collage_shape={collage_shape}"
+    if len(img_buffer) < target_buffer_len:
+        blank_img = np.zeros_like(img_buffer[0])
+        img_buffer0 = img_buffer + [blank_img]*(target_buffer_len-len(img_buffer))
+    else:
+        img_buffer0 = img_buffer.copy()
+    result_img_idx_matrix = np.array([idx for idx in range(len(img_buffer0))]).reshape(*collage_shape).tolist()
+    row_img_list = [cv2.hconcat([img_buffer0[idx] for idx in img_idx_list]) for img_idx_list in result_img_idx_matrix]
+    collage_img = cv2.vconcat(row_img_list) if len(row_img_list) > 1 else row_img_list[0]
+    return collage_img
