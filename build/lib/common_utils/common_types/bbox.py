@@ -80,6 +80,14 @@ class BBox:
         else:
             return NotImplemented
 
+    @property
+    def pmin(self) -> Point2D:
+        return Point2D(x=self.xmin, y=self.ymin)
+    
+    @property
+    def pmax(self) -> Point2D:
+        return Point2D(x=self.xmax, y=self.ymax)
+
     @classmethod
     def buffer(self, bbox: BBox) -> BBox:
         return bbox
@@ -258,6 +266,12 @@ class BBox:
 
     def within(self, obj) -> bool:
         return self.to_shapely().within(obj.to_shapely())
+
+    def resize(self, orig_frame_shape: list, new_frame_shape: list) -> BBox:
+        h, w = orig_frame_shape[:2]
+        target_h, target_w = new_frame_shape[:2]
+        w_scale, h_scale = target_w / w, target_h / h
+        return BBox(xmin=self.xmin*w_scale, ymin=self.ymin*h_scale, xmax=self.xmax*w_scale, ymax=self.ymax*h_scale)
 
     def rescale(self, target_shape: list, fixed_point: Point) -> BBox:
         if fixed_point.x < self.xmin or fixed_point.x > self.xmax or \

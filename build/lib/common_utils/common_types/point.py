@@ -149,6 +149,12 @@ class Point2D:
         else:
             raise TypeError
 
+    def resize(self, orig_frame_shape: list, new_frame_shape: list) -> Point2D:
+        h, w = orig_frame_shape[:2]
+        target_h, target_w = new_frame_shape[:2]
+        w_scale, h_scale = target_w / w, target_h / h
+        return Point2D(x=self.x*w_scale, y=self.y*h_scale)
+
 class Point2D_List(BasicHandler['Point2D_List', 'Point2D']):
     def __init__(self, point_list: List[Point2D]):
         super().__init__(obj_type=Point2D, obj_list=point_list)
@@ -243,6 +249,12 @@ class Point2D_List(BasicHandler['Point2D_List', 'Point2D']):
             if not point.within(obj):
                 return False
         return True
+
+    def resize(self, orig_frame_shape: list, new_frame_shape: list) -> Point2D:
+        h, w = orig_frame_shape[:2]
+        target_h, target_w = new_frame_shape[:2]
+        w_scale, h_scale = target_w / w, target_h / h
+        return Point2D_List([Point2D(x=point.x*w_scale, y=point.y*h_scale) for point in self])
 
 class Point3D:
     def __init__(self, x: float, y: float, z: float):

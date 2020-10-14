@@ -95,6 +95,12 @@ class Keypoint2D:
     def origin(cls, x: float=0.0, y: float=0.0, v: int=0) -> Keypoint2D:
         return Keypoint2D(point=Point2D(x=x, y=y), visibility=v)
 
+    def resize(self, orig_frame_shape: list, new_frame_shape: list) -> Keypoint2D:
+        return Keypoint2D(
+            point=self.point.resize(orig_frame_shape=orig_frame_shape, new_frame_shape=new_frame_shape),
+            visibility=self.visibility
+        )
+
 class Keypoint3D:
     def __init__(self, point: Point3D, visibility: int):
         check_type(point, valid_type_list=[Point3D])
@@ -268,6 +274,11 @@ class Keypoint2D_List(BasicHandler['Keypoint2D_List', 'Keypoint2D']):
 
     def to_point_list(self) -> Point2D_List:
         return Point2D_List([kpt.point for kpt in self])
+
+    def resize(self, orig_frame_shape: list, new_frame_shape: list) -> Keypoint2D_List:
+        return Keypoint2D_List(
+            [kpt.resize(orig_frame_shape=orig_frame_shape, new_frame_shape=new_frame_shape) for kpt in self]
+        )
 
 class Keypoint3D_List(BasicHandler['Keypoint3D_List', 'Keypoint3D']):
     def __init__(self, kpt_list: List[Keypoint3D]=None):
