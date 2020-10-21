@@ -118,4 +118,4 @@ def move_dir(src_path: str, dest_path: str, silent: bool=False):
 def create_softlink(src_path: str, dst_path: str):
     if link_exists(dst_path):
         delete_file(dst_path)
-    subprocess.run(f"ln -s {src_path} {dst_path}", shell=True)
+    subprocess.run(f"ln -s '{src_path}' '{dst_path}'", shell=True)
