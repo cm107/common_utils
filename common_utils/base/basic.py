@@ -6,11 +6,13 @@ import operator
 import inspect
 import random
 import numpy as np
+import yaml
 
 from logger import logger
 from ..check_utils import check_required_keys, check_type_from_list, \
     check_type, check_file_exists, check_issubclass, check_issubclass_from_list
 from ..file_utils import file_exists
+from ..path_utils import get_extension_from_path
 from ..constants.number_constants import jsonable_types, \
     iterable_jsonable_types, noniterable_jsonable_types
 
@@ -121,14 +123,40 @@ class BasicLoadableObject(BasicObject[T]):
         if file_exists(save_path) and not overwrite:
             logger.error(f'File already exists at save_path: {save_path}')
             raise Exception
-        json_dict = self.to_dict()
-        json.dump(json_dict, open(save_path, 'w'), indent=2, ensure_ascii=False)
+
+        extension = get_extension_from_path(save_path)
+        if extension == 'json':
+            json.dump(self.to_dict(), open(save_path, 'w'), indent=2, ensure_ascii=False)
+        elif extension == 'yaml':
+            yaml.dump(self.to_dict(), open(save_path, 'w'), allow_unicode=True)
+        else:
+            raise ValueError(
+                f"""
+                Invalid file extension encountered: {extension}
+                save_path: {save_path}
+
+                Please use either a .json or a .yaml extension.
+                """
+            )
     
     @classmethod
     def load_from_path(cls: T, json_path: str) -> T:
         check_file_exists(json_path)
-        json_dict = json.load(open(json_path, 'r'))
-        return cls.from_dict(json_dict)
+        extension = get_extension_from_path(json_path)
+        if extension == 'json':
+            item_dict = json.load(open(json_path, 'r'))
+        elif extension == 'yaml':
+            item_dict = yaml.load(open(json_path, 'r'), Loader=yaml.FullLoader)
+        else:
+            raise ValueError(
+                f"""
+                Invalid file extension encountered: {extension}
+                json_path: {json_path}
+
+                Please use either a .json or a .yaml extension.
+                """
+            )
+        return cls.from_dict(item_dict)
 
     def verify_jsonable(self):
         def verify_obj(obj: Any, working_path: str):
@@ -348,14 +376,40 @@ class BasicLoadableHandler(BasicHandler[H, T]):
         if file_exists(save_path) and not overwrite:
             logger.error(f'File already exists at save_path: {save_path}')
             raise Exception
-        json_data = self.to_dict_list()
-        json.dump(json_data, open(save_path, 'w'), indent=2, ensure_ascii=False)
+
+        extension = get_extension_from_path(save_path)
+        if extension == 'json':
+            json.dump(self.to_dict_list(), open(save_path, 'w'), indent=2, ensure_ascii=False)
+        elif extension == 'yaml':
+            yaml.dump(self.to_dict_list(), open(save_path, 'w'), allow_unicode=True)
+        else:
+            raise ValueError(
+                f"""
+                Invalid file extension encountered: {extension}
+                save_path: {save_path}
+
+                Please use either a .json or a .yaml extension.
+                """
+            )
     
     @classmethod
     def load_from_path(cls: H, json_path: str) -> H:
         check_file_exists(json_path)
-        json_dict = json.load(open(json_path, 'r'))
-        return cls.from_dict_list(json_dict)
+        extension = get_extension_from_path(json_path)
+        if extension == 'json':
+            item_dict_list = json.load(open(json_path, 'r'))
+        elif extension == 'yaml':
+            item_dict_list = yaml.load(open(json_path, 'r'), Loader=yaml.FullLoader)
+        else:
+            raise ValueError(
+                f"""
+                Invalid file extension encountered: {extension}
+                json_path: {json_path}
+
+                Please use either a .json or a .yaml extension.
+                """
+            )
+        return cls.from_dict_list(item_dict_list)
 
     def verify_jsonable(self):
         for item in self:
