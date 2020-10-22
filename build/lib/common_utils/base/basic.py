@@ -117,7 +117,7 @@ class BasicLoadableObject(BasicObject[T]):
             logger.warning(f'Expected: {constructor_params}')
             logger.warning(f'Extra: {unnecessary_params}')
         check_required_keys(constructor_dict, required_keys=constructor_params)
-        return cls(*constructor_dict.values())
+        return cls(**constructor_dict)
 
     def save_to_path(self: T, save_path: str, overwrite: bool=False):
         if file_exists(save_path) and not overwrite:
