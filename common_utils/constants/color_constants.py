@@ -1,8 +1,16 @@
+from __future__ import annotations
 from collections import namedtuple, OrderedDict
 
 ColorTuple = namedtuple('RGB','red, green, blue')
 
 class RGB(ColorTuple):
+    def to_tuple(self) -> tuple:
+        return (self.red, self.blue, self.green)
+    
+    @classmethod
+    def from_tuple(cls, vals: tuple) -> RGB:
+        return RGB(red=vals[0], green=vals[1], blue=vals[2])
+
     def hex_format(self):
         return '#{:02X}{:02X}{:02X}'.format(self.red,self.green,self.blue)
     

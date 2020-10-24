@@ -274,6 +274,26 @@ class Keypoint2D_List(BasicHandler['Keypoint2D_List', 'Keypoint2D']):
 
     def to_point_list(self) -> Point2D_List:
         return Point2D_List([kpt.point for kpt in self])
+    
+    @classmethod
+    def from_point_list(cls, point_list: Point2D_List, visibility: List[int]=None) -> Keypoint2D_List:
+        if not isinstance(point_list, Point2D_List):
+            raise TypeError(f'type(point_list) != Point2D_List')
+        if isinstance(visibility, (list, tuple)):
+            if not isinstance(visibility[0], int):
+                raise TypeError('type(visibility) != List[int]')
+            if len(visibility) != len(point_list):
+                raise IndexError(f'len(visibility) == {len(visibility)} != {len(point_list)} == len(point_list)')
+            v_list = list(visibility)
+        elif isinstance(visibility, int):
+            v_list = [visibility]*len(point_list)
+        elif isinstance(visibility, float):
+            if not visibility.is_integer():
+                raise ValueError(f'type(visibility) == float and not visibility.is_integer()')
+            v_list = [int(visibility)]*len(point_list)
+        else:
+            raise TypeError(f'visibility of type {type(visibility).__name__} not supported.')
+        return Keypoint2D_List([Keypoint2D(point=point, visibility=v) for point, v in zip(point_list, v_list)])
 
     def resize(self, orig_frame_shape: list, new_frame_shape: list) -> Keypoint2D_List:
         return Keypoint2D_List(
