@@ -360,6 +360,10 @@ class Polygon:
             dimensionality=3,
             demarcation=True
         )
+    
+    def draw(self, img: np.ndarray, color: tuple) -> np.ndarray:
+        result = img.copy()
+        return cv2.drawContours(image=result, contours=[self.to_contour()], color=color, contourIdx=-1, thickness=-1)
 
 class Segmentation:
     def __init__(self, polygon_list: list=None):
@@ -749,3 +753,7 @@ class Segmentation:
         result = self.__prune_imgaug_polys(result, img_shape=img_shape)
         result = self.__clip_out_of_image(result)
         return result
+
+    def draw(self, img: np.ndarray, color: tuple) -> np.ndarray:
+        result = img.copy()
+        return cv2.drawContours(image=result, contours=self.to_contour(), color=color, contourIdx=-1, thickness=-1)
