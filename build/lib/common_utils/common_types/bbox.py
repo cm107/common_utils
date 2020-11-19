@@ -401,6 +401,22 @@ class BBox:
             logger.error(f'Expected len(img.shape) to be either 2 or 3. Encountered len(img.shape) == {len(img.shape)}')
             raise Exception
     
+    def crop_and_paste(self, src_img: np.ndarray, dst_img: np.ndarray, dst_bbox: BBox=None) -> np.ndarray:
+        self.check_bbox_in_frame(src_img.shape)
+        if dst_bbox is not None:
+            dst_bbox.check_bbox_in_frame(dst_img.shape)
+        else:
+            self.check_bbox_in_frame(dst_img.shape)
+        result = dst_img.copy()
+        cropped_img = self.crop_from(src_img)
+        if dst_bbox is not None:
+            if dst_bbox.shape != cropped_img.shape[:2]:
+                cropped_img = cv2.resize(src=cropped_img, dsize=(dst_bbox.width, dst_bbox.height))
+            result[int(dst_bbox.ymin):int(dst_bbox.ymax), int(dst_bbox.xmin):int(dst_bbox.xmax), :] = cropped_img
+        else:
+            result[int(self.ymin):int(self.ymax), int(self.xmin):int(self.xmax), :] = cropped_img
+        return result
+
     def crop_from_and_save_to(self, img: np.ndarray, save_path: str, overwrite: bool=False):
         cropped_region = self.crop_from(img=img)
         if file_exists(save_path) and not overwrite:

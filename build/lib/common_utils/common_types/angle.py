@@ -1,9 +1,11 @@
 from __future__ import annotations
 import math
+import numpy as np
+from typing import List
 from ..check_utils import check_type_from_list
 from ..constants import number_types
 from scipy.spatial.transform import Rotation
-from ..base.basic import BasicLoadableObject
+from ..base.basic import BasicLoadableObject, BasicLoadableHandler, BasicHandler
 
 class EulerAngle(BasicLoadableObject['EulerAngle']):
     def __init__(self, roll, pitch, yaw):
@@ -61,6 +63,25 @@ class EulerAngle(BasicLoadableObject['EulerAngle']):
         else:
             return mag
 
+class EulerAngleList(
+    BasicLoadableHandler['EulerAngleList', 'EulerAngle'],
+    BasicHandler['EulerAngleList', 'EulerAngle']
+):
+    def __init__(self, angles: List[EulerAngle]=None):
+        super().__init__(obj_type=EulerAngle, obj_list=angles)
+        self.angles = self.obj_list
+    
+    @classmethod
+    def from_dict_list(cls, dict_list: List[dict]) -> EulerAngleList:
+        return EulerAngleList([EulerAngle.from_dict(item_dict) for item_dict in dict_list])
+
+    def to_list(self) -> List[List[float]]:
+        return [angle.to_list() for angle in self]
+
+    @classmethod
+    def from_list(cls, vals_list: List[List[float]]) -> EulerAngleList:
+        return EulerAngleList([EulerAngle.from_list(vals) for vals in vals_list])
+
 class Quaternion(BasicLoadableObject['Quaternion']):
     def __init__(self, qw, qx, qy, qz):
         super().__init__()
@@ -84,5 +105,38 @@ class Quaternion(BasicLoadableObject['Quaternion']):
         qw, qx, qy, qz = val_list
         return Quaternion(qw=qw, qx=qx, qy=qy, qz=qz)
 
+    def to_numpy(self) -> np.ndarray:
+        return np.array(self.to_list())
+    
+    @classmethod
+    def from_numpy(cls, arr: np.ndarray) -> Quaternion:
+        return cls.from_list(arr.tolist())
+
     def to_euler(self, seq: str='xyz') -> EulerAngle:
         return EulerAngle.from_list(Rotation.from_quat(self.to_list()).as_euler(seq=seq).tolist())
+
+class QuaternionList(
+    BasicLoadableHandler['QuaternionList', 'Quaternion'],
+    BasicHandler['QuaternionList', 'Quaternion']
+):
+    def __init__(self, angles: List[Quaternion]=None):
+        super().__init__(obj_type=Quaternion, obj_list=angles)
+        self.angles = self.obj_list
+    
+    @classmethod
+    def from_dict_list(cls, dict_list: List[dict]) -> QuaternionList:
+        return QuaternionList([Quaternion.from_dict(item_dict) for item_dict in dict_list])
+
+    def to_list(self) -> List[List[float]]:
+        return [angle.to_list() for angle in self]
+
+    @classmethod
+    def from_list(cls, vals_list: List[List[float]]) -> QuaternionList:
+        return QuaternionList([Quaternion.from_list(vals) for vals in vals_list])
+    
+    def to_numpy(self) -> np.ndarray:
+        return np.array(self.to_list())
+    
+    @classmethod
+    def from_numpy(cls, arr: np.ndarray) -> QuaternionList:
+        return cls.from_list(arr.tolist())
