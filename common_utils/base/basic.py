@@ -431,6 +431,18 @@ class BasicLoadableHandler(BasicHandler[H, T]):
             count += 1
             samples.append(self[start_location:end_location].copy())
         return samples
+    
+    def get(self, **kwargs) -> H:
+        def condition(obj) -> bool:
+            for key, val in kwargs.items():
+                if not hasattr(obj, key):
+                    return False
+                elif val is None or (val is not None and getattr(obj, key) == val):
+                    pass
+                else:
+                    return False
+            return True
+        return type(self)([obj for obj in self if condition(obj)])
 
 class BasicLoadableIdHandler(BasicLoadableHandler[H, T], BasicHandler[H, T]):
     """
