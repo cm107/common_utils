@@ -43,6 +43,13 @@ class EulerAngle(BasicLoadableObject['EulerAngle']):
             return EulerAngle(roll=roll*math.pi/180, pitch=pitch*math.pi/180, yaw=yaw*math.pi/180)
         else:
             return EulerAngle(roll=roll, pitch=pitch, yaw=yaw)
+    
+    def to_numpy(self) -> np.ndarray:
+        return np.array(self.to_list())
+    
+    @classmethod
+    def from_numpy(self, arr: np.ndarray, from_deg: bool=False) -> EulerAngle:
+        return EulerAngle.from_list(arr.tolist(), from_deg=from_deg)
 
     def to_quaternion(self, seq: str='xyz') -> Quaternion:
         return Quaternion.from_list(Rotation.from_euler(seq=seq, angles=self.to_list()).as_quat().tolist())
@@ -81,6 +88,13 @@ class EulerAngleList(
     @classmethod
     def from_list(cls, vals_list: List[List[float]]) -> EulerAngleList:
         return EulerAngleList([EulerAngle.from_list(vals) for vals in vals_list])
+
+    def to_numpy(self) -> np.ndarray:
+        return np.array(self.to_list())
+    
+    @classmethod
+    def from_numpy(self, arr: np.ndarray) -> EulerAngleList:
+        return EulerAngleList.from_list(arr.tolist())
 
 class Quaternion(BasicLoadableObject['Quaternion']):
     def __init__(self, qw, qx, qy, qz):
