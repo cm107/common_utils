@@ -27,8 +27,8 @@ common_utils/counter_utils/__init__.py
 common_utils/counter_utils/counter_utils.py
 common_utils/cv_drawing_utils/__init__.py
 common_utils/cv_drawing_utils/cv_drawing_utils.py
-common_utils/cv_drawing_utils/cv_viewer.py
 common_utils/cv_drawing_utils/spirograph.py
+common_utils/cv_viewer/__init__.py
 common_utils/download_utils/__init__.py
 common_utils/download_utils/download_utils.py
 common_utils/error_utils/__init__.py

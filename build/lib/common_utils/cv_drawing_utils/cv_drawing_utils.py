@@ -226,6 +226,33 @@ def draw_text_rows_at_point(
         )
     return result
 
+def draw_text_rows_in_corner(
+    img: np.ndarray, row_text_list: List[str],
+    combined_row_height: int=None, row_height: int=None,
+    corner: str='topleft', corner_leeway: float=0.01,
+    leeway: float=0.4, color: list=[0, 255, 255], font_face: int=cv2.FONT_HERSHEY_COMPLEX, thickness: int=2
+):
+    assert combined_row_height is not None or row_height is not None, f"Must specify either combined_row_height or row_height."
+    if row_height is not None:
+        combined_row_height = len(row_text_list) * row_height
+    img_h, img_w = img.shape[:2]
+    if corner.lower() == 'topleft':
+        return draw_text_rows_at_point(
+            img=img, row_text_list=row_text_list,
+            x=corner_leeway*img_w, y=corner_leeway*img_h,
+            combined_row_height=combined_row_height,
+            leeway=leeway, color=color, font_face=font_face, thickness=thickness
+        )
+    elif corner.lower() == 'bottomleft':
+        return draw_text_rows_at_point(
+            img=img, row_text_list=row_text_list,
+            x=corner_leeway*img_w, y=img_h - corner_leeway*img_h - combined_row_height,
+            combined_row_height=combined_row_height,
+            leeway=leeway, color=color, font_face=font_face, thickness=thickness
+        )
+    else:
+        raise ValueError(f"Can only draw in the 'topleft' and 'bottomleft' corners due to variable row width.")
+
 def draw_bbox(
     img: np.ndarray, bbox: BBox,
     color: list=[0, 255, 255], thickness: int=2, text: str=None, label_thickness: int=None, label_color: list=None, label_only: bool=False,

@@ -46,11 +46,12 @@ logger.purple(f'seg.area():\n{seg.area()}')
 logger.purple(f'seg.centroid():\n{seg.centroid()}')
 logger.purple(f'seg.within(seg.to_bbox()): {seg.within(seg.to_bbox())}')
 
-from common_utils.cv_drawing_utils import draw_segmentation, cv_simple_image_viewer
+from common_utils.cv_drawing_utils import draw_segmentation
+from streamer.cv_viewer import cv_simple_image_viewer
 import numpy as np
 
 seg_bbox = seg.to_bbox()
 seg_bbox_h, seg_bbox_w = seg_bbox.shape()
-blank_frame = np.zeros(shape=[seg_bbox_h, seg_bbox_w, 3])
+blank_frame = np.zeros(shape=[int(seg_bbox_h), int(seg_bbox_w), 3])
 vis = draw_segmentation(img=blank_frame, segmentation=seg)
 quit_flag = cv_simple_image_viewer(img=vis, preview_width=1000)

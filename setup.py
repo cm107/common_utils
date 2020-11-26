@@ -35,8 +35,7 @@ setup(
         'scipy>=1.4.1',
         'imgaug>=0.3.0',
         'PyYAML>=5.3.1',
-        'pyclay-logger @ https://github.com/cm107/logger/archive/master.zip',
-        'pyclay-streamer @ https://github.com/cm107/streamer/archive/master.zip'
+        'pyclay-logger @ https://github.com/cm107/logger/archive/master.zip'
     ],
     python_requires='>=3.6'
 )
