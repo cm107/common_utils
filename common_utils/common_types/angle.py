@@ -24,14 +24,36 @@ class EulerAngle(BasicLoadableObject['EulerAngle']):
     def __add__(self, other: EulerAngle) -> EulerAngle:
         if isinstance(other, EulerAngle):
             return EulerAngle(roll=self.roll+other.roll, pitch=self.pitch+other.pitch, yaw=self.yaw+other.yaw)
+        elif isinstance(other, (int, float)):
+            return EulerAngle(roll=self.roll+other, pitch=self.pitch+other, yaw=self.yaw+other)
         else:
             raise TypeError
 
     def __sub__(self, other: EulerAngle) -> EulerAngle:
         if isinstance(other, EulerAngle):
             return EulerAngle(roll=self.roll-other.roll, pitch=self.pitch-other.pitch, yaw=self.yaw-other.yaw)
+        elif isinstance(other, (int, float)):
+            return EulerAngle(roll=self.roll-other, pitch=self.pitch-other, yaw=self.yaw-other)
         else:
             raise TypeError
+
+    def __mul__(self, other) -> EulerAngle:
+        if isinstance(other, (int, float)):
+            return EulerAngle(roll=self.roll*other, pitch=self.pitch*other, yaw=self.yaw*other)
+        else:
+            raise TypeError
+
+    def __truediv__(self, other) -> EulerAngle:
+        if isinstance(other, (int, float)):
+            return EulerAngle(roll=self.roll/other, pitch=self.pitch/other, yaw=self.yaw/other)
+        else:
+            raise TypeError
+
+    def __eq__(self, other: EulerAngle) -> bool:
+        if isinstance(other, EulerAngle):
+            return self.roll == other.roll and self.pitch == other.pitch and self.yaw == other.yaw
+        else:
+            return NotImplemented
 
     def to_list(self) -> list:
         return [self.roll, self.pitch, self.yaw]

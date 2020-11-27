@@ -55,7 +55,11 @@ class BasicObject(Generic[T]):
         return obj
 
     def copy(self: T) -> T:
-        return type(self)(**self.to_constructor_dict())
+        constructor_dict = self.to_constructor_dict()
+        for key, val in constructor_dict.items():
+            if hasattr(val, 'copy'):
+                constructor_dict[key] = val.copy()
+        return type(self)(**constructor_dict)
 
 class BasicLoadableObject(BasicObject[T]):
     """
