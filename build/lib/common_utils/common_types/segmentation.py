@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Tuple
 import numpy as np
 import cv2
 from shapely.geometry import Point as ShapelyPoint
@@ -15,6 +15,7 @@ from logger import logger
 from ..constants import number_types
 from ..check_utils import check_type, check_type_from_list, check_value
 from ..utils import get_class_string
+from ..file_utils import file_exists
 
 from .point import Point, Point2D_List, Point3D_List, Point2D, Point3D
 from .keypoint import Keypoint2D, Keypoint3D
@@ -651,6 +652,23 @@ class Segmentation:
         return Segmentation(
             polygon_list=[Polygon.from_point2d_list(point2d_list) for point2d_list in point2d_list_list]
         )
+
+    @classmethod
+    def from_mask_path(
+        cls, mask_path: str,
+        lower_bgr: Tuple[int]=None, upper_bgr: Tuple[int]=(255,255,255),
+        exclude_invalid_polygons: bool=False
+    ) -> Segmentation:
+        if not file_exists(mask_path):
+            raise FileNotFoundError(f"Couldn't find mask image at {mask_path}")
+        if lower_bgr is None and upper_bgr is None:
+            raise ValueError
+        lower_bgr0 = lower_bgr if lower_bgr is not None else upper_bgr
+        upper_bgr0 = upper_bgr if upper_bgr is not None else lower_bgr
+        img = cv2.imread(mask_path)
+        color_mask = cv2.inRange(src=img, lowerb=tuple(lower_bgr0), upperb=tuple(upper_bgr0))
+        color_contours, _ = cv2.findContours(color_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        return Segmentation.from_contour(contour_list=color_contours, exclude_invalid_polygons=exclude_invalid_polygons)
 
     @classmethod
     def __remove_out_of_image(cls, img_aug_polys: ImgAugPolygons, fully: bool=True, partly: bool=False) -> ImgAugPolygons:
