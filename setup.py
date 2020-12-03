@@ -37,5 +37,5 @@ setup(
         'PyYAML>=5.3.1',
         'pyclay-logger @ https://github.com/cm107/logger/archive/master.zip'
     ],
-    python_requires='>=3.6'
+    python_requires='>=3.7'
 )
