@@ -218,7 +218,7 @@ class BasicHandler(Generic[H, T]):
         2. All contained objects are of type obj_type.
     """
     def __init__(self: H, obj_type: type, obj_list: List[T]=None):
-        check_type(obj_type, valid_type_list=[type])
+        # check_type(obj_type, valid_type_list=[type])
         self.obj_type = obj_type
         if obj_list is not None:
             check_type_from_list(obj_list, valid_type_list=[obj_type])
