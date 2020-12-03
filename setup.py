@@ -37,5 +37,5 @@ setup(
         'PyYAML>=5.3.1',
         'pyclay-logger==0.2'
     ],
-    python_requires='>=3.7'
+    python_requires='==3.6.*'
 )

@@ -1,4 +1,3 @@
-from __future__ import annotations
 import math
 import numpy as np
 from typing import List
@@ -21,7 +20,7 @@ class EulerAngle(BasicLoadableObject['EulerAngle']):
     def __repr__(self) -> str:
         return self.__str__()
 
-    def __add__(self, other: EulerAngle) -> EulerAngle:
+    def __add__(self, other):
         if isinstance(other, EulerAngle):
             return EulerAngle(roll=self.roll+other.roll, pitch=self.pitch+other.pitch, yaw=self.yaw+other.yaw)
         elif isinstance(other, (int, float)):
@@ -29,7 +28,7 @@ class EulerAngle(BasicLoadableObject['EulerAngle']):
         else:
             raise TypeError
 
-    def __sub__(self, other: EulerAngle) -> EulerAngle:
+    def __sub__(self, other):
         if isinstance(other, EulerAngle):
             return EulerAngle(roll=self.roll-other.roll, pitch=self.pitch-other.pitch, yaw=self.yaw-other.yaw)
         elif isinstance(other, (int, float)):
@@ -37,19 +36,19 @@ class EulerAngle(BasicLoadableObject['EulerAngle']):
         else:
             raise TypeError
 
-    def __mul__(self, other) -> EulerAngle:
+    def __mul__(self, other):
         if isinstance(other, (int, float)):
             return EulerAngle(roll=self.roll*other, pitch=self.pitch*other, yaw=self.yaw*other)
         else:
             raise TypeError
 
-    def __truediv__(self, other) -> EulerAngle:
+    def __truediv__(self, other):
         if isinstance(other, (int, float)):
             return EulerAngle(roll=self.roll/other, pitch=self.pitch/other, yaw=self.yaw/other)
         else:
             raise TypeError
 
-    def __eq__(self, other: EulerAngle) -> bool:
+    def __eq__(self, other) -> bool:
         if isinstance(other, EulerAngle):
             return self.roll == other.roll and self.pitch == other.pitch and self.yaw == other.yaw
         else:
@@ -59,7 +58,7 @@ class EulerAngle(BasicLoadableObject['EulerAngle']):
         return [self.roll, self.pitch, self.yaw]
 
     @classmethod
-    def from_list(self, val_list: list, from_deg: bool=False) -> EulerAngle:
+    def from_list(self, val_list: list, from_deg: bool=False):
         roll, pitch, yaw = val_list
         if from_deg:
             return EulerAngle(roll=roll*math.pi/180, pitch=pitch*math.pi/180, yaw=yaw*math.pi/180)
@@ -70,16 +69,16 @@ class EulerAngle(BasicLoadableObject['EulerAngle']):
         return np.array(self.to_list())
     
     @classmethod
-    def from_numpy(self, arr: np.ndarray, from_deg: bool=False) -> EulerAngle:
+    def from_numpy(self, arr: np.ndarray, from_deg: bool=False):
         return EulerAngle.from_list(arr.tolist(), from_deg=from_deg)
 
-    def to_quaternion(self, seq: str='xyz') -> Quaternion:
+    def to_quaternion(self, seq: str='xyz'):
         return Quaternion.from_list(Rotation.from_euler(seq=seq, angles=self.to_list()).as_quat().tolist())
 
-    def to_deg(self) -> EulerAngle:
+    def to_deg(self):
         return EulerAngle(roll=self.roll*180/math.pi, pitch=self.pitch*180/math.pi, yaw=self.yaw*180/math.pi)
     
-    def to_rad(self) -> EulerAngle:
+    def to_rad(self):
         return EulerAngle(roll=self.roll*math.pi/180, pitch=self.pitch*math.pi/180, yaw=self.yaw*math.pi/180)
 
     def to_deg_list(self) -> list:
@@ -101,21 +100,21 @@ class EulerAngleList(
         self.angles = self.obj_list
     
     @classmethod
-    def from_dict_list(cls, dict_list: List[dict]) -> EulerAngleList:
+    def from_dict_list(cls, dict_list: List[dict]):
         return EulerAngleList([EulerAngle.from_dict(item_dict) for item_dict in dict_list])
 
     def to_list(self) -> List[List[float]]:
         return [angle.to_list() for angle in self]
 
     @classmethod
-    def from_list(cls, vals_list: List[List[float]]) -> EulerAngleList:
+    def from_list(cls, vals_list: List[List[float]]):
         return EulerAngleList([EulerAngle.from_list(vals) for vals in vals_list])
 
     def to_numpy(self) -> np.ndarray:
         return np.array(self.to_list())
     
     @classmethod
-    def from_numpy(self, arr: np.ndarray) -> EulerAngleList:
+    def from_numpy(self, arr: np.ndarray):
         return EulerAngleList.from_list(arr.tolist())
 
 class Quaternion(BasicLoadableObject['Quaternion']):
@@ -137,7 +136,7 @@ class Quaternion(BasicLoadableObject['Quaternion']):
         return [self.qw, self.qx, self.qy, self.qz]
 
     @classmethod
-    def from_list(self, val_list: list) -> Quaternion:
+    def from_list(self, val_list: list):
         qw, qx, qy, qz = val_list
         return Quaternion(qw=qw, qx=qx, qy=qy, qz=qz)
 
@@ -145,7 +144,7 @@ class Quaternion(BasicLoadableObject['Quaternion']):
         return np.array(self.to_list())
     
     @classmethod
-    def from_numpy(cls, arr: np.ndarray) -> Quaternion:
+    def from_numpy(cls, arr: np.ndarray):
         return cls.from_list(arr.tolist())
 
     def to_euler(self, seq: str='xyz') -> EulerAngle:
@@ -160,19 +159,19 @@ class QuaternionList(
         self.angles = self.obj_list
     
     @classmethod
-    def from_dict_list(cls, dict_list: List[dict]) -> QuaternionList:
+    def from_dict_list(cls, dict_list: List[dict]):
         return QuaternionList([Quaternion.from_dict(item_dict) for item_dict in dict_list])
 
     def to_list(self) -> List[List[float]]:
         return [angle.to_list() for angle in self]
 
     @classmethod
-    def from_list(cls, vals_list: List[List[float]]) -> QuaternionList:
+    def from_list(cls, vals_list: List[List[float]]):
         return QuaternionList([Quaternion.from_list(vals) for vals in vals_list])
     
     def to_numpy(self) -> np.ndarray:
         return np.array(self.to_list())
     
     @classmethod
-    def from_numpy(cls, arr: np.ndarray) -> QuaternionList:
+    def from_numpy(cls, arr: np.ndarray):
         return cls.from_list(arr.tolist())

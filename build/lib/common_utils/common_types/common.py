@@ -1,4 +1,3 @@
-from __future__ import annotations
 import numpy as np
 from collections import namedtuple
 from logger import logger
@@ -106,7 +105,7 @@ class Point:
         return Point(x, y)
 
     @classmethod
-    def from_shapely(self, shapely_point: ShapelyPoint) -> Point:
+    def from_shapely(self, shapely_point: ShapelyPoint):
         coords = [list(val)[0] for val in shapely_point.coords.xy]
         return Point.from_list(coords)
 
@@ -168,7 +167,7 @@ class Rectangle:
         ]
 
     @classmethod
-    def from_p0p1(self, p0: Point, p1: Point) -> Point:
+    def from_p0p1(self, p0: Point, p1: Point):
         return Rectangle(xmin=p0.x, ymin=p0.y, xmax=p1.x, ymax=p1.y, check_types=False)
 
     @classmethod
@@ -362,7 +361,7 @@ class Interval:
     def __repr__(self):
         return self.__str__()
 
-    def copy(self) -> Interval:
+    def copy(self):
         return Interval(min_val=self.min_val, max_val=self.max_val, check_types=False)
 
     def to_int(self):
@@ -406,7 +405,7 @@ class Interval:
         else:
             raise Exception
 
-    def contains_interval(self, interval: Interval, bound_type: str='closed') -> bool:
+    def contains_interval(self, interval, bound_type: str='closed') -> bool:
         """
         bound_type
             'closed': Include boundary values
@@ -440,7 +439,7 @@ class Interval:
             on_boundary = True
         return on_boundary, side
 
-    def shift_interval_in_bounds(self, bound: Interval) -> (bool, list, Interval):
+    def shift_interval_in_bounds(self, bound):
         new_interval_min, new_interval_max = self.min_val, self.max_val
         if self.min_val >= bound.min_val and self.max_val <= bound.max_val:
             success = True
@@ -472,7 +471,7 @@ class Interval:
 
         return success, edge_orientation, new_interval
 
-    def split_at(self, val, inclusive_side: str=None) -> (Interval, Interval):
+    def split_at(self, val, inclusive_side: str=None):
         """
         inclusive_side
             None: val is excluded from both left and right interval
@@ -480,7 +479,7 @@ class Interval:
             'right' or 'l': val is included in right interval
         """
 
-        def get_interval_pair(val, left_offset: int=0, right_offset: int=0) -> (Interval, Interval):
+        def get_interval_pair(val, left_offset: int=0, right_offset: int=0):
             left_interval = Interval(self.min_val, val-left_offset) if self.min_val <= val-left_offset else None
             right_interval = Interval(val+right_offset, self.max_val) if val+right_offset <= self.max_val else None
             if left_interval is None or right_interval is None:
@@ -554,14 +553,14 @@ class Interval:
 
         return left_interval, right_interval
 
-    def intersects(self, target_interval: Interval, bound_type: str='closed') -> bool:
+    def intersects(self, target_interval, bound_type: str='closed') -> bool:
         if self.contains(target_interval.min_val, bound_type=bound_type) or \
             self.contains(target_interval.max_val, bound_type=bound_type):
             return True
         else:
             return False
 
-    def intersect(self, target_interval: Interval) -> Interval:
+    def intersect(self, target_interval):
         if not self.intersects(target_interval, bound_type='closed'):
             logger.error(f"Cannot find intersection because target_interval doesn't intersect with host interval.")
             logger.error(f"host interval: {self.__str__()}")
@@ -571,7 +570,7 @@ class Interval:
         max_val = min(self.max_val, target_interval.max_val)
         return Interval(min_val=min_val, max_val=max_val, check_types=False)
 
-    def union(self, target_interval: Interval) -> Interval:
+    def union(self, target_interval):
         if not self.intersects(target_interval, bound_type='closed'):
             logger.error(f"Cannot find intersection because target_interval doesn't intersect with host interval.")
             logger.error(f"host interval: {self.__str__()}")
@@ -581,14 +580,14 @@ class Interval:
         max_val = max(self.max_val, target_interval.max_val)
         return Interval(min_val=min_val, max_val=max_val, check_types=False)
 
-    def shares_exactly_one_bound_with(self, target_interval: Interval) -> bool:
+    def shares_exactly_one_bound_with(self, target_interval) -> bool:
         is_bound0, side0 = self.has_boundary(target_interval.min_val)
         valid0 = is_bound0 and side0 == 'left'
         is_bound1, side1 = self.has_boundary(target_interval.max_val)
         valid1 = is_bound1 and side1 == 'right'
         return (valid0 and not valid1) or (not valid0 and valid1)
 
-    def remove(self, target_interval: Interval) -> Interval:
+    def remove(self, target_interval):
         is_bound0, side0 = self.has_boundary(target_interval.min_val)
         valid0 = is_bound0 and side0 == 'left'
         is_bound1, side1 = self.has_boundary(target_interval.max_val)

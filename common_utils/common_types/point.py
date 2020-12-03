@@ -1,4 +1,3 @@
-from __future__ import annotations
 from typing import List
 import numpy as np
 from shapely.geometry import Point as ShapelyPoint
@@ -26,16 +25,16 @@ class Point:
         return self.__str__()
 
     @classmethod
-    def buffer(cls, point: Point) -> Point:
+    def buffer(cls, point):
         return point
 
-    def copy(self) -> Point:
+    def copy(self):
         return Point(coords=self.coords)
 
-    def to_int(self) -> Point:
+    def to_int(self):
         return Point(coords=[int(val) for val in self.coords])
 
-    def to_float(self) -> Point:
+    def to_float(self):
         return Point(coords=[float(val) for val in self.coords])
 
     def to_list(self) -> list:
@@ -45,11 +44,11 @@ class Point:
         return ShapelyPoint(self.to_list())
 
     @classmethod
-    def from_list(cls, coords: list) -> Point:
+    def from_list(cls, coords: list):
         return Point(coords=coords)
 
     @classmethod
-    def from_shapely(cls, shapely_point: ShapelyPoint) -> Point:
+    def from_shapely(cls, shapely_point: ShapelyPoint):
         return Point(coords=[list(val)[0] for val in shapely_point.coords.xy])
 
     def within(self, obj) -> bool:
@@ -66,7 +65,7 @@ class Point2D:
     def __repr__(self):
         return self.__str__()
 
-    def __add__(self, other) -> Point2D:
+    def __add__(self, other):
         if isinstance(other, Point2D):
             return Point2D(x=self.x+other.x, y=self.y+other.y)
         elif isinstance(other, (int, float)):
@@ -75,7 +74,7 @@ class Point2D:
             logger.error(f'Cannot add {type(other)} to Point2D')
             raise TypeError
     
-    def __sub__(self, other) -> Point2D:
+    def __sub__(self, other):
         if isinstance(other, Point2D):
             return Point2D(x=self.x-other.x, y=self.y-other.y)
         elif isinstance(other, (int, float)):
@@ -84,38 +83,38 @@ class Point2D:
             logger.error(f'Cannot subtract {type(other)} from Point2D')
             raise TypeError
     
-    def __mul__(self, other) -> Point2D:
+    def __mul__(self, other):
         if isinstance(other, (int, float)):
             return Point2D(x=self.x*other, y=self.y*other)
         else:
             logger.error(f'Cannot multiply {type(other)} with Point2D')
             raise TypeError
 
-    def __truediv__(self, other) -> Point2D:
+    def __truediv__(self, other):
         if isinstance(other, (int, float)):
             return Point2D(x=self.x/other, y=self.y/other)
         else:
             logger.error(f'Cannot divide {type(other)} from Point2D')
             raise TypeError
     
-    def __eq__(self, other: Point2D) -> bool:
+    def __eq__(self, other) -> bool:
         if isinstance(other, Point2D):
             return self.x == other.x and self.y == other.y
         else:
             return NotImplemented
 
     @classmethod
-    def buffer(self, val: Point2D) -> Point2D:
+    def buffer(self, val):
         return val
 
-    def copy(self) -> Point2D:
+    def copy(self):
         return Point2D(x=self.x, y=self.y)
 
     def to_list(self) -> list:
         return [self.x, self.y]
 
     @classmethod
-    def from_list(cls, coords: list) -> Point2D:
+    def from_list(cls, coords: list):
         check_list_length(coords, correct_length=2)
         return Point2D(x=coords[0], y=coords[1])
 
@@ -123,7 +122,7 @@ class Point2D:
         return np.array(self.to_list())
 
     @classmethod
-    def from_numpy(cls, arr: np.ndarray) -> Point2D:
+    def from_numpy(cls, arr: np.ndarray):
         if arr.shape != (2,):
             logger.error(f'Expected shape: (2,), got {arr.shape} instead.')
             raise Exception
@@ -133,23 +132,23 @@ class Point2D:
         return ShapelyPoint(self.to_list())
 
     @classmethod
-    def from_shapely(cls, shapely_point: ShapelyPoint) -> Point2D:
+    def from_shapely(cls, shapely_point: ShapelyPoint):
         return Point2D.from_list(coords=[list(val)[0] for val in shapely_point.coords.xy])
 
     def within(self, obj) -> bool:
         return self.to_shapely().within(obj.to_shapely())
     
     @classmethod
-    def origin(cls, x: float=0.0, y: float=0.0) -> Point2D:
+    def origin(cls, x: float=0.0, y: float=0.0):
         return Point2D(x=x, y=y)
 
-    def distance(self, other: Point2D) -> float:
+    def distance(self, other) -> float:
         if isinstance(other, Point2D):
             return ((self.x-other.x)**2 + (self.y-other.y)**2)**0.5
         else:
             raise TypeError
 
-    def resize(self, orig_frame_shape: list, new_frame_shape: list) -> Point2D:
+    def resize(self, orig_frame_shape: list, new_frame_shape: list):
         h, w = orig_frame_shape[:2]
         target_h, target_w = new_frame_shape[:2]
         w_scale, h_scale = target_w / w, target_h / h
@@ -166,35 +165,35 @@ class Point2D_List(BasicHandler['Point2D_List', 'Point2D']):
     def __repr__(self) -> str:
         return self.__str__()
 
-    def __add__(self, other) -> Point2D_List:
+    def __add__(self, other):
         if isinstance(other, (Point2D, int, float)):
             return Point2D_List(point_list=[point+other for point in self])
         else:
             logger.error(f'Cannot add {type(other)} to Point2D_List')
             raise TypeError
     
-    def __sub__(self, other) -> Point2D_List:
+    def __sub__(self, other):
         if isinstance(other, (Point2D, int, float)):
             return Point2D_List(point_list=[point-other for point in self])
         else:
             logger.error(f'Cannot subtract {type(other)} from Point2D_List')
             raise TypeError
     
-    def __mul__(self, other) -> Point2D_List:
+    def __mul__(self, other):
         if isinstance(other, (int, float)):
             return Point2D_List(point_list=[point*other for point in self])
         else:
             logger.error(f'Cannot multiply {type(other)} with Point2D_List')
             raise TypeError
 
-    def __truediv__(self, other) -> Point2D_List:
+    def __truediv__(self, other):
         if isinstance(other, (int, float)):
             return Point2D_List(point_list=[point/other for point in self])
         else:
             logger.error(f'Cannot divide {type(other)} from Point2D_List')
             raise TypeError
     
-    def __eq__(self, other: Point2D_List) -> bool:
+    def __eq__(self, other) -> bool:
         if isinstance(other, Point2D_List):
             return all([p0 == p1 for p0, p1 in zip(self, other)])
         else:
@@ -207,7 +206,7 @@ class Point2D_List(BasicHandler['Point2D_List', 'Point2D']):
             return np.array([point.to_list() for point in self]).reshape(-1)
 
     @classmethod
-    def from_numpy(cls, arr: np.ndarray, demarcation: bool=True) -> Point2D_List:
+    def from_numpy(cls, arr: np.ndarray, demarcation: bool=True):
         if demarcation:
             if arr.shape[-1] != 2:
                 logger.error(f"arr.shape[-1] != 2")
@@ -232,14 +231,14 @@ class Point2D_List(BasicHandler['Point2D_List', 'Point2D']):
         return self.to_numpy(demarcation=demarcation).tolist()
 
     @classmethod
-    def from_list(cls, value_list: list, demarcation: bool=True) -> Point2D_List:
+    def from_list(cls, value_list: list, demarcation: bool=True):
         return cls.from_numpy(arr=np.array(value_list), demarcation=demarcation)
 
     def to_shapely_list(self) -> List[ShapelyPoint]:
         return [point.to_shapely() for point in self]
 
     @classmethod
-    def from_shapely(cls, shapely_point_list: List[ShapelyPoint]) -> Point2D_List:
+    def from_shapely(cls, shapely_point_list: List[ShapelyPoint]):
         return Point2D_List(point_list=[Point2D.from_shapely(shapely_point) for shapely_point in shapely_point_list])
 
     def within(self, obj) -> bool:
@@ -250,7 +249,7 @@ class Point2D_List(BasicHandler['Point2D_List', 'Point2D']):
                 return False
         return True
 
-    def resize(self, orig_frame_shape: list, new_frame_shape: list) -> Point2D:
+    def resize(self, orig_frame_shape: list, new_frame_shape: list):
         h, w = orig_frame_shape[:2]
         target_h, target_w = new_frame_shape[:2]
         w_scale, h_scale = target_w / w, target_h / h
@@ -268,7 +267,7 @@ class Point3D:
     def __repr__(self):
         return self.__str__()
     
-    def __add__(self, other) -> Point3D:
+    def __add__(self, other):
         if isinstance(other, Point3D):
             return Point3D(x=self.x+other.x, y=self.y+other.y, z=self.z+other.z)
         elif isinstance(other, (int, float)):
@@ -277,7 +276,7 @@ class Point3D:
             logger.error(f'Cannot add {type(other)} to Point3D')
             raise TypeError
     
-    def __sub__(self, other) -> Point3D:
+    def __sub__(self, other):
         if isinstance(other, Point3D):
             return Point3D(x=self.x-other.x, y=self.y-other.y, z=self.z-other.z)
         elif isinstance(other, (int, float)):
@@ -286,38 +285,38 @@ class Point3D:
             logger.error(f'Cannot subtract {type(other)} from Point3D')
             raise TypeError
     
-    def __mul__(self, other) -> Point3D:
+    def __mul__(self, other):
         if isinstance(other, (int, float)):
             return Point3D(x=self.x*other, y=self.y*other, z=self.z*other)
         else:
             logger.error(f'Cannot multiply {type(other)} with Point3D')
             raise TypeError
 
-    def __truediv__(self, other) -> Point3D:
+    def __truediv__(self, other):
         if isinstance(other, (int, float)):
             return Point3D(x=self.x/other, y=self.y/other, z=self.z/other)
         else:
             logger.error(f'Cannot divide {type(other)} from Point3D')
             raise TypeError
 
-    def __eq__(self, other: Point3D) -> bool:
+    def __eq__(self, other) -> bool:
         if isinstance(other, Point3D):
             return self.x == other.x and self.y == other.y and self.z == other.z
         else:
             return NotImplemented
 
     @classmethod
-    def buffer(self, val: Point3D) -> Point3D:
+    def buffer(self, val):
         return val
 
-    def copy(self) -> Point3D:
+    def copy(self):
         return Point3D(x=self.x, y=self.y, z=self.z)
 
     def to_list(self) -> list:
         return [self.x, self.y, self.z]
 
     @classmethod
-    def from_list(cls, coords: list) -> Point3D:
+    def from_list(cls, coords: list):
         check_list_length(coords, correct_length=3)
         return Point3D(x=coords[0], y=coords[1], z=coords[2])
 
@@ -325,17 +324,17 @@ class Point3D:
         return np.array(self.to_list())
 
     @classmethod
-    def from_numpy(cls, arr: np.ndarray) -> Point3D:
+    def from_numpy(cls, arr: np.ndarray):
         if arr.shape != (3,):
             logger.error(f'Expected shape: (3,), got {arr.shape} instead.')
             raise Exception
         return cls.from_list(arr.tolist())
 
     @classmethod
-    def origin(cls, x: float=0.0, y: float=0.0, z: float=0.0) -> Point3D:
+    def origin(cls, x: float=0.0, y: float=0.0, z: float=0.0):
         return Point3D(x=x, y=y, z=z)
 
-    def distance(self, other: Point3D) -> float:
+    def distance(self, other) -> float:
         if isinstance(other, Point3D):
             return ((self.x-other.x)**2 + (self.y-other.y)**2 + (self.z-other.z)**2)**0.5
         else:
@@ -352,35 +351,35 @@ class Point3D_List(BasicHandler['Point3D_List', 'Point3D']):
     def __repr__(self) -> str:
         return self.__str__()
 
-    def __add__(self, other) -> Point3D_List:
+    def __add__(self, other):
         if isinstance(other, (Point3D, int, float)):
             return Point3D_List(point_list=[point+other for point in self])
         else:
             logger.error(f'Cannot add {type(other)} to Point3D_List')
             raise TypeError
     
-    def __sub__(self, other) -> Point3D_List:
+    def __sub__(self, other):
         if isinstance(other, (Point3D, int, float)):
             return Point3D_List(point_list=[point-other for point in self])
         else:
             logger.error(f'Cannot subtract {type(other)} from Point3D_List')
             raise TypeError
     
-    def __mul__(self, other) -> Point3D_List:
+    def __mul__(self, other):
         if isinstance(other, (int, float)):
             return Point3D_List(point_list=[point*other for point in self])
         else:
             logger.error(f'Cannot multiply {type(other)} with Point3D_List')
             raise TypeError
 
-    def __truediv__(self, other) -> Point3D_List:
+    def __truediv__(self, other):
         if isinstance(other, (int, float)):
             return Point3D_List(point_list=[point/other for point in self])
         else:
             logger.error(f'Cannot divide {type(other)} from Point3D_List')
             raise TypeError
     
-    def __eq__(self, other: Point3D_List) -> bool:
+    def __eq__(self, other) -> bool:
         if isinstance(other, Point3D_List):
             return all([p0 == p1 for p0, p1 in zip(self, other)])
         else:
@@ -393,7 +392,7 @@ class Point3D_List(BasicHandler['Point3D_List', 'Point3D']):
             return np.array([point.to_list() for point in self]).reshape(-1)
 
     @classmethod
-    def from_numpy(cls, arr: np.ndarray, demarcation: bool=True) -> Point3D_List:
+    def from_numpy(cls, arr: np.ndarray, demarcation: bool=True):
         if demarcation:
             if arr.shape[-1] != 3:
                 logger.error(f"arr.shape[-1] != 3")
@@ -418,5 +417,5 @@ class Point3D_List(BasicHandler['Point3D_List', 'Point3D']):
         return self.to_numpy(demarcation=demarcation).tolist()
 
     @classmethod
-    def from_list(cls, value_list: list, demarcation: bool=True) -> Point3D_List:
+    def from_list(cls, value_list: list, demarcation: bool=True):
         return cls.from_numpy(arr=np.array(value_list), demarcation=demarcation)

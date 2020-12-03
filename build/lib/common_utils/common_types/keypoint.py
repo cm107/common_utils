@@ -1,4 +1,3 @@
-from __future__ import annotations
 from typing import List
 import numpy as np
 from imgaug.augmentables.kps import Keypoint as ImgAug_Keypoint, KeypointsOnImage as ImgAug_Keypoints
@@ -21,7 +20,7 @@ class Keypoint2D:
     def __repr__(self) -> str:
         return self.__str__()
 
-    def __add__(self, other) -> Keypoint2D:
+    def __add__(self, other):
         if isinstance(other, (Point2D, int, float)):
             return Keypoint2D(point=self.point+other, visibility=self.visibility)
         elif isinstance(other, Keypoint2D):
@@ -30,7 +29,7 @@ class Keypoint2D:
             logger.error(f'Cannot add {type(other)} to Keypoint2D')
             raise TypeError
 
-    def __sub__(self, other) -> Keypoint2D:
+    def __sub__(self, other):
         if isinstance(other, (Point2D, int, float)):
             return Keypoint2D(point=self.point-other, visibility=self.visibility)
         elif isinstance(other, Keypoint2D):
@@ -39,38 +38,38 @@ class Keypoint2D:
             logger.error(f'Cannot subtract {type(other)} from Keypoint2D')
             raise TypeError
     
-    def __mul__(self, other) -> Keypoint2D:
+    def __mul__(self, other):
         if isinstance(other, (int, float)):
             return Keypoint2D(point=self.point*other, visibility=self.visibility)
         else:
             logger.error(f'Cannot multiply {type(other)} with Keypoint2D')
             raise TypeError
 
-    def __truediv__(self, other) -> Keypoint2D:
+    def __truediv__(self, other):
         if isinstance(other, (int, float)):
             return Keypoint2D(point=self.point/other, visibility=self.visibility)
         else:
             logger.error(f'Cannot divide {type(other)} from Keypoint2D')
             raise TypeError
 
-    def __eq__(self, other: Keypoint2D) -> bool:
+    def __eq__(self, other) -> bool:
         if isinstance(other, Keypoint2D):
             return self.point == other.point and self.visibility == other.visibility
         else:
             return NotImplemented
 
     @classmethod
-    def buffer(self, kpt: Keypoint2D) -> Keypoint2D:
+    def buffer(self, kpt):
         return kpt
 
-    def copy(self) -> Keypoint2D:
+    def copy(self):
         return Keypoint2D(point=self.point, visibility=self.visibility)
 
     def to_list(self) -> list:
         return self.point.to_list() + [self.visibility]
 
     @classmethod
-    def from_list(cls, val_list: list) -> Keypoint2D:
+    def from_list(cls, val_list: list):
         check_list_length(val_list, correct_length=3, ineq_type='eq')
         return Keypoint2D(
             point=Point2D.from_list(val_list[:2]),
@@ -81,21 +80,21 @@ class Keypoint2D:
         return np.array(self.to_list)
 
     @classmethod
-    def from_numpy(cls, arr: np.ndarray) -> Keypoint2D:
+    def from_numpy(cls, arr: np.ndarray):
         return cls.from_list(arr.tolist())
 
     def to_imgaug(self) -> ImgAug_Keypoint:
         return ImgAug_Keypoint(x=self.point.x, y=self.point.y)
 
     @classmethod
-    def from_imgaug(cls, imgaug_kpt: ImgAug_Keypoint, visibility: int=2) -> Keypoint2D:
+    def from_imgaug(cls, imgaug_kpt: ImgAug_Keypoint, visibility: int=2):
         return Keypoint2D(point=Point2D(x=imgaug_kpt.x, y=imgaug_kpt.y), visibility=visibility)
 
     @classmethod
-    def origin(cls, x: float=0.0, y: float=0.0, v: int=0) -> Keypoint2D:
+    def origin(cls, x: float=0.0, y: float=0.0, v: int=0):
         return Keypoint2D(point=Point2D(x=x, y=y), visibility=v)
 
-    def resize(self, orig_frame_shape: list, new_frame_shape: list) -> Keypoint2D:
+    def resize(self, orig_frame_shape: list, new_frame_shape: list):
         return Keypoint2D(
             point=self.point.resize(orig_frame_shape=orig_frame_shape, new_frame_shape=new_frame_shape),
             visibility=self.visibility
@@ -114,7 +113,7 @@ class Keypoint3D:
     def __repr__(self) -> str:
         return self.__str__()
 
-    def __add__(self, other) -> Keypoint3D:
+    def __add__(self, other):
         if isinstance(other, (Point3D, int, float)):
             return Keypoint3D(point=self.point+other, visibility=self.visibility)
         elif isinstance(other, Keypoint3D):
@@ -123,7 +122,7 @@ class Keypoint3D:
             logger.error(f'Cannot add {type(other)} to Keypoint3D')
             raise TypeError
 
-    def __sub__(self, other) -> Keypoint3D:
+    def __sub__(self, other):
         if isinstance(other, (Point3D, int, float)):
             return Keypoint3D(point=self.point-other, visibility=self.visibility)
         elif isinstance(other, Keypoint3D):
@@ -132,38 +131,38 @@ class Keypoint3D:
             logger.error(f'Cannot subtract {type(other)} from Keypoint3D')
             raise TypeError
     
-    def __mul__(self, other) -> Keypoint3D:
+    def __mul__(self, other):
         if isinstance(other, (int, float)):
             return Keypoint3D(point=self.point*other, visibility=self.visibility)
         else:
             logger.error(f'Cannot multiply {type(other)} with Keypoint3D')
             raise TypeError
 
-    def __truediv__(self, other) -> Keypoint3D:
+    def __truediv__(self, other):
         if isinstance(other, (int, float)):
             return Keypoint3D(point=self.point/other, visibility=self.visibility)
         else:
             logger.error(f'Cannot divide {type(other)} from Keypoint3D')
             raise TypeError
 
-    def __eq__(self, other: Keypoint3D) -> bool:
+    def __eq__(self, other) -> bool:
         if isinstance(other, Keypoint3D):
             return self.point == other.point and self.visibility == other.visibility
         else:
             return NotImplemented
 
     @classmethod
-    def buffer(self, kpt: Keypoint3D) -> Keypoint3D:
+    def buffer(self, kpt):
         return kpt
 
-    def copy(self) -> Keypoint3D:
+    def copy(self):
         return Keypoint3D(point=self.point, visibility=self.visibility)
 
     def to_list(self) -> list:
         return self.point.to_list() + [self.visibility]
 
     @classmethod
-    def from_list(cls, val_list: list) -> Keypoint3D:
+    def from_list(cls, val_list: list):
         check_list_length(val_list, correct_length=4, ineq_type='eq')
         return Keypoint3D(
             point=Point3D.from_list(val_list[:3]),
@@ -174,11 +173,11 @@ class Keypoint3D:
         return np.array(self.to_list)
 
     @classmethod
-    def from_numpy(cls, arr: np.ndarray) -> Keypoint3D:
+    def from_numpy(cls, arr: np.ndarray):
         return cls.from_list(arr.tolist())
 
     @classmethod
-    def origin(cls, x: float=0.0, y: float=0.0, z: float=0.0, v: int=0) -> Keypoint3D:
+    def origin(cls, x: float=0.0, y: float=0.0, z: float=0.0, v: int=0):
         return Keypoint3D(point=Point3D(x=x, y=y, z=z), visibility=v)
 
 class Keypoint2D_List(BasicHandler['Keypoint2D_List', 'Keypoint2D']):
@@ -192,35 +191,35 @@ class Keypoint2D_List(BasicHandler['Keypoint2D_List', 'Keypoint2D']):
     def __repr__(self) -> str:
         return self.__str__()
 
-    def __add__(self, other) -> Keypoint2D_List:
+    def __add__(self, other):
         if isinstance(other, (Keypoint2D, Point2D, int, float)):
             return Keypoint2D_List(kpt_list=[kpt+other for kpt in self])
         else:
             logger.error(f'Cannot add {type(other)} to Keypoint2D_List')
             raise TypeError
 
-    def __sub__(self, other) -> Keypoint2D_List:
+    def __sub__(self, other):
         if isinstance(other, (Keypoint2D, Point2D, int, float)):
             return Keypoint2D_List(kpt_list=[kpt-other for kpt in self])
         else:
             logger.error(f'Cannot subtract {type(other)} from Keypoint2D_List')
             raise TypeError
     
-    def __mul__(self, other) -> Keypoint2D_List:
+    def __mul__(self, other):
         if isinstance(other, (int, float)):
             return Keypoint2D_List(kpt_list=[kpt*other for kpt in self])
         else:
             logger.error(f'Cannot multiply {type(other)} with Keypoint2D_List')
             raise TypeError
 
-    def __truediv__(self, other) -> Keypoint2D_List:
+    def __truediv__(self, other):
         if isinstance(other, (int, float)):
             return Keypoint2D_List(kpt_list=[kpt/other for kpt in self])
         else:
             logger.error(f'Cannot divide {type(other)} from Keypoint2D_List')
             raise TypeError
 
-    def __eq__(self, other: Keypoint2D_List) -> bool:
+    def __eq__(self, other) -> bool:
         if isinstance(other, Keypoint2D_List):
             return all([kpt0 == kpt1 for kpt0, kpt1 in zip(self, other)])
         else:
@@ -233,7 +232,7 @@ class Keypoint2D_List(BasicHandler['Keypoint2D_List', 'Keypoint2D']):
             return np.array([kpt.to_list() for kpt in self]).reshape(-1)
 
     @classmethod
-    def from_numpy(cls, arr: np.ndarray, demarcation: bool=False) -> Keypoint2D_List:
+    def from_numpy(cls, arr: np.ndarray, demarcation: bool=False):
         if demarcation:
             if arr.shape[-1] != 3:
                 logger.error(f"arr.shape[-1] != 3")
@@ -257,7 +256,7 @@ class Keypoint2D_List(BasicHandler['Keypoint2D_List', 'Keypoint2D']):
         return self.to_numpy(demarcation=demarcation).tolist()
 
     @classmethod
-    def from_list(cls, value_list: list, demarcation: bool=False) -> Keypoint2D_List:
+    def from_list(cls, value_list: list, demarcation: bool=False):
         return cls.from_numpy(arr=np.array(value_list), demarcation=demarcation)
 
     def to_imgaug(self, img_shape: list) -> ImgAug_Keypoints:
@@ -267,7 +266,7 @@ class Keypoint2D_List(BasicHandler['Keypoint2D_List', 'Keypoint2D']):
         )
 
     @classmethod
-    def from_imgaug(cls, imgaug_kpts: ImgAug_Keypoints) -> Keypoint2D_List:
+    def from_imgaug(cls, imgaug_kpts: ImgAug_Keypoints):
         return Keypoint2D_List(
             kpt_list=[Keypoint2D.from_imgaug(imgaug_kpt) for imgaug_kpt in imgaug_kpts.keypoints]
         )
@@ -276,7 +275,7 @@ class Keypoint2D_List(BasicHandler['Keypoint2D_List', 'Keypoint2D']):
         return Point2D_List([kpt.point for kpt in self])
     
     @classmethod
-    def from_point_list(cls, point_list: Point2D_List, visibility: List[int]=None) -> Keypoint2D_List:
+    def from_point_list(cls, point_list: Point2D_List, visibility: List[int]=None):
         if not isinstance(point_list, Point2D_List):
             raise TypeError(f'type(point_list) != Point2D_List')
         if isinstance(visibility, (list, tuple)):
@@ -295,7 +294,7 @@ class Keypoint2D_List(BasicHandler['Keypoint2D_List', 'Keypoint2D']):
             raise TypeError(f'visibility of type {type(visibility).__name__} not supported.')
         return Keypoint2D_List([Keypoint2D(point=point, visibility=v) for point, v in zip(point_list, v_list)])
 
-    def resize(self, orig_frame_shape: list, new_frame_shape: list) -> Keypoint2D_List:
+    def resize(self, orig_frame_shape: list, new_frame_shape: list):
         return Keypoint2D_List(
             [kpt.resize(orig_frame_shape=orig_frame_shape, new_frame_shape=new_frame_shape) for kpt in self]
         )
@@ -311,35 +310,35 @@ class Keypoint3D_List(BasicHandler['Keypoint3D_List', 'Keypoint3D']):
     def __repr__(self) -> str:
         return self.__str__()
 
-    def __add__(self, other) -> Keypoint3D_List:
+    def __add__(self, other):
         if isinstance(other, (Keypoint3D, Point3D, int, float)):
             return Keypoint3D_List(kpt_list=[kpt+other for kpt in self])
         else:
             logger.error(f'Cannot add {type(other)} to Keypoint3D_List')
             raise TypeError
 
-    def __sub__(self, other) -> Keypoint3D_List:
+    def __sub__(self, other):
         if isinstance(other, (Keypoint3D, Point3D, int, float)):
             return Keypoint3D_List(kpt_list=[kpt-other for kpt in self])
         else:
             logger.error(f'Cannot subtract {type(other)} from Keypoint3D_List')
             raise TypeError
     
-    def __mul__(self, other) -> Keypoint3D_List:
+    def __mul__(self, other):
         if isinstance(other, (int, float)):
             return Keypoint3D_List(kpt_list=[kpt*other for kpt in self])
         else:
             logger.error(f'Cannot multiply {type(other)} with Keypoint3D_List')
             raise TypeError
 
-    def __truediv__(self, other) -> Keypoint3D_List:
+    def __truediv__(self, other):
         if isinstance(other, (int, float)):
             return Keypoint3D_List(kpt_list=[kpt/other for kpt in self])
         else:
             logger.error(f'Cannot divide {type(other)} from Keypoint3D_List')
             raise TypeError
 
-    def __eq__(self, other: Keypoint3D_List) -> bool:
+    def __eq__(self, other) -> bool:
         if isinstance(other, Keypoint3D_List):
             return all([kpt0 == kpt1 for kpt0, kpt1 in zip(self, other)])
         else:
@@ -352,7 +351,7 @@ class Keypoint3D_List(BasicHandler['Keypoint3D_List', 'Keypoint3D']):
             return np.array([kpt.to_list() for kpt in self]).reshape(-1)
 
     @classmethod
-    def from_numpy(cls, arr: np.ndarray, demarcation: bool=False) -> Keypoint3D_List:
+    def from_numpy(cls, arr: np.ndarray, demarcation: bool=False):
         if demarcation:
             if arr.shape[-1] != 4:
                 logger.error(f"arr.shape[-1] != 4")
@@ -376,14 +375,14 @@ class Keypoint3D_List(BasicHandler['Keypoint3D_List', 'Keypoint3D']):
         return self.to_numpy(demarcation=demarcation).tolist()
 
     @classmethod
-    def from_list(cls, value_list: list, demarcation: bool=False) -> Keypoint3D_List:
+    def from_list(cls, value_list: list, demarcation: bool=False):
         return cls.from_numpy(arr=np.array(value_list), demarcation=demarcation)
 
     def to_point_list(self) -> Point3D_List:
         return Point3D_List([kpt.point for kpt in self])
 
     @classmethod
-    def from_point_list(cls, point_list: Point3D_List, visibility: List[int]=None) -> Keypoint3D_List:
+    def from_point_list(cls, point_list: Point3D_List, visibility: List[int]=None):
         if not isinstance(point_list, Point3D_List):
             raise TypeError(f'type(point_list) != Point3D_List')
         if isinstance(visibility, (list, tuple)):

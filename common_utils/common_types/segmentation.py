@@ -1,4 +1,3 @@
-from __future__ import annotations
 from typing import List, Tuple
 import numpy as np
 import cv2
@@ -61,7 +60,7 @@ class Polygon:
     def __repr__(self):
         return self.__str__()
 
-    def __add__(self, other) -> Polygon:
+    def __add__(self, other):
         if isinstance(other, Point2D) and self.dimensionality == 2:
             return Polygon.from_point2d_list(point2d_list=Point2D_List([point+other for point in self.to_point2d_list()]))
         elif isinstance(other, Keypoint2D) and self.dimensionality == 2:
@@ -79,7 +78,7 @@ class Polygon:
             logger.error(f'Cannot add {type(other)} to Polygon')
             raise TypeError
 
-    def __sub__(self, other) -> Polygon:
+    def __sub__(self, other):
         if isinstance(other, Point2D) and self.dimensionality == 2:
             return Polygon.from_point2d_list(point2d_list=Point2D_List([point-other for point in self.to_point2d_list()]))
         elif isinstance(other, Keypoint2D) and self.dimensionality == 2:
@@ -98,7 +97,7 @@ class Polygon:
             raise TypeError
 
     
-    def __mul__(self, other) -> Polygon:
+    def __mul__(self, other):
         if isinstance(other, (int, float)):
             return Polygon.from_list(
                 points=[val*other for val in self.to_list(demarcation=False)],
@@ -108,7 +107,7 @@ class Polygon:
             logger.error(f'Cannot multiply {type(other)} with Polygon')
             raise TypeError
 
-    def __truediv__(self, other) -> Polygon:
+    def __truediv__(self, other):
         if isinstance(other, (int, float)):
             return Polygon.from_list(
                 points=[val/other for val in self.to_list(demarcation=False)],
@@ -118,7 +117,7 @@ class Polygon:
             logger.error(f'Cannot divide {type(other)} from Polygon')
             raise TypeError
 
-    def __eq__(self, other: Polygon) -> bool:
+    def __eq__(self, other) -> bool:
         if isinstance(other, Polygon):
             vals = self.to_list(demarcation=False)
             other_vals = other.to_list(demarcation=False)
@@ -127,16 +126,16 @@ class Polygon:
             return NotImplemented
     
     @classmethod
-    def buffer(self, polygon: Polygon) -> Polygon:
+    def buffer(self, polygon):
         return polygon
 
-    def copy(self) -> Polygon:
+    def copy(self):
         return Polygon(points=self.points, dimensionality=self.dimensionality)
 
-    def to_int(self) -> Polygon:
+    def to_int(self):
         return Polygon(points=[int(val) for val in self.points], dimensionality=self.dimensionality)
 
-    def to_float(self) -> Polygon:
+    def to_float(self):
         return Polygon(points=[float(val) for val in self.points], dimensionality=self.dimensionality)
 
     def to_list(self, demarcation: bool=False) -> list:
@@ -169,7 +168,7 @@ class Polygon:
     def contains_point(self, point: Point) -> bool:
         return self.to_shapely().contains(point.to_shapely())
 
-    def contains_polygon(self, polygon: Polygon) -> bool:
+    def contains_polygon(self, polygon) -> bool:
         return self.to_shapely().contains(polygon.to_shapely())
 
     def contains_bbox(self, bbox: BBox) -> bool:
@@ -179,7 +178,7 @@ class Polygon:
         check_type(item=obj, valid_type_list=[Point, Polygon, BBox])
         return self.to_shapely().contains(obj.to_shapely())
 
-    def within_polygon(self, polygon: Polygon) -> bool:
+    def within_polygon(self, polygon) -> bool:
         return self.to_shapely().within(polygon.to_shapely())
 
     def within_bbox(self, bbox: BBox) -> bool:
@@ -189,13 +188,13 @@ class Polygon:
         check_type(item=obj, valid_type_list=[Polygon, BBox])
         return self.to_shapely().within(obj.to_shapely())
 
-    def intersects_polygon(self, polygon: Polygon) -> bool:
+    def intersects_polygon(self, polygon) -> bool:
         return self.to_shapely().intersects(polygon)
 
     def size(self) -> tuple:
         return np.array(self.points).reshape(-1, self.dimensionality).shape
 
-    def resize(self, orig_frame_shape: list, new_frame_shape: list) -> Polygon:
+    def resize(self, orig_frame_shape: list, new_frame_shape: list):
         if self.dimensionality != 2:
             logger.error(f"Only resize of dimensionality 2 is supported at this time.")
             logger.error(f"This polygon is dimensionality: {self.dimensionality}")
@@ -215,7 +214,7 @@ class Polygon:
         return Polygon.from_point_list(point_list=new_point_list, dimensionality=2)
 
     @classmethod
-    def from_list(self, points: list, dimensionality: int=2, demarcation: bool=False) -> Polygon:
+    def from_list(self, points: list, dimensionality: int=2, demarcation: bool=False):
         if demarcation:
             flattened_list = np.array(points).reshape(-1).tolist()
             return Polygon(points=flattened_list, dimensionality=dimensionality)
@@ -223,7 +222,7 @@ class Polygon:
             return Polygon(points=points, dimensionality=dimensionality)
 
     @classmethod
-    def from_point_list(self, point_list: list, dimensionality: int=2) -> Polygon:
+    def from_point_list(self, point_list: list, dimensionality: int=2):
         check_type_from_list(item_list=point_list, valid_type_list=[Point])
         result = []
         for i, point in enumerate(point_list):
@@ -242,7 +241,7 @@ class Polygon:
         return polygons[0]
 
     @classmethod
-    def from_shapely(self, shapely_polygon: ShapelyPolygon, fix_invalid: bool=False) -> Polygon:
+    def from_shapely(self, shapely_polygon: ShapelyPolygon, fix_invalid: bool=False):
         if not shapely_polygon.is_valid and fix_invalid:
             shapely_polygon = Polygon.fix_shapely_invalid(shapely_polygon)
         
@@ -253,12 +252,12 @@ class Polygon:
         return Polygon(points=flattened_list, dimensionality=dimensionality)
 
     @classmethod
-    def from_contour(self, contour: np.ndarray) -> Polygon:
+    def from_contour(self, contour: np.ndarray):
         cont = contour.reshape(contour.shape[0], contour.shape[2]).tolist()
         return self.from_list(points=cont, dimensionality=2, demarcation=True)
 
     @classmethod
-    def from_polygon_list_to_merge(self, polygon_list: list) -> Polygon:
+    def from_polygon_list_to_merge(self, polygon_list: list):
         from shapely.geometry import MultiPolygon as ShapelyMultiPolygon
         import matplotlib.pyplot as plt
         import geopandas as gpd
@@ -329,7 +328,7 @@ class Polygon:
             raise NotImplementedError
 
     @classmethod
-    def from_imgaug(cls, imgaug_polygon: ImgAugPolygon, fix_invalid: bool=False) -> Polygon:
+    def from_imgaug(cls, imgaug_polygon: ImgAugPolygon, fix_invalid: bool=False):
         return Polygon.from_shapely(imgaug_polygon.to_shapely_polygon(), fix_invalid=fix_invalid)
 
     def to_point2d_list(self) -> Point2D_List:
@@ -339,7 +338,7 @@ class Polygon:
         return Point2D_List.from_list(self.to_list(demarcation=True))
 
     @classmethod
-    def from_point2d_list(cls, point2d_list: Point2D_List) -> Polygon:
+    def from_point2d_list(cls, point2d_list: Point2D_List):
         check_type(point2d_list, valid_type_list=[Point2D_List])
         return Polygon.from_list(
             points=point2d_list.to_list(demarcation=True),
@@ -354,7 +353,7 @@ class Polygon:
         return Point3D_List.from_list(self.to_list(demarcation=True))
 
     @classmethod
-    def from_point3d_list(cls, point3d_list: Point3D_List) -> Polygon:
+    def from_point3d_list(cls, point3d_list: Point3D_List):
         check_type(point3d_list, valid_type_list=[Point3D_List])
         return Polygon.from_list(
             points=point3d_list.to_list(demarcation=True),
@@ -389,7 +388,7 @@ class Segmentation:
     def __len__(self) -> int:
         return len(self.polygon_list)
 
-    def __getitem__(self, idx: int) -> Polygon:
+    def __getitem__(self, idx: int):
         if len(self.polygon_list) == 0:
             logger.error(f"polygon_list is empty.")
             raise IndexError
@@ -407,7 +406,7 @@ class Segmentation:
         self.n = 0
         return self
 
-    def __next__(self) -> Polygon:
+    def __next__(self):
         if self.n < len(self.polygon_list):
             result = self.polygon_list[self.n]
             self.n += 1
@@ -415,7 +414,7 @@ class Segmentation:
         else:
             raise StopIteration
 
-    def __add__(self, other) -> Segmentation:
+    def __add__(self, other):
         if isinstance(other, Segmentation):
             # TODO: Figure out why this error is thrown upon the below check.
             # "ValueError: A LinearRing must have at least 3 coordinate tuples "
@@ -433,28 +432,28 @@ class Segmentation:
             logger.error(f'Cannot add {type(other)} to Segmentation')
             raise TypeError
 
-    def __sub__(self, other) -> Segmentation:
+    def __sub__(self, other):
         if isinstance(other, (Point2D, Keypoint2D, int, float)):
             return Segmentation([poly-other for poly in self])
         else:
             logger.error(f'Cannot subtract {type(other)} from Segmentation')
             raise TypeError
     
-    def __mul__(self, other) -> Segmentation:
+    def __mul__(self, other):
         if isinstance(other, (int, float)):
             return Segmentation([poly*other for poly in self])
         else:
             logger.error(f'Cannot multiply {type(other)} with Segmentation')
             raise TypeError
 
-    def __truediv__(self, other) -> Segmentation:
+    def __truediv__(self, other):
         if isinstance(other, (int, float)):
             return Segmentation([poly/other for poly in self])
         else:
             logger.error(f'Cannot divide {type(other)} from Segmentation')
             raise TypeError
 
-    def __eq__(self, other: Segmentation) -> bool:
+    def __eq__(self, other) -> bool:
         if isinstance(other, Segmentation):
             vals = self.to_list(demarcation=False)
             other_vals = other.to_list(demarcation=False)
@@ -463,20 +462,20 @@ class Segmentation:
             return NotImplemented
 
     @classmethod
-    def buffer(self, segmentation: Segmentation) -> Segmentation:
+    def buffer(self, segmentation):
         return segmentation
 
-    def copy(self) -> Segmentation:
+    def copy(self):
         return Segmentation(polygon_list=self.polygon_list)
 
     def append(self, item: Polygon):
         check_type(item, valid_type_list=[Polygon])
         self.polygon_list.append(item)
 
-    def to_int(self) -> Segmentation:
+    def to_int(self):
         return Segmentation([polygon.to_int() for polygon in self])
 
-    def to_float(self) -> Segmentation:
+    def to_float(self):
         return Segmentation([polygon.to_float() for polygon in self])
 
     def to_list(self, demarcation: bool=False) -> list:
@@ -559,14 +558,14 @@ class Segmentation:
             return poly_contains_seg
         return all([polygon.within(obj) for polygon in self])
 
-    def merge(self) -> Segmentation:
+    def merge(self):
         return Segmentation(
             polygon_list=[Polygon.from_polygon_list_to_merge(
                 polygon_list=self.polygon_list
             )]
         )
 
-    def resize(self, orig_frame_shape: list, new_frame_shape: list) -> Segmentation:
+    def resize(self, orig_frame_shape: list, new_frame_shape: list):
         new_polygon_list = []
         for polygon in self:
             polygon = Polygon.buffer(polygon)
@@ -577,7 +576,7 @@ class Segmentation:
         return Segmentation(polygon_list=new_polygon_list)
 
     @classmethod
-    def from_list(self, points_list: list, demarcation: bool=False) -> Segmentation:
+    def from_list(self, points_list: list, demarcation: bool=False):
         return Segmentation(
             polygon_list=[
                 Polygon.from_list(
@@ -587,7 +586,7 @@ class Segmentation:
         )
 
     @classmethod
-    def from_point_list(self, point_list_list: list) -> Segmentation:
+    def from_point_list(self, point_list_list: list):
         return Segmentation(
             polygon_list=[
                 Polygon.from_point_list(
@@ -597,7 +596,7 @@ class Segmentation:
         )
 
     @classmethod
-    def from_shapely(self, shapely_polygon_list: list) -> Segmentation:
+    def from_shapely(self, shapely_polygon_list: list):
         shapely_polygon_list0 = shapely_polygon_list.copy()
         del_idx_list = []
         for i, shapely_polygon in enumerate(shapely_polygon_list0):
@@ -614,7 +613,7 @@ class Segmentation:
         )
 
     @classmethod
-    def from_contour(self, contour_list: list, exclude_invalid_polygons: bool=False) -> Segmentation:
+    def from_contour(self, contour_list: list, exclude_invalid_polygons: bool=False):
         contour_list0 = contour_list.copy()
         if exclude_invalid_polygons:
             del_idx_list = []
@@ -639,7 +638,7 @@ class Segmentation:
         )
 
     @classmethod
-    def from_imgaug(cls, imgaug_polygons: ImgAugPolygons, fix_invalid: bool=False) -> Segmentation:
+    def from_imgaug(cls, imgaug_polygons: ImgAugPolygons, fix_invalid: bool=False):
         return Segmentation(
             polygon_list=[Polygon.from_imgaug(imgaug_polygon, fix_invalid=fix_invalid) for imgaug_polygon in imgaug_polygons.polygons]
         )
@@ -648,7 +647,7 @@ class Segmentation:
         return [polygon.to_point2d_list() for polygon in self]
 
     @classmethod
-    def from_point2d_list_list(cls, point2d_list_list: List[Point2D_List]) -> Segmentation:
+    def from_point2d_list_list(cls, point2d_list_list: List[Point2D_List]):
         return Segmentation(
             polygon_list=[Polygon.from_point2d_list(point2d_list) for point2d_list in point2d_list_list]
         )
@@ -658,7 +657,7 @@ class Segmentation:
         cls, mask_path: str,
         lower_bgr: Tuple[int]=None, upper_bgr: Tuple[int]=(255,255,255),
         exclude_invalid_polygons: bool=False
-    ) -> Segmentation:
+    ):
         if not file_exists(mask_path):
             raise FileNotFoundError(f"Couldn't find mask image at {mask_path}")
         if lower_bgr is None and upper_bgr is None:
@@ -677,7 +676,7 @@ class Segmentation:
 
         return result
 
-    def remove_out_of_image(self, img_shape: np.ndarray, fully: bool=True, partly: bool=False) -> Segmentation:
+    def remove_out_of_image(self, img_shape: np.ndarray, fully: bool=True, partly: bool=False):
         """Remove polygons in segmentation that are outside of the frame.
 
         Arguments:
@@ -705,7 +704,7 @@ class Segmentation:
 
         return result
 
-    def clip_out_of_image(self, img_shape: np.ndarray) -> Segmentation:
+    def clip_out_of_image(self, img_shape: np.ndarray):
         """Clip off all parts from all polygons that are outside of an image.
 
         .. note::
@@ -755,7 +754,7 @@ class Segmentation:
         polys = [ImgAugPolygon.from_shapely(shape_obj) for shape_obj in multipoly_inter_shapely if type(shape_obj) is ShapelyPolygon]
         return ImgAugPolygons(polys, shape=img_shape)
 
-    def imgaug_based_prune(self, img_shape: np.ndarray, fully: bool=True, partly: bool=False) -> Segmentation:
+    def imgaug_based_prune(self, img_shape: np.ndarray, fully: bool=True, partly: bool=False):
         """Removes all polygons that are fully outside of the frame, and then crops out
         the portions of the remaining polygons that are outside of the frame.
         It also deletes any Non-Polygon shapes that are generated as a result.
