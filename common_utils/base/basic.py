@@ -443,6 +443,16 @@ class BasicLoadableHandler(BasicHandler[H, T]):
                     return False
                 elif val is None or (val is not None and getattr(obj, key) == val):
                     pass
+                elif isinstance(val, (list, tuple)) and not isinstance(getattr(obj, key), (list, tuple)):
+                    found = False
+                    for val_part in val:
+                        if getattr(obj, key) == val_part:
+                            found = True
+                            break
+                    if not found:
+                        return False
+                    else:
+                        pass
                 else:
                     return False
             return True
