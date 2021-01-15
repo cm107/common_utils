@@ -234,7 +234,9 @@ class Keypoint2D_List(BasicHandler['Keypoint2D_List', 'Keypoint2D']):
 
     @classmethod
     def from_numpy(cls, arr: np.ndarray, demarcation: bool=False) -> Keypoint2D_List:
-        if demarcation:
+        if len(arr) == 0:
+            return Keypoint2D_List()
+        elif demarcation:
             if arr.shape[-1] != 3:
                 logger.error(f"arr.shape[-1] != 3")
                 raise Exception
