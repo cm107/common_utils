@@ -322,7 +322,7 @@ class BasicHandler(Generic[H, T]):
         return obj
 
     def copy(self: H) -> H:
-        return type(self)(self.obj_list.copy())
+        return type(self)([obj.copy() for obj in self.obj_list])
 
     def append(self: H, item: T):
         check_type(item, valid_type_list=[self.obj_type])

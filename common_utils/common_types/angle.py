@@ -76,8 +76,25 @@ class EulerAngle(BasicLoadableObject['EulerAngle']):
     def to_quaternion(self, seq: str='xyz') -> Quaternion:
         return Quaternion.from_list(Rotation.from_euler(seq=seq, angles=self.to_list()).as_quat().tolist())
 
-    def to_deg(self) -> EulerAngle:
-        return EulerAngle(roll=self.roll*180/math.pi, pitch=self.pitch*180/math.pi, yaw=self.yaw*180/math.pi)
+    def to_deg(self, find_smallest_congruent: bool=False) -> EulerAngle:
+        result = EulerAngle(roll=self.roll*180/math.pi, pitch=self.pitch*180/math.pi, yaw=self.yaw*180/math.pi)
+        if find_smallest_congruent:
+            result.roll = result.roll % 360
+            if abs(result.roll - 360) < abs(result.roll):
+                result.roll -= 360
+            elif abs(result.roll + 360) < abs(result.roll):
+                result.roll += 360
+            result.pitch = result.pitch % 360
+            if abs(result.pitch - 360) < abs(result.pitch):
+                result.pitch -= 360
+            elif abs(result.pitch + 360) < abs(result.pitch):
+                result.pitch += 360
+            result.yaw = result.yaw % 360
+            if abs(result.yaw - 360) < abs(result.yaw):
+                result.yaw -= 360
+            elif abs(result.yaw + 360) < abs(result.yaw):
+                result.yaw += 360
+        return result
     
     def to_rad(self) -> EulerAngle:
         return EulerAngle(roll=self.roll*math.pi/180, pitch=self.pitch*math.pi/180, yaw=self.yaw*math.pi/180)
@@ -91,6 +108,39 @@ class EulerAngle(BasicLoadableObject['EulerAngle']):
             return mag * 180 / math.pi
         else:
             return mag
+
+    # Note: This method is pointless.
+    # def angle_from(self, other: EulerAngle, in_deg: bool=False) -> float:
+    #     # Assume XYZ order
+    #     assert isinstance(other, EulerAngle)
+        
+    #     def get_z_axis_vector(euler: EulerAngle, in_deg: bool=False) -> list:
+    #         if in_deg:
+    #             euler0 = euler.to_rad()
+    #         else:
+    #             euler0 = euler
+    #         return [math.sin(euler0.pitch), -math.cos(euler0.pitch)*math.sin(euler0.roll), math.cos(euler0.pitch)*math.cos(euler0.roll)]
+        
+    #     Z0, Z1 = get_z_axis_vector(euler=self, in_deg=in_deg), get_z_axis_vector(euler=other, in_deg=in_deg)
+    #     norm_cross = np.linalg.norm(np.cross(Z0, Z1)).tolist()
+    #     dot = np.dot(Z0, Z1).tolist()
+    #     result = math.atan2(norm_cross, dot)
+    #     if in_deg:
+    #         result *= 180 / math.pi
+    #     return result
+
+    def angle_from(self, other: EulerAngle, in_deg: bool=False) -> float:
+        q0 = Rotation.from_euler('xyz', self.to_list(), degrees=in_deg)
+        q1 = Rotation.from_euler('xyz', other.to_list(), degrees=in_deg)
+
+        # sin(theta/2) = norm of the vector part of the quaternion product q1*q2^(-1)
+        sin_theta_2 = q0*q1.inv()
+        sin_theta_2 = sin_theta_2.as_quat() # 正規化
+        sin_theta_2_vec = (sin_theta_2[0]**2+sin_theta_2[1]**2+sin_theta_2[2]**2)**0.5 # vector部のnorm
+
+        angle = 2 * math.asin(sin_theta_2_vec)
+        angle = math.degrees(angle)
+        return angle
 
 class EulerAngleList(
     BasicLoadableHandler['EulerAngleList', 'EulerAngle'],
