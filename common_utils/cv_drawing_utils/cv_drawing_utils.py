@@ -270,7 +270,7 @@ def draw_bbox(
 
 def draw_keypoints_labels(
     img: np.ndarray, keypoints: list, keypoint_labels: list, color: list=[0, 0, 255], font_face: int=cv2.FONT_HERSHEY_COMPLEX, thickness: int=1,
-    ignore_kpt_idx: list=[]
+    ignore_kpt_idx: list=[], font_scale: float=None
 ):
     result = img.copy()
 
@@ -284,13 +284,13 @@ def draw_keypoints_labels(
         
         # Define target_textbox_w and initial font_scale guess.
         target_textbox_w = 0.1 * bbox_w # Needs adjustment
-        font_scale = 1 * (target_textbox_w / 93)
+        font_scale0 = 1 * (target_textbox_w / 93)
 
         # Find max_size_label_idx
         textbox_w, textbox_h = None, None
         max_size_label_idx = None
         for i, keypoint_label in enumerate(keypoint_labels):
-            [label_w, label_h], _ = cv2.getTextSize(text=keypoint_label, fontFace=font_face, fontScale=font_scale, thickness=thickness)
+            [label_w, label_h], _ = cv2.getTextSize(text=keypoint_label, fontFace=font_face, fontScale=font_scale0, thickness=thickness)
             if textbox_w is None or label_w > textbox_w:
                 textbox_w, textbox_h = label_w, label_h
                 max_size_label_idx = i
@@ -303,8 +303,8 @@ def draw_keypoints_labels(
         retry_count = 0
         while abs(textbox_w - target_textbox_w) / target_textbox_w > 0.1 and retry_count < 3:
             retry_count += 1
-            font_scale = font_scale * (target_textbox_w / textbox_w)
-            [textbox_w, textbox_h], _ = cv2.getTextSize(text=keypoint_labels[max_size_label_idx], fontFace=font_face, fontScale=font_scale, thickness=thickness)
+            font_scale0 = font_scale0 * (target_textbox_w / textbox_w)
+            [textbox_w, textbox_h], _ = cv2.getTextSize(text=keypoint_labels[max_size_label_idx], fontFace=font_face, fontScale=font_scale0, thickness=thickness)
             textbox_w = textbox_w if textbox_w > 1 else 1
             textbox_h = textbox_h if textbox_h > 1 else 1
 
@@ -314,8 +314,24 @@ def draw_keypoints_labels(
                 textbox_org_x = int(x - 0.5 * textbox_w)
                 textbox_org_y = int(y - 0.5 * textbox_h)
                 textbox_org = (textbox_org_x, textbox_org_y)
+                
+                # if True: # debug
+                #     x_oob = textbox_org_x < 0 or textbox_org_x >= img.shape[1]
+                #     y_oob = textbox_org_y < 0 or textbox_org_y >= img.shape[0]
+                #     if x_oob or y_oob:
+                #         print(
+                #             f"""
+                #             textbox_org: {textbox_org} is outside of frame
+                #             (x, y): {(x, y)}
+                #             img.shape: {img.shape}
+                #             keypoint_label: {keypoint_label}
+                #             """
+                #         )
+                
                 cv2.putText(
-                    img=result, text=keypoint_label, org=textbox_org, fontFace=font_face, fontScale=font_scale, color=color,
+                    img=result, text=keypoint_label, org=textbox_org, fontFace=font_face,
+                    fontScale=font_scale0 if font_scale is None else font_scale,
+                    color=color,
                     thickness=thickness, bottomLeftOrigin=False
                 )
     return result
@@ -324,7 +340,7 @@ def draw_keypoints(
     img: np.ndarray, keypoints: list,
     radius: int=4, color: list=[0, 0, 255],
     keypoint_labels: list=None, show_keypoints_labels: bool=False, label_thickness: int=1, label_color: list=None, label_only: bool=False,
-    ignore_kpt_idx: list=[]
+    ignore_kpt_idx: list=[], font_scale: float=None
 ) -> np.ndarray:
     result = img.copy()
     if not (keypoint_labels is not None and label_only):
@@ -342,7 +358,7 @@ def draw_keypoints(
             text_color = label_color if label_color is not None else color
             result = draw_keypoints_labels(
                 img=result, keypoints=keypoints, keypoint_labels=keypoint_labels, color=text_color, thickness=label_thickness,
-                ignore_kpt_idx=ignore_kpt_idx
+                ignore_kpt_idx=ignore_kpt_idx, font_scale=font_scale
             )
         else:
             logger.error(f"Need to provide keypoint_labels in order to show labels.")
@@ -353,14 +369,14 @@ def draw_kpts2d(
     img: np.ndarray, keypoints: Keypoint2D_List,
     radius: int=4, color: list=[0, 0, 255],
     keypoint_labels: list=None, show_keypoints_labels: bool=False, label_thickness: int=1, label_color: list=None, label_only: bool=False,
-    ignore_kpt_idx: list=[]
+    ignore_kpt_idx: list=[], font_scale: float=None
 ):
     kpts = keypoints.to_numpy(demarcation=True)[:, :2].tolist()
     return draw_keypoints(
         img=img, keypoints=kpts, radius=radius, color=color,
         keypoint_labels=keypoint_labels, show_keypoints_labels=show_keypoints_labels,
         label_thickness=label_thickness, label_color=label_color, label_only=label_only,
-        ignore_kpt_idx=ignore_kpt_idx
+        ignore_kpt_idx=ignore_kpt_idx, font_scale=font_scale
     )
 
 def draw_skeleton(
