@@ -270,63 +270,57 @@ def draw_bbox(
 
 def draw_keypoints_labels(
     img: np.ndarray, keypoints: list, keypoint_labels: list, color: list=[0, 0, 255], font_face: int=cv2.FONT_HERSHEY_COMPLEX, thickness: int=1,
-    ignore_kpt_idx: list=[], font_scale: float=None
+    ignore_kpt_idx: list=[], font_scale: float=None, rel_org: (int, int)=None
 ):
     result = img.copy()
 
     # Define BBox enclosing keypoints
     np_kpts = np.array(keypoints)
     if len(np_kpts) > 0:
-        kpts_xmin, kpts_ymin = np.min(np_kpts, axis=0)
-        kpts_xmax, kpts_ymax = np.max(np_kpts, axis=0)
-        kpts_bbox = BBox(xmin=kpts_xmin, ymin=kpts_ymin, xmax=kpts_xmax, ymax=kpts_ymax)
-        bbox_h, bbox_w = kpts_bbox.shape()
-        
-        # Define target_textbox_w and initial font_scale guess.
-        target_textbox_w = 0.1 * bbox_w # Needs adjustment
-        font_scale0 = 1 * (target_textbox_w / 93)
+        if font_scale is None or rel_org is None:
+            kpts_xmin, kpts_ymin = np.min(np_kpts, axis=0)
+            kpts_xmax, kpts_ymax = np.max(np_kpts, axis=0)
+            kpts_bbox = BBox(xmin=kpts_xmin, ymin=kpts_ymin, xmax=kpts_xmax, ymax=kpts_ymax)
+            bbox_h, bbox_w = kpts_bbox.shape()
+            
+            # Define target_textbox_w and initial font_scale guess.
+            target_textbox_w = 0.1 * bbox_w # Needs adjustment
+            font_scale0 = 1 * (target_textbox_w / 93)
 
-        # Find max_size_label_idx
-        textbox_w, textbox_h = None, None
-        max_size_label_idx = None
-        for i, keypoint_label in enumerate(keypoint_labels):
-            [label_w, label_h], _ = cv2.getTextSize(text=keypoint_label, fontFace=font_face, fontScale=font_scale0, thickness=thickness)
-            if textbox_w is None or label_w > textbox_w:
-                textbox_w, textbox_h = label_w, label_h
-                max_size_label_idx = i
+            # Find max_size_label_idx
+            textbox_w, textbox_h = None, None
+            max_size_label_idx = None
+            for i, keypoint_label in enumerate(keypoint_labels):
+                [label_w, label_h], _ = cv2.getTextSize(text=keypoint_label, fontFace=font_face, fontScale=font_scale0, thickness=thickness)
+                if textbox_w is None or label_w > textbox_w:
+                    textbox_w, textbox_h = label_w, label_h
+                    max_size_label_idx = i
 
-        # Prevent Divide By Zero Errors
-        target_textbox_w = target_textbox_w if target_textbox_w > 1 else 1
-        textbox_w = textbox_w if textbox_w > 1 else 1
-
-        # Adjust to target_textbox_w
-        retry_count = 0
-        while abs(textbox_w - target_textbox_w) / target_textbox_w > 0.1 and retry_count < 3:
-            retry_count += 1
-            font_scale0 = font_scale0 * (target_textbox_w / textbox_w)
-            [textbox_w, textbox_h], _ = cv2.getTextSize(text=keypoint_labels[max_size_label_idx], fontFace=font_face, fontScale=font_scale0, thickness=thickness)
+            # Prevent Divide By Zero Errors
+            target_textbox_w = target_textbox_w if target_textbox_w > 1 else 1
             textbox_w = textbox_w if textbox_w > 1 else 1
-            textbox_h = textbox_h if textbox_h > 1 else 1
+
+            # Adjust to target_textbox_w
+            retry_count = 0
+            while abs(textbox_w - target_textbox_w) / target_textbox_w > 0.1 and retry_count < 3:
+                retry_count += 1
+                font_scale0 = font_scale0 * (target_textbox_w / textbox_w)
+                [textbox_w, textbox_h], _ = cv2.getTextSize(text=keypoint_labels[max_size_label_idx], fontFace=font_face, fontScale=font_scale0, thickness=thickness)
+                textbox_w = textbox_w if textbox_w > 1 else 1
+                textbox_h = textbox_h if textbox_h > 1 else 1
 
         # Draw Label
         for i, [[x, y], keypoint_label] in enumerate(zip(keypoints, keypoint_labels)):
             if i not in ignore_kpt_idx:
-                textbox_org_x = int(x - 0.5 * textbox_w)
-                textbox_org_y = int(y - 0.5 * textbox_h)
-                textbox_org = (textbox_org_x, textbox_org_y)
-                
-                # if True: # debug
-                #     x_oob = textbox_org_x < 0 or textbox_org_x >= img.shape[1]
-                #     y_oob = textbox_org_y < 0 or textbox_org_y >= img.shape[0]
-                #     if x_oob or y_oob:
-                #         print(
-                #             f"""
-                #             textbox_org: {textbox_org} is outside of frame
-                #             (x, y): {(x, y)}
-                #             img.shape: {img.shape}
-                #             keypoint_label: {keypoint_label}
-                #             """
-                #         )
+                if rel_org is None:
+                    textbox_org_x = int(x - 0.5 * textbox_w)
+                    textbox_org_y = int(y - 0.5 * textbox_h)
+                    textbox_org = (textbox_org_x, textbox_org_y)
+                else:
+                    assert len(rel_org) == 2
+                    textbox_org_x = int(x + rel_org[0])
+                    textbox_org_y = int(y + rel_org[1])
+                    textbox_org = (textbox_org_x, textbox_org_y)
                 
                 cv2.putText(
                     img=result, text=keypoint_label, org=textbox_org, fontFace=font_face,
