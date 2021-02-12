@@ -39,6 +39,8 @@ common_utils/file_utils/__init__.py
 common_utils/file_utils/file_utils.py
 common_utils/image_utils/__init__.py
 common_utils/image_utils/image_utils.py
+common_utils/iter_utils/__init__.py
+common_utils/iter_utils/image_iter.py
 common_utils/math_utils/__init__.py
 common_utils/math_utils/math_utils.py
 common_utils/ml_utils/__init__.py
