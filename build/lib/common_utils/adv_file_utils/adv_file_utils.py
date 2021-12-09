@@ -30,19 +30,21 @@ def move_all_to_dump_dir(
             silent=silent
         )
 
-def delete_all_files_of_extension(dir_path: str, extension: str):
+def delete_all_files_of_extension(dir_path: str, extension: str, verbose: bool=False):
     filepaths = get_all_files_of_extension(dir_path, extension)
     if len(filepaths) > 0:
         for filepath in filepaths:
             delete_existing_file(filepath)
-            print(f'Deleted {filepath}')
+            if verbose:
+                print(f'Deleted {filepath}')
 
-def delete_all_files_in_extension_list(dir_path: str, extension_list: list):
+def delete_all_files_in_extension_list(dir_path: str, extension_list: list, verbose: bool=False):
     filepaths = get_all_files_in_extension_list(dir_path, extension_list)
     if len(filepaths) > 0:
         for filepath in filepaths:
             delete_existing_file(filepath)
-            print(f'Deleted {filepath}')
+            if verbose:
+                print(f'Deleted {filepath}')
 
 def get_filepaths_in_dir(dir_path: str):
     pathlist = get_pathlist(dir_path)
