@@ -54,6 +54,10 @@ def get_dir_contents_len(dir_path: str) -> int:
 def dir_is_empty(dir_path: str) -> bool:
     return get_dir_contents_len(dir_path) == 0
 
+def del_dir_if_empty(dir_path: str):
+    if dir_exists(dir_path) and dir_is_empty(dir_path):
+        delete_dir(dir_path)
+
 def delete_all_files_in_dir(dir_path: str, ask_permission: bool=True, verbose: bool=False):
     if not dir_is_empty(dir_path):
         if ask_permission:
