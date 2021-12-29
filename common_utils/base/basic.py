@@ -294,6 +294,8 @@ class BasicHandler(Generic[H, T]):
             if len(self.obj_list) == 0:
                 logger.error(f"{type(self).__name__} is empty.")
                 raise IndexError
+            elif idx < 0 and abs(idx) <= len(self):
+                del self.obj_list[idx]
             elif idx < 0 or idx >= len(self.obj_list):
                 logger.error(f"Index out of range: {idx}")
                 raise IndexError
