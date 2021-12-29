@@ -1,7 +1,9 @@
-from ..file_utils import move_file, delete_existing_file
+from typing import List
+from common_utils.file_utils.file_utils import del_dir_if_empty
+from ..file_utils import move_file, delete_existing_file, delete_dir
 from ..path_utils import get_next_dump_path, get_extension_from_path, \
     get_pathlist, get_all_files_of_extension, get_filename, get_all_files_in_extension_list
-from ..file_utils import file_exists, dir_exists
+from ..file_utils import file_exists, dir_exists, del_dir_if_empty
 
 def move_to_dump_dir(
     src_path: str, dump_dir: str, label_length: int=6,
@@ -69,3 +71,16 @@ def get_dirpaths_in_dir(dir_path: str):
 def get_dirnames_in_dir(dir_path: str):
     dirpaths_in_dir = get_dirpaths_in_dir(dir_path)
     return [get_filename(dirpath) for dirpath in dirpaths_in_dir]
+
+def delete_empty_dirs(parent_dir: str):
+    dirpaths = get_dirpaths_in_dir(parent_dir)
+    for dirpath in dirpaths:
+        del_dir_if_empty(dirpath)
+
+def delete_all_dirs_in_dir(parent_dirpath: str, exclude: List[str]=None):
+    existing_child_dirs = get_dirpaths_in_dir(parent_dirpath)
+    for child_dirpath in existing_child_dirs:
+        child_dirname = get_filename(child_dirpath)
+        if exclude is not None and (child_dirpath in exclude or child_dirname in exclude):
+            continue
+        delete_dir(child_dirpath)
